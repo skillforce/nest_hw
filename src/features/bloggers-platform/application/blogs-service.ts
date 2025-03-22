@@ -14,6 +14,8 @@ export class BlogsService {
   async createBlog(createBlogDto: CreateBlogDto): Promise<string> {
     const newBlog = this.BlogModel.createInstance(createBlogDto);
 
+    await newBlog.save();
+
     return newBlog._id.toString();
   }
 

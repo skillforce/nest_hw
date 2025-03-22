@@ -13,6 +13,8 @@ export class PostsService {
   async createPost(createPostDto: PostDto): Promise<string> {
     const newPost = this.PostModel.createInstance(createPostDto);
 
+    await newPost.save();
+
     return newPost._id.toString();
   }
 
