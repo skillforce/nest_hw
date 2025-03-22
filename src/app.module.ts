@@ -5,12 +5,12 @@ import { UserAccountsModule } from './features/user-accounts/user-accounts.modul
 import { MongooseModule } from '@nestjs/mongoose';
 import { TestingModule } from './features/testing/testing.module';
 import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-platform.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      process.env.MONGODB_URL ?? 'mongodb://localhost/nest_hw_mongo_db',
-    ),
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGODB_URL!),
     UserAccountsModule,
     TestingModule,
     BloggersPlatformModule,
