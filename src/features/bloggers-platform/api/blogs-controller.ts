@@ -53,7 +53,7 @@ export class BlogsController {
 
   @Get(':blogId/posts')
   async getPostsByBlogId(
-    @Param(':blogId') blogId: string,
+    @Param('blogId') blogId: string,
     @Query() query: GetPostsQueryParams,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
     return this.postQueryRepository.getAll(query, { blogId });
@@ -61,7 +61,7 @@ export class BlogsController {
 
   @Post(':blogId/posts')
   async createPostByBlogId(
-    @Param(':blogId') blogId: string,
+    @Param('blogId') blogId: string,
     @Body() body: CreatePostByBlogIdInputDto,
   ): Promise<PostsViewDto> {
     const blog = await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
@@ -77,14 +77,15 @@ export class BlogsController {
 
   @ApiParam({ name: 'id' })
   @Get(':blogId')
-  async getBlogById(@Param(':blogId') blogId: string): Promise<BlogsViewDto> {
+  async getBlogById(@Param('blogId') blogId: string): Promise<BlogsViewDto> {
+    console.log(blogId);
     return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
   }
 
   @Put(':blogId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlogById(
-    @Param(':blogId') blogId: string,
+    @Param('blogId') blogId: string,
     @Body() body: UpdateBlogInputDto,
   ): Promise<void> {
     await this.blogsService.updateBlogById(blogId, body);

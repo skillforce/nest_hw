@@ -70,7 +70,7 @@ export class PostsController {
   @Put(':postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePostById(
-    @Param(':postId') postId: string,
+    @Param('postId') postId: string,
     @Body() body: UpdatePostInputDto,
   ): Promise<void> {
     const blog = await this.blogQueryRepository.getByIdOrNotFoundFail(

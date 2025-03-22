@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
 import { CommentViewDto } from './view-dto/comments.view-dto';
 
@@ -8,8 +8,10 @@ export class CommentsController {
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
-  @Get(':id')
-  async getCommentById(id: string): Promise<CommentViewDto> {
-    return this.commentsQueryRepository.getByIdOrNotFoundFail(id);
+  @Get(':commentId')
+  async getCommentById(
+    @Param('commentId') commentId: string,
+  ): Promise<CommentViewDto> {
+    return this.commentsQueryRepository.getByIdOrNotFoundFail(commentId);
   }
 }
