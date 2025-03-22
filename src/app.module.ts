@@ -8,7 +8,9 @@ import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-pl
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost/nest_hw_mongo_db'),
+    MongooseModule.forRoot(
+      process.env.MONGODB_URL ?? 'mongodb://localhost/nest_hw_mongo_db',
+    ),
     UserAccountsModule,
     TestingModule,
     BloggersPlatformModule,
