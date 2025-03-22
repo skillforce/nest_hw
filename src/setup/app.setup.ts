@@ -4,7 +4,7 @@ import { globalPrefixSetup } from './global-prefix.setup';
 import { swaggerSetup } from './swagger.setup';
 
 export function appSetup(app: INestApplication) {
-    pipesSetup(app);
-    globalPrefixSetup(app);
-    swaggerSetup(app);
+  pipesSetup(app);
+  // globalPrefixSetup(app);
+  // swaggerSetup(app);
 }
