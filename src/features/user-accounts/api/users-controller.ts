@@ -22,9 +22,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly userQueryRepository: UsersQueryRepository,
-  ) {
-    console.log('UsersController created!');
-  }
+  ) {}
   @Get('/')
   async getAllUsers(
     @Query() query: GetUsersQueryParams,
