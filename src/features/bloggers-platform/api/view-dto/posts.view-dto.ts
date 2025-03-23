@@ -1,6 +1,7 @@
 import { BlogDocument } from '../../domain/blog.entity';
 import { PostDocument } from '../../domain/post.entity';
 import { ExtendedLikesInfoViewDto } from './like-view-dto/extended-like-info.view-dto';
+import { LikeStatusEnum } from '../../domain/schemas/like-info.schema';
 
 export class PostsViewDto {
   id: string;
@@ -22,7 +23,12 @@ export class PostsViewDto {
     dto.blogId = post.blogId;
     dto.blogName = post.blogName;
     dto.createdAt = post.createdAt ?? new Date();
-    dto.extendedLikesInfo = post.extendedLikesInfo;
+    dto.extendedLikesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: LikeStatusEnum.None,
+      newestLikes: [],
+    };
 
     return dto;
   }
