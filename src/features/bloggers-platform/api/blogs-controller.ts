@@ -22,7 +22,6 @@ import {
 import { PostsService } from '../application/posts-service';
 import { ApiParam } from '@nestjs/swagger';
 import { CreatePostByBlogIdInputDto } from './input-dto/post-input-dto/post.input-dto';
-import { CommentViewDto } from './view-dto/comments.view-dto';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 import { BlogsViewDto } from './view-dto/blogs.view-dto';
 import { PostsViewDto } from './view-dto/posts.view-dto';
@@ -56,6 +55,8 @@ export class BlogsController {
     @Param('blogId') blogId: string,
     @Query() query: GetPostsQueryParams,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+    await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+
     return this.postQueryRepository.getAll(query, { blogId });
   }
 
