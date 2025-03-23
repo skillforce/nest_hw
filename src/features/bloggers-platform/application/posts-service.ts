@@ -34,6 +34,8 @@ export class PostsService {
   async deleteBlogById(id: string) {
     const blog = await this.postRepository.findOrNotFoundFail(id);
 
+    console.log(blog);
+
     blog.makeDeleted();
 
     await this.postRepository.save(blog);

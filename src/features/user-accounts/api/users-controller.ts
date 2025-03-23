@@ -32,6 +32,7 @@ export class UsersController {
     return this.userQueryRepository.getAllUsers(query);
   }
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() dto: CreateUserInputDto) {
     const newUserId = await this.usersService.createUser(dto);
     return this.userQueryRepository.getByIdOrNotFoundFail(newUserId);

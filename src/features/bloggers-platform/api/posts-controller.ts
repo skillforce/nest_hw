@@ -87,6 +87,7 @@ export class PostsController {
   @Delete(':postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlogById(@Param('postId') postId: string) {
+    console.log(postId);
     return await this.postService.deleteBlogById(postId);
   }
 }

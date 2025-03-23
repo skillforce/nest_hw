@@ -16,7 +16,7 @@ export class Comment {
   postId: string;
   @Prop({ type: CommentatorInfoSchema })
   commentatorInfo: CommentatorInfo;
-  @Prop({ type: Date, nullable: true })
+  @Prop({ type: Date, nullable: true, default: null })
   deletedAt: Date | null;
   @Prop({
     type: LikesInfoSchema,

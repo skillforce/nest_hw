@@ -18,7 +18,7 @@ export class User {
   @Prop({ required: true, min: 6, max: 20, type: String })
   passwordHash: string;
 
-  @Prop({ type: Date, nullable: true })
+  @Prop({ type: Date, nullable: true, default: null })
   deletedAt: Date | null;
 
   createdAt?: Date;

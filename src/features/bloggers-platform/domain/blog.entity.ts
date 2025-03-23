@@ -22,7 +22,7 @@ export class Blog {
   })
   websiteUrl: string;
 
-  @Prop({ type: Date, nullable: true })
+  @Prop({ type: Date, nullable: true, default: null })
   deletedAt: Date | null;
 
   createdAt?: Date;
