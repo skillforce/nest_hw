@@ -5,19 +5,40 @@ import {
   CreatePostDomainDto,
   UpdatePostDomainDto,
 } from './dto/post-domain.dto';
+import {
+  ExtendedLikesInfo,
+  ExtendedLikesInfoSchema,
+} from './schemas/extended-like-info.schema';
 
 @Schema({ timestamps: true })
 export class Post {
   @Prop({ required: true, type: String, max: 30 })
   title: string;
+
   @Prop({ required: true, type: String, max: 100 })
   shortDescription: string;
+
   @Prop({ required: true, type: String, max: 1000 })
   content: string;
+
   @Prop({ required: true, type: String })
   blogId: string;
+
   @Prop({ required: true, type: String })
   blogName: string;
+
+  @Prop({
+    type: ExtendedLikesInfoSchema,
+    required: true,
+    default: {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: 'None',
+      newestLikes: [],
+    },
+  })
+  extendedLikesInfo: ExtendedLikesInfo;
+
   @Prop({ type: Date, nullable: true })
   deletedAt: Date | null;
 

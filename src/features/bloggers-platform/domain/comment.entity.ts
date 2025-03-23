@@ -4,8 +4,9 @@ import { HydratedDocument, Model } from 'mongoose';
 import {
   CommentatorInfo,
   CommentatorInfoSchema,
-} from './commentator-info.schema';
+} from './schemas/commentator-info.schema';
 import { CommentDomainDto } from './dto/comment-domain.dto';
+import { LikesInfoSchema, LikeStatusEnum } from './schemas/like-info.schema';
 
 @Schema({ timestamps: true })
 export class Comment {
@@ -17,7 +18,10 @@ export class Comment {
   commentatorInfo: CommentatorInfo;
   @Prop({ type: Date, nullable: true })
   deletedAt: Date | null;
-
+  @Prop({
+    type: LikesInfoSchema,
+    default: { likesCount: 0, dislikesCount: 0, myStatus: LikeStatusEnum.None },
+  })
   createdAt?: Date;
   updatedAt?: Date;
 

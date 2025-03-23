@@ -1,4 +1,4 @@
-import { CommentatorInfo } from '../commentator-info.schema';
+import { CommentatorInfo } from '../schemas/commentator-info.schema';
 
 export class CommentDomainDto {
   content: string;
