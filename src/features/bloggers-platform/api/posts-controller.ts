@@ -41,7 +41,7 @@ export class PostsController {
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
     return this.commentsQueryRepository.getAll(query, { postId });
   }
-
+  @Get()
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
