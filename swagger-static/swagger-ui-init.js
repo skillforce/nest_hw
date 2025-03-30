@@ -84,6 +84,169 @@ window.onload = function() {
           ]
         }
       },
+      "/auth/login": {
+        "post": {
+          "operationId": "AuthController_login",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
+      "/auth/registration": {
+        "post": {
+          "operationId": "AuthController_register",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
+      "/auth/registration-confirmation": {
+        "post": {
+          "operationId": "AuthController_registrationConfirmation",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationConfirmationInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
+      "/auth/registration-email-resending": {
+        "post": {
+          "operationId": "AuthController_resendRegistrationEmail",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationResendingInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
+      "/auth/password-recovery": {
+        "post": {
+          "operationId": "AuthController_recoverPassword",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordRecoveryInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
+      "/auth/new-password": {
+        "post": {
+          "operationId": "AuthController_createNewPassword",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewPasswordInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
+      "/auth/me": {
+        "get": {
+          "operationId": "AuthController_getMe",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "security": [
+            {
+              "bearer": []
+            }
+          ],
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
       "/testing/all-data": {
         "delete": {
           "operationId": "TestingController_deleteAllData",
@@ -457,6 +620,30 @@ window.onload = function() {
       },
       "schemas": {
         "CreateUserInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "LoginInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "RegistrationInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "RegistrationConfirmationInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "RegistrationResendingInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "PasswordRecoveryInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "NewPasswordInputDto": {
           "type": "object",
           "properties": {}
         },

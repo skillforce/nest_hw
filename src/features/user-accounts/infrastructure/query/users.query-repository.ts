@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../../domain/user.entity';
-import { UserViewDto } from '../../api/view-dto/users.view-dto';
+import { UserViewDto } from '../../api/view-dto/users-view-dto/users.view-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { FilterQuery } from 'mongoose';
-import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.input-dto';
+import { GetUsersQueryParams } from '../../api/input-dto/users-input-dto/get-users-query-params.input-dto';
 
 @Injectable()
 export class UsersQueryRepository {

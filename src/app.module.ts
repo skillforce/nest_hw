@@ -9,6 +9,9 @@ import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GLOBAL_PREFIX } from './setup/global-prefix.setup';
+import { APP_FILTER } from '@nestjs/core';
+import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
+import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 
 @Module({
   imports: [
@@ -23,6 +26,16 @@ import { GLOBAL_PREFIX } from './setup/global-prefix.setup';
     BloggersPlatformModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllHttpExceptionsFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: DomainHttpExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}
