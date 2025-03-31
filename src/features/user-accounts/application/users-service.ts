@@ -19,7 +19,7 @@ export class UsersService {
   async createUser(dto: UserDto, isConfirmed = false): Promise<string> {
     const userWithSameLogin = await this.usersRepository.findByLogin(dto.login);
     const userWithSameEmail = await this.usersRepository.findByEmail(dto.email);
-    if (userWithSameLogin || userWithSameEmail) {
+    if (userWithSameLogin) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -27,12 +27,20 @@ export class UsersService {
             field: 'login',
             message: 'user with this login already exists',
           },
+        ],
+        message: 'user with this login already exists',
+      });
+    }
+    if (userWithSameEmail) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        extensions: [
           {
             field: 'email',
             message: 'user with this email already exists',
           },
         ],
-        message: 'user with this login or email already exists',
+        message: 'user with this email already exists',
       });
     }
 

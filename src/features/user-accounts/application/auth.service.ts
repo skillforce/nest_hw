@@ -10,6 +10,7 @@ import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { UsersService } from './users-service';
 import { EmailService } from '../../notifications/email.service';
+import { UserDocument } from '../domain/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -40,18 +41,9 @@ export class AuthService {
       return null;
     }
 
-    return { id: user.id.toString() };
+    return { id: user.id + '' };
   }
-  async login(userId: string): Promise<{ accessToken: string }> {
-    const accessToken = this.jwtService.sign({ id: userId } as UserContextDto);
-
-    return { accessToken };
-  }
-
-  async registerUser(dto: UserDto) {
-    const createdUserId = await this.userService.createUser(dto);
-    const user = await this.usersRepository.findOrNotFoundFail(createdUserId);
-
+  async initializeConfirmEmail(user: UserDocument) {
     const confirmationCode = randomUUID();
     user.setEmailConfirmationCode(confirmationCode);
     await this.usersRepository.save(user);
@@ -61,6 +53,17 @@ export class AuthService {
       confirmationCode,
       EmailLayouts.REGISTRATION,
     );
+  }
+  login(userId: string): { accessToken: string } {
+    const accessToken = this.jwtService.sign({ id: userId } as UserContextDto);
+
+    return { accessToken };
+  }
+
+  async registerUser(dto: UserDto) {
+    const createdUserId = await this.userService.createUser(dto);
+    const user = await this.usersRepository.findOrNotFoundFail(createdUserId);
+    await this.initializeConfirmEmail(user);
   }
 
   async changePassword({ newPassword, recoveryCode }: UpdateUserPasswordDto) {
@@ -121,12 +124,7 @@ export class AuthService {
         message: 'user is already confirmed',
       });
     }
-
-    this.emailService.sendConfirmationEmail(
-      user.email,
-      user.emailConfirmation.confirmationCode,
-      EmailLayouts.REGISTRATION,
-    );
+    await this.initializeConfirmEmail(user);
   }
 
   async confirmRegistrationByCode(code: string) {

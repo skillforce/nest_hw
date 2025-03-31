@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsUUID, Length } from 'class-validator';
+import { IsEmail, IsUUID, Length } from 'class-validator';
 import {
   loginConstraints,
   passwordConstraints,

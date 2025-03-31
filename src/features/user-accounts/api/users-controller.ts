@@ -18,7 +18,9 @@ import { UserViewDto } from './view-dto/users-view-dto/users.view-dto';
 import { CreateUserInputDto } from './input-dto/users-input-dto/user.input-dto';
 import { ApiParam } from '@nestjs/swagger';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('users')
 @UseGuards(BasicAuthGuard)
 export class UsersController {

@@ -28,11 +28,11 @@ export class UsersRepository {
     const user = await this.UserModel.findOne({ email });
     if (!user) {
       throw new DomainException({
-        code: DomainExceptionCode.NotFound,
+        code: DomainExceptionCode.BadRequest,
         extensions: [
           {
-            field: 'id',
-            message: 'user not found',
+            field: 'email',
+            message: 'user with such email does not exist',
           },
         ],
         message: 'user not found',
@@ -49,14 +49,14 @@ export class UsersRepository {
     });
     if (!user) {
       throw new DomainException({
-        code: DomainExceptionCode.NotFound,
+        code: DomainExceptionCode.BadRequest,
         extensions: [
           {
-            field: 'user',
-            message: 'user not found',
+            field: 'code',
+            message: 'code is not valid',
           },
         ],
-        message: 'user not found',
+        message: 'code is not valid',
       });
     }
 
