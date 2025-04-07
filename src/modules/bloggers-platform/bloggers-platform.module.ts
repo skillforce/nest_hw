@@ -24,6 +24,9 @@ import { UsersRepository } from '../user-accounts/infrastructure/users.repositor
 import { CommentsRepository } from './infrastructure/comments.repository';
 import { UpdateCommentUseCase } from './application/usecases/update-comment.usecase';
 import { DeleteCommentUseCase } from './application/usecases/delete-comment.usecase';
+import { MakeLikeOperationUseCase } from './application/usecases/make-like-operation.usecase';
+import { LikesRepository } from './infrastructure/like.repository';
+import { Like, LikeSchema } from './domain/like.entity';
 
 @Module({
   imports: [
@@ -44,6 +47,10 @@ import { DeleteCommentUseCase } from './application/usecases/delete-comment.usec
         name: Comment.name,
         schema: CommentSchema,
       },
+      {
+        name: Like.name,
+        schema: LikeSchema,
+      },
     ]),
   ],
   controllers: [BlogsController, PostsController, CommentsController],
@@ -51,6 +58,7 @@ import { DeleteCommentUseCase } from './application/usecases/delete-comment.usec
     CommentsService,
     BlogsRepository,
     UsersRepository,
+    LikesRepository,
     BlogsQueryRepository,
     PostsRepository,
     PostsQueryRepository,
@@ -65,6 +73,7 @@ import { DeleteCommentUseCase } from './application/usecases/delete-comment.usec
     CreateCommentUseCase,
     UpdateCommentUseCase,
     DeleteCommentUseCase,
+    MakeLikeOperationUseCase,
   ],
   exports: [],
 })

@@ -18,6 +18,8 @@ import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto'
 import { CommandBus } from '@nestjs/cqrs';
 import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
 import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecase';
+import { LikeInputDto } from './input-dto/like-input-dto/like.input-dto';
+import { MakeLikeOperationCommand } from '../application/usecases/make-like-operation.usecase';
 
 @Controller('comments')
 export class CommentsController {
@@ -43,6 +45,19 @@ export class CommentsController {
   ) {
     await this.commandBus.execute<UpdateCommentCommand, void>(
       new UpdateCommentCommand(body, commentId, user.id),
+    );
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  @Put(':commentId/like-status')
+  async makeLike(
+    @Body() body: LikeInputDto,
+    @Param('commentId') commentId: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ) {
+    await this.commandBus.execute<MakeLikeOperationCommand, void>(
+      new MakeLikeOperationCommand(body, user.id, commentId),
     );
   }
 

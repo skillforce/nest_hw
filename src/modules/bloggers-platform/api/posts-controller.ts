@@ -32,6 +32,8 @@ import { CreateCommentCommand } from '../application/usecases/create-comment.use
 import { JwtAuthGuard } from '../../user-accounts/guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
+import { LikeInputDto } from './input-dto/like-input-dto/like.input-dto';
+import { MakeLikeOperationCommand } from '../application/usecases/make-like-operation.usecase';
 
 @Controller('posts')
 export class PostsController {
@@ -95,6 +97,19 @@ export class PostsController {
   ): Promise<void> {
     return await this.commandBus.execute<UpdatePostCommand, void>(
       new UpdatePostCommand(postId, body),
+    );
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  @Put(':postId/like-status')
+  async makeLike(
+    @Body() body: LikeInputDto,
+    @Param('postId') postId: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ) {
+    await this.commandBus.execute<MakeLikeOperationCommand, void>(
+      new MakeLikeOperationCommand(body, user.id, postId),
     );
   }
 

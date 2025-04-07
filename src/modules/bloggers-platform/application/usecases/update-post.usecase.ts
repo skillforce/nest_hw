@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UpdatePostDto } from '../../dto/createPostDto';
+import { UpdatePostDto } from '../../dto/post.dto';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 

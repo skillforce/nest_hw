@@ -1,11 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreatePostDto } from '../../dto/createPostDto';
+import { PostDto } from '../../dto/post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../../domain/post.entity';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 
 export class CreatePostCommand {
-  constructor(public createPostDto: Omit<CreatePostDto, 'blogName'>) {}
+  constructor(public createPostDto: Omit<PostDto, 'blogName'>) {}
 }
 
 @CommandHandler(CreatePostCommand)

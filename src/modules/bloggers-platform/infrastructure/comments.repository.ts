@@ -15,6 +15,9 @@ export class CommentsRepository {
   async findById(id: string) {
     return this.CommentModel.findById({ _id: id, deletedAt: null });
   }
+  async findByUserIdAndParentId(parentId: string, userId: string) {
+    return this.CommentModel.findOne({ parentId, userId, deletedAt: null });
+  }
   async findOrNotFoundFail(id: string): Promise<CommentDocument> {
     const comment = await this.findById(id);
 

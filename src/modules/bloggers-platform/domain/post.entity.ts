@@ -59,6 +59,7 @@ export class Post {
 
   get id() {
     //@ts-ignore
+    //eslint-disable-next-line
     return this._id.toString();
   }
 
