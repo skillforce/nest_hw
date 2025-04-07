@@ -14,7 +14,12 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     appSetup(app);
+
     await app.init();
+
+    await supertest(app.getHttpServer())
+      .delete('/testing/all-data')
+      .expect(204);
   });
 
   it('/ (GET)', () => {
@@ -22,5 +27,16 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect('Hello World!1');
+  });
+  it('/create users)', async () => {
+    await supertest(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+      .send({
+        login: 'admin',
+        password: '12345564',
+        email: 'KvBZV@example.com',
+      })
+      .expect(201);
   });
 });

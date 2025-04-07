@@ -1,15 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { appSetup } from './setup/app.setup';
-import { ConfigService } from '@nestjs/config';
+import { initAppModule } from './init-app-module';
+import { CoreConfig } from './core/core.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
-  app.enableCors();
-  appSetup(app);
+  //with dynamic app module which can be created on the fly with additional modules
+  const DynamicAppModule = await initAppModule();
+  const app = await NestFactory.create(DynamicAppModule);
 
-  const port = configService.get<number>('PORT') || 3000;
-  await app.listen(port || 3000);
+  const coreConfig = app.get<CoreConfig>(CoreConfig);
+  appSetup(app, coreConfig.isSwaggerEnabled);
+
+  const port = coreConfig.port;
+  await app.listen(port, () => {
+    console.log('App starting listen port: ', port);
+    console.log('NODE_ENV: ', coreConfig.env);
+  });
 }
 bootstrap();
