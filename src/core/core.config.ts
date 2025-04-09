@@ -29,7 +29,7 @@ export class CoreConfig {
   @IsEnum(Environments, {
     message: `Set correct NODE_ENV value, available values: ${configValidationUtility.getEnumValues(Environments).join(', ')}`,
   })
-  env: string;
+  env: Environments;
 
   @IsBoolean({
     message:

@@ -27,6 +27,7 @@ import { DeleteCommentUseCase } from './application/usecases/delete-comment.usec
 import { MakeLikeOperationUseCase } from './application/usecases/make-like-operation.usecase';
 import { LikesRepository } from './infrastructure/like.repository';
 import { Like, LikeSchema } from './domain/like.entity';
+import { LikesQueryRepository } from './infrastructure/query/likes.query-repository';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { Like, LikeSchema } from './domain/like.entity';
     UsersRepository,
     LikesRepository,
     BlogsQueryRepository,
+    LikesQueryRepository,
     PostsRepository,
     PostsQueryRepository,
     CommentsQueryRepository,

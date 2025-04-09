@@ -34,38 +34,89 @@ import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/pa
 import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
 import { LikeInputDto } from './input-dto/like-input-dto/like.input-dto';
 import { MakeLikeOperationCommand } from '../application/usecases/make-like-operation.usecase';
+import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
+import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private readonly postQueryRepository: PostsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
+    private readonly likesQueryRepository: LikesQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
 
   @Get(':postId/comments')
+  @UseGuards(JwtOptionalAuthGuard)
   async getCommentsByPostId(
     @Query() query: GetCommentsQueryParams,
     @Param('postId') postId: string,
+    @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
-    return this.commentsQueryRepository.getAll(query, { postId });
+    const commentsPaginatedData = await this.commentsQueryRepository.getAll(
+      query,
+      {
+        postId,
+      },
+    );
+    const commentsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
+      parentIds: commentsPaginatedData.items.map((comment) => comment.id),
+      userId: user?.id,
+    });
+    return {
+      ...commentsPaginatedData,
+      items: CommentViewDto.mapCommentsToViewWithLikesInfo(
+        commentsPaginatedData.items,
+        commentsLikesInfo,
+      ),
+    };
   }
   @Get()
+  @UseGuards(JwtOptionalAuthGuard)
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
+    @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    return this.postQueryRepository.getAll(query);
+    const paginatedPosts = await this.postQueryRepository.getAll(query);
+    const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
+      parentIds: paginatedPosts.items.map((post) => post.id),
+      userId: user?.id,
+    });
+    const newestLikes = await this.likesQueryRepository.getBulkNewestLikesInfo(
+      paginatedPosts.items.map((post) => post.id),
+    );
+    return {
+      ...paginatedPosts,
+      items: PostsViewDto.mapPostsToViewWithLikesInfo(
+        paginatedPosts.items,
+        postsLikesInfo,
+        newestLikes,
+      ),
+    };
   }
 
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  async createPost(@Body() body: CreatePostInputDto): Promise<PostsViewDto> {
+  async createPost(
+    @Body() body: CreatePostInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<PostsViewDto> {
     const createPostId = await this.commandBus.execute<
       CreatePostCommand,
       string
     >(new CreatePostCommand(body));
 
-    return this.postQueryRepository.getByIdOrNotFoundFail(createPostId);
+    const post =
+      await this.postQueryRepository.getByIdOrNotFoundFail(createPostId);
+    const likesInfo = await this.likesQueryRepository.getEntityLikesInfo(
+      createPostId,
+      user.id,
+    );
+    const newestLikes =
+      await this.likesQueryRepository.getNewestLikesForEntity(createPostId);
+
+    return PostsViewDto.mapToViewWithLikesInfo(post, likesInfo, newestLikes);
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -81,16 +132,43 @@ export class PostsController {
       string
     >(new CreateCommentCommand(body, postId, user.id));
 
-    return this.commentsQueryRepository.getByIdOrNotFoundFail(createdCommentId);
+    const createdComment =
+      await this.commentsQueryRepository.getByIdOrNotFoundFail(
+        createdCommentId,
+      );
+
+    const likeInfo = await this.likesQueryRepository.getEntityLikesInfo(
+      createdCommentId,
+      user.id,
+    );
+
+    return CommentViewDto.mapToViewWithLikesInfo(createdComment, likeInfo);
   }
 
   @Get(':postId')
-  async getPostById(@Param('postId') postId: string): Promise<PostsViewDto> {
-    return this.postQueryRepository.getByIdOrNotFoundFail(postId);
+  @UseGuards(JwtOptionalAuthGuard)
+  async getPostById(
+    @Param('postId') postId: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<PostsViewDto> {
+    const post = await this.postQueryRepository.getByIdOrNotFoundFail(postId);
+    const postLikesInfo = await this.likesQueryRepository.getEntityLikesInfo(
+      postId,
+      user.id,
+    );
+    const newestLikes =
+      await this.likesQueryRepository.getNewestLikesForEntity(postId);
+
+    return PostsViewDto.mapToViewWithLikesInfo(
+      post,
+      postLikesInfo,
+      newestLikes,
+    );
   }
 
   @Put(':postId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
   async updatePostById(
     @Param('postId') postId: string,
     @Body() body: UpdatePostInputDto,
@@ -115,6 +193,7 @@ export class PostsController {
 
   @ApiParam({ name: 'id' })
   @Delete(':postId')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlogById(@Param('postId') postId: string) {
     return await this.commandBus.execute<DeletePostCommand, void>(

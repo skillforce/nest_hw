@@ -20,19 +20,34 @@ import { UpdateCommentCommand } from '../application/usecases/update-comment.use
 import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecase';
 import { LikeInputDto } from './input-dto/like-input-dto/like.input-dto';
 import { MakeLikeOperationCommand } from '../application/usecases/make-like-operation.usecase';
+import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
+import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 
 @Controller('comments')
 export class CommentsController {
   constructor(
     private readonly commentsQueryRepository: CommentsQueryRepository,
+    private readonly likesQueryRepository: LikesQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
 
   @Get(':commentId')
+  @UseGuards(JwtOptionalAuthGuard)
   async getCommentById(
     @Param('commentId') commentId: string,
+    @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
-    return this.commentsQueryRepository.getByIdOrNotFoundFail(commentId);
+    const comment =
+      await this.commentsQueryRepository.getByIdOrNotFoundFail(commentId);
+    const commentLikesInfo = await this.likesQueryRepository.getEntityLikesInfo(
+      commentId,
+      user.id,
+    );
+
+    return {
+      ...comment,
+      likesInfo: commentLikesInfo,
+    };
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)

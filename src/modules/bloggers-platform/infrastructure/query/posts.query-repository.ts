@@ -11,7 +11,9 @@ export class PostsQueryRepository {
   constructor(
     @InjectModel(Post.name) private readonly PostModel: PostModelType,
   ) {}
-  async getByIdOrNotFoundFail(id: string): Promise<PostsViewDto> {
+  async getByIdOrNotFoundFail(
+    id: string,
+  ): Promise<Omit<PostsViewDto, 'extendedLikesInfo'>> {
     const post = await this.PostModel.findOne({
       _id: id,
       deletedAt: null,
@@ -27,19 +29,19 @@ export class PostsQueryRepository {
   async getAll(
     query: GetPostsQueryParams,
     additionalFilters: FilterQuery<Post> = {},
-  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+  ): Promise<PaginatedViewDto<Omit<PostsViewDto, 'extendedLikesInfo'>[]>> {
     const filter: FilterQuery<Post> = {
       deletedAt: null,
       ...additionalFilters,
     };
 
-    const comments = await this.PostModel.find(filter)
+    const posts = await this.PostModel.find(filter)
       .sort({ [query.sortBy]: query.sortDirection })
       .skip(query.calculateSkip())
       .limit(query.pageSize);
 
     const totalCount = await this.PostModel.countDocuments(filter);
-    const items = comments.map(PostsViewDto.mapToViewDto);
+    const items = posts.map(PostsViewDto.mapToViewDto);
 
     return PaginatedViewDto.mapToView({
       items,

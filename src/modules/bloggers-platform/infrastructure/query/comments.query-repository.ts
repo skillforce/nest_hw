@@ -5,13 +5,16 @@ import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
 import { CommentViewDto } from '../../api/view-dto/comments.view-dto';
 import { GetCommentsQueryParams } from '../../api/input-dto/comment-input-dto/get-comments-query-params.input-dto';
+import { LikesInfoViewDto } from '../../api/view-dto/like-view-dto/like-info.view-dto';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
     @InjectModel(Comment.name) private readonly CommentModel: CommentModelType,
   ) {}
-  async getByIdOrNotFoundFail(id: string): Promise<CommentViewDto> {
+  async getByIdOrNotFoundFail(
+    id: string,
+  ): Promise<Omit<CommentViewDto, 'likesInfo'>> {
     const comment = await this.CommentModel.findOne({
       _id: id,
       deletedAt: null,
@@ -27,7 +30,7 @@ export class CommentsQueryRepository {
   async getAll(
     query: GetCommentsQueryParams,
     additionalFilter: FilterQuery<Comment> = {},
-  ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+  ): Promise<PaginatedViewDto<Omit<CommentViewDto, 'likesInfo'>[]>> {
     const filter: FilterQuery<Comment> = {
       deletedAt: null,
       ...additionalFilter,

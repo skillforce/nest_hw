@@ -1,7 +1,7 @@
 export enum LikeStatusEnum {
-  None = 'None',
-  Like = 'Like',
-  Dislike = 'Dislike',
+  NONE = 'None',
+  LIKE = 'Like',
+  DISLIKE = 'Dislike',
 }
 
 export class LikeDomainDto {

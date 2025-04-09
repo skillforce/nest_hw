@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import { GetBlogsQueryParams } from './input-dto/blog-input-dto/get-blogs-query-params.input-dto';
@@ -31,12 +32,18 @@ import { CreatePostCommand } from '../application/usecases/create-post.usecase';
 import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
 import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
 import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
+import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
+import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
+import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
+import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
+import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postQueryRepository: PostsQueryRepository,
+    private readonly likesQueryRepository: LikesQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
 
@@ -49,6 +56,7 @@ export class BlogsController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post()
+  @UseGuards(BasicAuthGuard)
   async createBlog(@Body() body: CreateBlogInputDto): Promise<BlogsViewDto> {
     const blogId = await this.commandBus.execute<CreateBlogCommand, string>(
       new CreateBlogCommand(body),
@@ -58,16 +66,37 @@ export class BlogsController {
   }
 
   @Get(':blogId/posts')
+  @UseGuards(JwtOptionalAuthGuard)
   async getPostsByBlogId(
     @Param('blogId') blogId: string,
     @Query() query: GetPostsQueryParams,
+    @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
     await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
 
-    return this.postQueryRepository.getAll(query, { blogId });
+    const paginatedPosts = await this.postQueryRepository.getAll(query, {
+      blogId,
+    });
+    const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
+      parentIds: paginatedPosts.items.map((post) => post.id),
+      userId: user?.id,
+    });
+    const postsNewestLikes =
+      await this.likesQueryRepository.getBulkNewestLikesInfo(
+        paginatedPosts.items.map((post) => post.id),
+      );
+    return {
+      ...paginatedPosts,
+      items: PostsViewDto.mapPostsToViewWithLikesInfo(
+        paginatedPosts.items,
+        postsLikesInfo,
+        postsNewestLikes,
+      ),
+    };
   }
 
   @Post(':blogId/posts')
+  @UseGuards(BasicAuthGuard)
   async createPostByBlogId(
     @Param('blogId') blogId: string,
     @Body() body: CreatePostByBlogIdInputDto,
@@ -82,7 +111,19 @@ export class BlogsController {
       string
     >(new CreatePostCommand(postDto));
 
-    return this.postQueryRepository.getByIdOrNotFoundFail(createdPostId);
+    const post =
+      await this.postQueryRepository.getByIdOrNotFoundFail(createdPostId);
+
+    const postLikesInfo =
+      await this.likesQueryRepository.getEntityLikesInfo(createdPostId);
+    const newestLikes =
+      await this.likesQueryRepository.getNewestLikesForEntity(createdPostId);
+
+    return PostsViewDto.mapToViewWithLikesInfo(
+      post,
+      postLikesInfo,
+      newestLikes,
+    );
   }
 
   @ApiParam({ name: 'id' })
@@ -93,6 +134,7 @@ export class BlogsController {
 
   @Put(':blogId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(BasicAuthGuard)
   async updateBlogById(
     @Param('blogId') blogId: string,
     @Body() body: UpdateBlogInputDto,
@@ -105,6 +147,7 @@ export class BlogsController {
   @ApiParam({ name: 'id' })
   @Delete(':blogId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(BasicAuthGuard)
   async deleteBlogById(@Param('blogId') blogId: string) {
     await this.commandBus.execute<DeleteBlogCommand, void>(
       new DeleteBlogCommand(blogId),

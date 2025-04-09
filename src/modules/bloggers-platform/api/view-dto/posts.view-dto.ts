@@ -1,7 +1,7 @@
-import { BlogDocument } from '../../domain/blog.entity';
 import { PostDocument } from '../../domain/post.entity';
 import { ExtendedLikesInfoViewDto } from './like-view-dto/extended-like-info.view-dto';
-import { LikeStatusEnum } from '../../domain/schemas/like-info.schema';
+import { LikesInfoViewDto } from './like-view-dto/like-info.view-dto';
+import { NewestLikeViewDto } from './like-view-dto/newest-like.view-dto';
 
 export class PostsViewDto {
   id: string;
@@ -13,7 +13,9 @@ export class PostsViewDto {
   createdAt: Date;
   extendedLikesInfo: ExtendedLikesInfoViewDto;
 
-  static mapToViewDto(post: PostDocument): PostsViewDto {
+  static mapToViewDto(
+    post: PostDocument,
+  ): Omit<PostsViewDto, 'extendedLikesInfo'> {
     const dto = new PostsViewDto();
 
     dto.id = post._id.toString();
@@ -23,13 +25,38 @@ export class PostsViewDto {
     dto.blogId = post.blogId;
     dto.blogName = post.blogName;
     dto.createdAt = post.createdAt ?? new Date();
-    dto.extendedLikesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: LikeStatusEnum.None,
-      newestLikes: [],
-    };
 
     return dto;
+  }
+  static mapPostsToViewWithLikesInfo(
+    posts: Omit<PostsViewDto, 'extendedLikesInfo'>[],
+    likesInfo: Record<string, LikesInfoViewDto>,
+    newestLikes: Record<string, NewestLikeViewDto[]>,
+  ): PostsViewDto[] {
+    return posts.map((post) => {
+      const likesInfoForPost = likesInfo[post.id];
+      const newestLikesForPost = newestLikes[post.id];
+
+      return this.mapToViewWithLikesInfo(
+        post,
+        likesInfoForPost,
+        newestLikesForPost,
+      );
+    });
+  }
+  static mapToViewWithLikesInfo(
+    post: Omit<PostsViewDto, 'extendedLikesInfo'>,
+    likesInfo: LikesInfoViewDto,
+    newestLikes: NewestLikeViewDto[],
+  ): PostsViewDto {
+    return {
+      ...post,
+      extendedLikesInfo: {
+        likesCount: likesInfo.likesCount,
+        dislikesCount: likesInfo.dislikesCount,
+        myStatus: likesInfo.myStatus,
+        newestLikes: newestLikes,
+      },
+    };
   }
 }
