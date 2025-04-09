@@ -37,7 +37,9 @@ import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-opti
 import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
 import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('blogs')
 export class BlogsController {
   constructor(

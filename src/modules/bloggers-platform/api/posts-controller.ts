@@ -36,7 +36,9 @@ import { LikeInputDto } from './input-dto/like-input-dto/like.input-dto';
 import { MakeLikeOperationCommand } from '../application/usecases/make-like-operation.usecase';
 import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('posts')
 export class PostsController {
   constructor(
