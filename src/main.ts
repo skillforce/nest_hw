@@ -9,7 +9,8 @@ async function bootstrap() {
   const app = await NestFactory.create(DynamicAppModule);
 
   const coreConfig = app.get<CoreConfig>(CoreConfig);
-  appSetup(app, coreConfig.isSwaggerEnabled);
+  app.enableCors();
+  // appSetup(app, coreConfig.isSwaggerEnabled);
 
   const port = coreConfig.port;
   await app.listen(port, () => {

@@ -17,6 +17,7 @@ import { CoreModule } from './core/core.module';
 
 @Module({
   imports: [
+    configModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),
       serveRoot: GLOBAL_PREFIX,
@@ -35,7 +36,6 @@ import { CoreModule } from './core/core.module';
     UserAccountsModule,
     BloggersPlatformModule,
     CoreModule,
-    configModule,
   ],
   controllers: [AppController],
   providers: [

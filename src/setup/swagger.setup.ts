@@ -7,7 +7,7 @@ import { createWriteStream } from 'fs';
 const serverUrl = `http://localhost:${process.env.PORT}`;
 
 export function swaggerSetup(app: INestApplication, isEnabled: boolean) {
-  if (!isEnabled) {
+  if (isEnabled) {
     const config = new DocumentBuilder()
       .setTitle('BLOGGER API')
       .addBearerAuth()

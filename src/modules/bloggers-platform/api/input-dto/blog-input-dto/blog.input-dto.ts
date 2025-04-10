@@ -4,6 +4,7 @@ import {
   blogNameConstraint,
   blogUrlConstraint,
 } from '../../../domain/blog.entity';
+import { IsUrl, Matches } from 'class-validator';
 
 export class CreateBlogInputDto {
   @IsFieldExistAndStringWithTrim(
@@ -23,6 +24,7 @@ export class CreateBlogInputDto {
     blogUrlConstraint.minLength,
     blogUrlConstraint.maxLength,
   )
+  @Matches(blogUrlConstraint.pattern)
   websiteUrl: string;
 }
 

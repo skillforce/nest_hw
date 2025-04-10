@@ -8,7 +8,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
   handleRequest(err, user, info, context: ExecutionContext) {
     if (err || !user) {
       const extensions =
-        info === 'Missing Credentials'
+        info?.message === 'Missing credentials'
           ? [
               {
                 field: 'loginOrEmail',
@@ -25,9 +25,11 @@ export class LocalAuthGuard extends AuthGuard('local') {
                 message: 'Invalid username or password',
               },
             ];
-
       throw new DomainException({
-        code: DomainExceptionCode.Unauthorized,
+        code:
+          info?.message === 'Missing credentials'
+            ? DomainExceptionCode.BadRequest
+            : DomainExceptionCode.Unauthorized,
         extensions,
         message: '',
       });

@@ -56,7 +56,7 @@ export class CreateUserUseCase
 
   private async checkUserDtoForUniqueFields(dto: UserDto) {
     const userWithSameLogin = await this.usersRepository.findByLogin(dto.login);
-    if (userWithSameLogin) {
+    if (userWithSameLogin && userWithSameLogin.deletedAt === null) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -70,7 +70,7 @@ export class CreateUserUseCase
     }
 
     const userWithSameEmail = await this.usersRepository.findByEmail(dto.email);
-    if (userWithSameEmail) {
+    if (userWithSameEmail && userWithSameEmail.deletedAt === null) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [

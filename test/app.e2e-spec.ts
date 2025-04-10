@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import supertest from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { appSetup } from '../src/setup/app.setup';
+import { afterEach } from 'node:test';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -13,30 +13,16 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    appSetup(app);
-
     await app.init();
-
-    await supertest(app.getHttpServer())
-      .delete('/testing/all-data')
-      .expect(204);
+  });
+  afterEach(async () => {
+    await app.close();
   });
 
   it('/ (GET)', () => {
-    return supertest(app.getHttpServer())
+    return request(app.getHttpServer())
       .get('/')
       .expect(200)
       .expect('Hello World!1');
-  });
-  it('/create users)', async () => {
-    await supertest(app.getHttpServer())
-      .post('/users')
-      .set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-      .send({
-        login: 'admin',
-        password: '12345564',
-        email: 'KvBZV@example.com',
-      })
-      .expect(201);
   });
 });

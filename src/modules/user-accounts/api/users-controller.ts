@@ -21,6 +21,8 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteUserByIdCommand } from '../application/usecases/delete-user-by-id.usecase';
 import { CreateUserCommand } from '../application/usecases/create-user.usecase';
+import { IsMongoId } from 'class-validator';
+import { IdParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('users')
@@ -37,6 +39,7 @@ export class UsersController {
   ): Promise<PaginatedViewDto<UserViewDto[]>> {
     return this.userQueryRepository.getAllUsers(query);
   }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() dto: CreateUserInputDto) {
@@ -51,7 +54,7 @@ export class UsersController {
   @ApiParam({ name: 'id' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUserById(@Param('id') id: string) {
+  async deleteUserById(@Param() { id }: IdParamDto) {
     return this.commandBus.execute<DeleteUserByIdCommand, void>(
       new DeleteUserByIdCommand(id),
     );
