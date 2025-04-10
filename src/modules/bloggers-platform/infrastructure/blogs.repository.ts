@@ -11,10 +11,11 @@ export class BlogsRepository {
   ) {}
 
   async findById(id: string) {
-    return this.BlogModel.findById({ _id: id, deletedAt: null });
+    return this.BlogModel.findOne({ _id: id, deletedAt: null });
   }
   async findOrNotFoundFail(id: string): Promise<BlogDocument> {
     const blog = await this.findById(id);
+    console.log(blog);
 
     if (!blog) {
       throw new DomainException({

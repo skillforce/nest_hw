@@ -9,7 +9,7 @@ export const IsFieldExistAndStringWithTrim = (
   maxLength?: number,
 ) =>
   applyDecorators(
-    FieldExists(fieldName),
+    // FieldExists(fieldName),
     IsString(),
     Length(minLength ?? 0, maxLength),
     Trim(),

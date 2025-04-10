@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../src/modules/user-accounts/constants/auth-tokens.inject-contants';
 import { initSettings } from './helpers/init-settings';
@@ -128,7 +128,7 @@ describe('Blogs Controller (e2e)', () => {
       description: 'description',
       websiteUrl: 'https://www.websiteUrl.com',
     };
-    const createdPostResponse = await request(app.getHttpServer())
+    const createdBlogResponse = await request(app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/blogs`)
       .auth('admin', 'qwerty')
       .send(blogBody)
@@ -141,9 +141,13 @@ describe('Blogs Controller (e2e)', () => {
     expect(blogsResponse.body.items).toHaveLength(1);
 
     await request(app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/blogs/${createdPostResponse.body.id}`)
+      .delete(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
       .auth('admin', 'qwerty')
       .expect(204);
+    await request(app.getHttpServer())
+      .delete(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
+      .auth('admin', 'qwerty')
+      .expect(HttpStatus.NOT_FOUND);
     const blogsResponseAfterDelete = await request(app.getHttpServer())
       .get(`/${GLOBAL_PREFIX}/blogs`)
       .expect(200);
