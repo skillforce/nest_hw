@@ -150,4 +150,22 @@ describe('Blogs Controller (e2e)', () => {
 
     expect(blogsResponseAfterDelete.body.items).toHaveLength(0);
   });
+
+  it('should return error 404 when try to delete unexist blog', async () => {
+    const blogBody = {
+      name: 'name',
+      description: 'description',
+      websiteUrl: 'https://www.websiteUrl.com',
+    };
+    await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/blogs`)
+      .auth('admin', 'qwerty')
+      .send(blogBody)
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .delete(`/${GLOBAL_PREFIX}/blogs/63189b06003380064c4193be`)
+      .auth('admin', 'qwerty')
+      .expect(404);
+  });
 });
