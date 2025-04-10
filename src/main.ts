@@ -10,7 +10,7 @@ async function bootstrap() {
 
   const coreConfig = app.get<CoreConfig>(CoreConfig);
   app.enableCors();
-  // appSetup(app, coreConfig.isSwaggerEnabled);
+  appSetup(app, coreConfig);
 
   const port = coreConfig.port;
   await app.listen(port, () => {

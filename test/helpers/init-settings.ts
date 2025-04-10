@@ -7,6 +7,7 @@ import { deleteAllData } from './delete-all-data';
 import { EmailService } from '../../src/modules/notifications/email.service';
 import { EmailServiceMock } from '../mock/email-service.mock';
 import { initAppModule } from '../../src/init-app-module';
+import { CoreConfig } from '../../src/core/core.config';
 
 export const initSettings = async (
   //передаем callback, который получает ModuleBuilder, если хотим изменить настройку тестового модуля
@@ -26,7 +27,9 @@ export const initSettings = async (
   const testingAppModule = await testingModuleBuilder.compile();
 
   const app = testingAppModule.createNestApplication();
-  appSetup(app, false);
+
+  const coreConfig = app.get<CoreConfig>(CoreConfig);
+  appSetup(app, coreConfig);
 
   await app.init();
 

@@ -11,7 +11,7 @@ window.onload = function() {
   "swaggerDoc": {
     "openapi": "3.0.0",
     "paths": {
-      "/": {
+      "/api": {
         "get": {
           "operationId": "AppController_getHello",
           "parameters": [],
@@ -25,7 +25,21 @@ window.onload = function() {
           ]
         }
       },
-      "/users": {
+      "/api/testing/all-data": {
+        "delete": {
+          "operationId": "TestingController_deleteAllData",
+          "parameters": [],
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Testing"
+          ]
+        }
+      },
+      "/api/users": {
         "get": {
           "operationId": "UsersController_getAllUsers",
           "parameters": [],
@@ -61,7 +75,7 @@ window.onload = function() {
           ]
         }
       },
-      "/users/{id}": {
+      "/api/users/{id}": {
         "delete": {
           "operationId": "UsersController_deleteUserById",
           "parameters": [
@@ -69,9 +83,7 @@ window.onload = function() {
               "name": "id",
               "required": true,
               "in": "path",
-              "schema": {
-                "type": "string"
-              }
+              "schema": {}
             }
           ],
           "responses": {
@@ -84,7 +96,7 @@ window.onload = function() {
           ]
         }
       },
-      "/auth/login": {
+      "/api/auth/login": {
         "post": {
           "operationId": "AuthController_login",
           "parameters": [],
@@ -108,7 +120,7 @@ window.onload = function() {
           ]
         }
       },
-      "/auth/registration": {
+      "/api/auth/registration": {
         "post": {
           "operationId": "AuthController_register",
           "parameters": [],
@@ -132,7 +144,7 @@ window.onload = function() {
           ]
         }
       },
-      "/auth/registration-confirmation": {
+      "/api/auth/registration-confirmation": {
         "post": {
           "operationId": "AuthController_registrationConfirmation",
           "parameters": [],
@@ -156,7 +168,7 @@ window.onload = function() {
           ]
         }
       },
-      "/auth/registration-email-resending": {
+      "/api/auth/registration-email-resending": {
         "post": {
           "operationId": "AuthController_resendRegistrationEmail",
           "parameters": [],
@@ -180,7 +192,7 @@ window.onload = function() {
           ]
         }
       },
-      "/auth/password-recovery": {
+      "/api/auth/password-recovery": {
         "post": {
           "operationId": "AuthController_recoverPassword",
           "parameters": [],
@@ -204,7 +216,7 @@ window.onload = function() {
           ]
         }
       },
-      "/auth/new-password": {
+      "/api/auth/new-password": {
         "post": {
           "operationId": "AuthController_createNewPassword",
           "parameters": [],
@@ -228,7 +240,7 @@ window.onload = function() {
           ]
         }
       },
-      "/auth/me": {
+      "/api/auth/me": {
         "get": {
           "operationId": "AuthController_getMe",
           "parameters": [],
@@ -247,21 +259,7 @@ window.onload = function() {
           ]
         }
       },
-      "/testing/all-data": {
-        "delete": {
-          "operationId": "TestingController_deleteAllData",
-          "parameters": [],
-          "responses": {
-            "204": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "Testing"
-          ]
-        }
-      },
-      "/blogs": {
+      "/api/blogs": {
         "get": {
           "operationId": "BlogsController_getAllBlogs",
           "parameters": [],
@@ -297,7 +295,7 @@ window.onload = function() {
           ]
         }
       },
-      "/blogs/{blogId}/posts": {
+      "/api/blogs/{blogId}/posts": {
         "get": {
           "operationId": "BlogsController_getPostsByBlogId",
           "parameters": [
@@ -351,7 +349,7 @@ window.onload = function() {
           ]
         }
       },
-      "/blogs/{blogId}": {
+      "/api/blogs/{blogId}": {
         "get": {
           "operationId": "BlogsController_getBlogById",
           "parameters": [
@@ -409,18 +407,12 @@ window.onload = function() {
           "tags": [
             "Blogs"
           ]
-        },
+        }
+      },
+      "/api/blogs/{id}": {
         "delete": {
           "operationId": "BlogsController_deleteBlogById",
           "parameters": [
-            {
-              "name": "blogId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            },
             {
               "name": "id",
               "required": true,
@@ -438,7 +430,7 @@ window.onload = function() {
           ]
         }
       },
-      "/posts/{postId}/comments": {
+      "/api/posts/{postId}/comments": {
         "get": {
           "operationId": "PostsController_getCommentsByPostId",
           "parameters": [
@@ -459,9 +451,40 @@ window.onload = function() {
           "tags": [
             "Posts"
           ]
+        },
+        "post": {
+          "operationId": "PostsController_commentPost",
+          "parameters": [
+            {
+              "name": "postId",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCommentInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Posts"
+          ]
         }
       },
-      "/posts": {
+      "/api/posts": {
         "get": {
           "operationId": "PostsController_getAllPosts",
           "parameters": [],
@@ -497,7 +520,7 @@ window.onload = function() {
           ]
         }
       },
-      "/posts/{postId}": {
+      "/api/posts/{postId}": {
         "get": {
           "operationId": "PostsController_getPostById",
           "parameters": [
@@ -578,7 +601,40 @@ window.onload = function() {
           ]
         }
       },
-      "/comments/{commentId}": {
+      "/api/posts/{postId}/like-status": {
+        "put": {
+          "operationId": "PostsController_makeLike",
+          "parameters": [
+            {
+              "name": "postId",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LikeInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Posts"
+          ]
+        }
+      },
+      "/api/comments/{commentId}": {
         "get": {
           "operationId": "CommentsController_getCommentById",
           "parameters": [
@@ -593,6 +649,91 @@ window.onload = function() {
           ],
           "responses": {
             "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Comments"
+          ]
+        },
+        "put": {
+          "operationId": "CommentsController_updateComment",
+          "parameters": [
+            {
+              "name": "commentId",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCommentInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Comments"
+          ]
+        },
+        "delete": {
+          "operationId": "CommentsController_deleteComment",
+          "parameters": [
+            {
+              "name": "commentId",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Comments"
+          ]
+        }
+      },
+      "/api/comments/{commentId}/like-status": {
+        "put": {
+          "operationId": "CommentsController_makeLike",
+          "parameters": [
+            {
+              "name": "commentId",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LikeInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
               "description": ""
             }
           },
@@ -663,7 +804,19 @@ window.onload = function() {
           "type": "object",
           "properties": {}
         },
+        "CreateCommentInputDto": {
+          "type": "object",
+          "properties": {}
+        },
         "UpdatePostInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "LikeInputDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "UpdateCommentInputDto": {
           "type": "object",
           "properties": {}
         }

@@ -3,11 +3,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GLOBAL_PREFIX } from './global-prefix.setup';
 import { get } from 'http';
 import { createWriteStream } from 'fs';
+import { CoreConfig } from '../core/core.config';
 
-const serverUrl = `http://localhost:${process.env.PORT}`;
-
-export function swaggerSetup(app: INestApplication, isEnabled: boolean) {
-  if (isEnabled) {
+export function swaggerSetup(app: INestApplication, coreConfig: CoreConfig) {
+  if (coreConfig.isSwaggerEnabled) {
+    const serverUrl = `http://localhost:${coreConfig.port}`;
     const config = new DocumentBuilder()
       .setTitle('BLOGGER API')
       .addBearerAuth()

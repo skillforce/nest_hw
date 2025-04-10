@@ -54,6 +54,7 @@ export class BlogsController {
   async getAllBlogs(
     @Query() query: GetBlogsQueryParams,
   ): Promise<PaginatedViewDto<BlogsViewDto[]>> {
+    console.log(query);
     return this.blogsQueryRepository.getAll(query);
   }
 
