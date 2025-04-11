@@ -8,19 +8,19 @@ import { TestingModule } from './modules/testing/testing.module';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { GLOBAL_PREFIX } from './setup/global-prefix.setup';
 import { APP_FILTER } from '@nestjs/core';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
 import { CoreConfig } from './core/core.config';
 import { CoreModule } from './core/core.module';
+import { SWAGGER_PREFIX } from './setup/swagger.setup';
 
 @Module({
   imports: [
     configModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),
-      serveRoot: GLOBAL_PREFIX,
+      serveRoot: SWAGGER_PREFIX,
     }),
     MongooseModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {

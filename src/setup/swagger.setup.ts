@@ -5,6 +5,7 @@ import { get } from 'http';
 import { createWriteStream } from 'fs';
 import { CoreConfig } from '../core/core.config';
 
+export const SWAGGER_PREFIX = 'swagger';
 export function swaggerSetup(app: INestApplication, coreConfig: CoreConfig) {
   if (coreConfig.isSwaggerEnabled) {
     const serverUrl = `http://localhost:${coreConfig.port}`;
@@ -15,7 +16,7 @@ export function swaggerSetup(app: INestApplication, coreConfig: CoreConfig) {
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup(GLOBAL_PREFIX, app, document, {
+    SwaggerModule.setup(SWAGGER_PREFIX, app, document, {
       customSiteTitle: 'Blogger platform Swagger',
     });
     // write swagger ui files
