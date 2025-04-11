@@ -6,9 +6,15 @@ import { UserAccountsConfig } from '../src/modules/user-accounts/config/user-acc
 import { deleteAllData } from './helpers/delete-all-data';
 import request from 'supertest';
 import { GLOBAL_PREFIX } from '../src/setup/global-prefix.setup';
+import { BlogsTestManager } from './helpers/blogs-test-manager';
+import {
+  CreateBlogInputDto,
+  UpdateBlogInputDto,
+} from '../src/modules/bloggers-platform/api/input-dto/blog-input-dto/blog.input-dto';
 
 describe('Blogs Controller (e2e)', () => {
   let app: INestApplication;
+  let blogsTestManager: BlogsTestManager;
 
   beforeAll(async () => {
     const result = await initSettings((moduleBuilder) =>
@@ -27,6 +33,7 @@ describe('Blogs Controller (e2e)', () => {
         }),
     );
     app = result.app;
+    blogsTestManager = result.blogsTestManager;
   });
 
   beforeEach(async () => {
@@ -56,13 +63,9 @@ describe('Blogs Controller (e2e)', () => {
       description: 'description',
       websiteUrl: 'https://someurl.com',
     };
-    const createdBlogResponse = await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
-      .auth('admin', 'qwerty')
-      .send(blogBody)
-      .expect(201);
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
 
-    expect(createdBlogResponse.body).toEqual({
+    expect(createdBlogResponseBody).toEqual({
       id: expect.any(String),
       name: blogBody.name,
       description: blogBody.description,
@@ -70,11 +73,9 @@ describe('Blogs Controller (e2e)', () => {
       createdAt: expect.any(String),
       isMembership: false,
     });
-    const blogsResponse = await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/blogs`)
-      .expect(200);
+    const blogsResponseBody = await blogsTestManager.getBlogs();
 
-    expect(blogsResponse.body.items).toHaveLength(1);
+    expect(blogsResponseBody.items).toHaveLength(1);
   });
   it('should update blog for authenticated user', async () => {
     const blogBody = {
@@ -82,45 +83,35 @@ describe('Blogs Controller (e2e)', () => {
       description: 'description',
       websiteUrl: 'https://www.websiteUrl.com',
     };
-    await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
-      .auth('admin', 'qwerty')
-      .send(blogBody)
-      .expect(201);
+    await blogsTestManager.createBlog(blogBody);
 
-    const blogsResponseAfterCreation = await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/blogs`)
-      .expect(200);
+    const blogsResponseAfterCreationBody = await blogsTestManager.getBlogs();
 
-    expect(blogsResponseAfterCreation.body.items).toHaveLength(1);
+    expect(blogsResponseAfterCreationBody.items).toHaveLength(1);
 
     const updatedPostBody = {
       name: 'new name',
       description: 'new description',
       websiteUrl: 'https://www.new-websiteUrl.com',
     };
-    await request(app.getHttpServer())
-      .put(
-        `/${GLOBAL_PREFIX}/blogs/${blogsResponseAfterCreation.body.items[0].id}`,
-      )
-      .auth('admin', 'qwerty')
-      .send(updatedPostBody)
-      .expect(204);
+
+    await blogsTestManager.updateBlog(
+      updatedPostBody,
+      blogsResponseAfterCreationBody.items[0].id,
+    );
 
     await request(app.getHttpServer())
       .put(
-        `/${GLOBAL_PREFIX}/blogs/${blogsResponseAfterCreation.body.items[0].id}`,
+        `/${GLOBAL_PREFIX}/blogs/${blogsResponseAfterCreationBody.items[0].id}`,
       )
       .auth('wrong', 'wrong')
       .send(updatedPostBody)
       .expect(401);
 
-    const blogsResponse = await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/blogs`)
-      .expect(200);
+    const blogsResponse = await blogsTestManager.getBlogs();
 
-    expect(blogsResponse.body.items).toHaveLength(1);
-    expect(blogsResponse.body.items[0]).toEqual({
+    expect(blogsResponse.items).toHaveLength(1);
+    expect(blogsResponse.items[0]).toEqual({
       id: expect.any(String),
       name: updatedPostBody.name,
       description: updatedPostBody.description,
@@ -135,31 +126,20 @@ describe('Blogs Controller (e2e)', () => {
       description: 'description',
       websiteUrl: 'https://www.websiteUrl.com',
     };
-    const createdBlogResponse = await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
-      .auth('admin', 'qwerty')
-      .send(blogBody)
-      .expect(201);
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
 
-    const blogsResponse = await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/blogs`)
-      .expect(200);
+    const blogsResponseBody = await blogsTestManager.getBlogs();
 
-    expect(blogsResponse.body.items).toHaveLength(1);
+    expect(blogsResponseBody.items).toHaveLength(1);
 
-    await request(app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
-      .auth('admin', 'qwerty')
-      .expect(204);
-    await request(app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
-      .auth('admin', 'qwerty')
-      .expect(HttpStatus.NOT_FOUND);
-    const blogsResponseAfterDelete = await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/blogs`)
-      .expect(200);
+    await blogsTestManager.deleteBlog(createdBlogResponseBody.id);
+    await blogsTestManager.deleteBlog(
+      createdBlogResponseBody.id,
+      HttpStatus.NOT_FOUND,
+    );
+    const blogsResponseAfterDeleteBody = await blogsTestManager.getBlogs();
 
-    expect(blogsResponseAfterDelete.body.items).toHaveLength(0);
+    expect(blogsResponseAfterDeleteBody.items).toHaveLength(0);
   });
 
   it('should return error 404 when try to delete unexist blog', async () => {
@@ -168,16 +148,12 @@ describe('Blogs Controller (e2e)', () => {
       description: 'description',
       websiteUrl: 'https://www.websiteUrl.com',
     };
-    await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
-      .auth('admin', 'qwerty')
-      .send(blogBody)
-      .expect(201);
 
-    await request(app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/blogs/63189b06003380064c4193be`)
-      .auth('admin', 'qwerty')
-      .expect(404);
+    await blogsTestManager.createBlog(blogBody);
+    await blogsTestManager.deleteBlog(
+      '63189b06003380064c4193be',
+      HttpStatus.NOT_FOUND,
+    );
   });
 
   it('should return error 404 when try to get blog which was already deleted', async () => {
@@ -186,20 +162,12 @@ describe('Blogs Controller (e2e)', () => {
       description: 'description',
       websiteUrl: 'https://www.websiteUrl.com',
     };
-    const createdBlogResponse = await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
-      .auth('admin', 'qwerty')
-      .send(blogBody)
-      .expect(201);
-
-    await request(app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
-      .auth('admin', 'qwerty')
-      .expect(204);
-
-    await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
-      .expect(404);
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
+    await blogsTestManager.deleteBlog(createdBlogResponseBody.id);
+    await blogsTestManager.getBlogById(
+      createdBlogResponseBody.id,
+      HttpStatus.NOT_FOUND,
+    );
   });
   it('should return correct error response if try to CREATE blog with incorrect data', async () => {
     const blogBody = {
@@ -207,12 +175,12 @@ describe('Blogs Controller (e2e)', () => {
       websiteUrl: 'invalid-url',
       description: 'description',
     };
-    const createdBlogResponse = await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
-      .auth('admin', 'qwerty')
-      .send(blogBody)
-      .expect(400);
-    expect(createdBlogResponse.body).toEqual({
+    const createdBlogResponseBody = await blogsTestManager.createBlog(
+      blogBody as unknown as CreateBlogInputDto,
+      HttpStatus.BAD_REQUEST,
+    );
+
+    expect(createdBlogResponseBody).toEqual({
       errorsMessages: [
         {
           field: 'name',
@@ -231,11 +199,7 @@ describe('Blogs Controller (e2e)', () => {
       websiteUrl: 'https://www.websiteUrl.com',
       description: 'description',
     };
-    const createdBlogResponse = await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
-      .auth('admin', 'qwerty')
-      .send(blogBody)
-      .expect(201);
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
 
     const updateBlogIncorrectBody = {
       nam: 'somename',
@@ -243,13 +207,13 @@ describe('Blogs Controller (e2e)', () => {
       description: 'description',
     };
 
-    const updatedBlogResponse = await request(app.getHttpServer())
-      .put(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
-      .auth('admin', 'qwerty')
-      .send(updateBlogIncorrectBody)
-      .expect(400);
+    const updatedBlogResponseBody = await blogsTestManager.updateBlog(
+      updateBlogIncorrectBody as unknown as UpdateBlogInputDto,
+      createdBlogResponseBody.id,
+      HttpStatus.BAD_REQUEST,
+    );
 
-    expect(updatedBlogResponse.body).toEqual({
+    expect(updatedBlogResponseBody).toEqual({
       errorsMessages: [
         {
           field: 'name',

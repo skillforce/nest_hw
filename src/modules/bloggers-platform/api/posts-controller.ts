@@ -37,6 +37,7 @@ import { MakeLikeOperationCommand } from '../application/usecases/make-like-oper
 import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
+import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
 
 @SkipThrottle()
 @Controller('posts')
@@ -73,6 +74,7 @@ export class PostsController {
       ),
     };
   }
+
   @Get()
   @UseGuards(JwtOptionalAuthGuard)
   async getAllPosts(
@@ -97,13 +99,10 @@ export class PostsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  async createPost(
-    @Body() body: CreatePostInputDto,
-    @ExtractUserFromRequest() user: UserContextDto,
-  ): Promise<PostsViewDto> {
+  async createPost(@Body() body: CreatePostInputDto): Promise<PostsViewDto> {
     const createPostId = await this.commandBus.execute<
       CreatePostCommand,
       string
@@ -111,10 +110,8 @@ export class PostsController {
 
     const post =
       await this.postQueryRepository.getByIdOrNotFoundFail(createPostId);
-    const likesInfo = await this.likesQueryRepository.getEntityLikesInfo(
-      createPostId,
-      user.id,
-    );
+    const likesInfo =
+      await this.likesQueryRepository.getEntityLikesInfo(createPostId);
     const newestLikes =
       await this.likesQueryRepository.getNewestLikesForEntity(createPostId);
 
@@ -156,7 +153,7 @@ export class PostsController {
     const post = await this.postQueryRepository.getByIdOrNotFoundFail(postId);
     const postLikesInfo = await this.likesQueryRepository.getEntityLikesInfo(
       postId,
-      user.id,
+      user?.id,
     );
     const newestLikes =
       await this.likesQueryRepository.getNewestLikesForEntity(postId);
@@ -170,7 +167,7 @@ export class PostsController {
 
   @Put(':postId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BasicAuthGuard)
   async updatePostById(
     @Param('postId') postId: string,
     @Body() body: UpdatePostInputDto,
@@ -195,7 +192,7 @@ export class PostsController {
 
   @ApiParam({ name: 'id' })
   @Delete(':postId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlogById(@Param('postId') postId: string) {
     return await this.commandBus.execute<DeletePostCommand, void>(
