@@ -23,6 +23,7 @@ import { MakeLikeOperationCommand } from '../application/usecases/make-like-oper
 import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
+import { IdParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('comments')
@@ -80,13 +81,13 @@ export class CommentsController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
-  @Delete(':commentId')
+  @Delete(':id')
   async deleteComment(
-    @Param('commentId') commentId: string,
+    @Param() { id }: IdParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     await this.commandBus.execute<DeleteCommentCommand, void>(
-      new DeleteCommentCommand(commentId, user.id),
+      new DeleteCommentCommand(id, user.id),
     );
   }
 }
