@@ -451,37 +451,6 @@ window.onload = function() {
           "tags": [
             "Posts"
           ]
-        },
-        "post": {
-          "operationId": "PostsController_commentPost",
-          "parameters": [
-            {
-              "name": "postId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateCommentInputDto"
-                }
-              }
-            }
-          },
-          "responses": {
-            "201": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "Posts"
-          ]
         }
       },
       "/api/posts": {
@@ -520,19 +489,34 @@ window.onload = function() {
           ]
         }
       },
-      "/api/posts/{postId}": {
-        "get": {
-          "operationId": "PostsController_getPostById",
-          "parameters": [
-            {
-              "name": "postId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
+      "/api/posts/{id}/comments": {
+        "post": {
+          "operationId": "PostsController_commentPost",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCommentInputDto"
+                }
               }
             }
-          ],
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Posts"
+          ]
+        }
+      },
+      "/api/posts/{id}": {
+        "get": {
+          "operationId": "PostsController_getPostById",
+          "parameters": [],
           "responses": {
             "200": {
               "description": ""
@@ -544,16 +528,7 @@ window.onload = function() {
         },
         "put": {
           "operationId": "PostsController_updatePostById",
-          "parameters": [
-            {
-              "name": "postId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
+          "parameters": [],
           "requestBody": {
             "required": true,
             "content": {
@@ -577,14 +552,6 @@ window.onload = function() {
           "operationId": "PostsController_deleteBlogById",
           "parameters": [
             {
-              "name": "postId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
               "name": "id",
               "required": true,
               "in": "path",
@@ -601,19 +568,10 @@ window.onload = function() {
           ]
         }
       },
-      "/api/posts/{postId}/like-status": {
+      "/api/posts/{id}/like-status": {
         "put": {
           "operationId": "PostsController_makeLike",
-          "parameters": [
-            {
-              "name": "postId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
+          "parameters": [],
           "requestBody": {
             "required": true,
             "content": {
@@ -686,27 +644,6 @@ window.onload = function() {
           "tags": [
             "Comments"
           ]
-        },
-        "delete": {
-          "operationId": "CommentsController_deleteComment",
-          "parameters": [
-            {
-              "name": "commentId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "204": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "Comments"
-          ]
         }
       },
       "/api/comments/{commentId}/like-status": {
@@ -732,6 +669,20 @@ window.onload = function() {
               }
             }
           },
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Comments"
+          ]
+        }
+      },
+      "/api/comments/{id}": {
+        "delete": {
+          "operationId": "CommentsController_deleteComment",
+          "parameters": [],
           "responses": {
             "204": {
               "description": ""

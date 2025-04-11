@@ -29,7 +29,7 @@ describe('Users Controller (e2e)', () => {
         }),
     );
     app = result.app;
-    userTestManger = result.userTestManger;
+    userTestManger = result.userTestManager;
   });
 
   beforeEach(async () => {

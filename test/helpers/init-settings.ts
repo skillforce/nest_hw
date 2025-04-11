@@ -37,7 +37,7 @@ export const initSettings = async (
 
   const databaseConnection = app.get<Connection>(getConnectionToken());
   const httpServer = app.getHttpServer();
-  const userTestManger = new UsersTestManager(app);
+  const userTestManager = new UsersTestManager(app);
   const blogsTestManager = new BlogsTestManager(app);
   const postsTestManager = new PostsTestManager(app);
 
@@ -47,7 +47,7 @@ export const initSettings = async (
     app,
     databaseConnection,
     httpServer,
-    userTestManger,
+    userTestManager,
     blogsTestManager,
     postsTestManager,
   };

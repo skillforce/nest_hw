@@ -6,11 +6,14 @@ import { UserAccountsConfig } from '../src/modules/user-accounts/config/user-acc
 import { deleteAllData } from './helpers/delete-all-data';
 import { PostsTestManager } from './helpers/posts-test-manager';
 import { BlogsTestManager } from './helpers/blogs-test-manager';
+import { UsersTestManager } from './helpers/users-test-manager';
+import { LikeStatusEnum } from '../src/modules/bloggers-platform/domain/dto/like-domain.dto';
 
 describe('Posts Controller (e2e)', () => {
   let app: INestApplication;
   let postsTestManager: PostsTestManager;
   let blogsTestManager: BlogsTestManager;
+  let userTestManager: UsersTestManager;
 
   beforeAll(async () => {
     const result = await initSettings((moduleBuilder) =>
@@ -31,6 +34,7 @@ describe('Posts Controller (e2e)', () => {
     app = result.app;
     postsTestManager = result.postsTestManager;
     blogsTestManager = result.blogsTestManager;
+    userTestManager = result.userTestManager;
   });
 
   beforeEach(async () => {
@@ -181,5 +185,62 @@ describe('Posts Controller (e2e)', () => {
         },
       ],
     });
+  });
+  it('should create like for existing post', async () => {
+    const blogBody = {
+      name: 'somename',
+      websiteUrl: 'https://www.websiteUrl.com',
+      description: 'description',
+    };
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
+
+    const postBody = {
+      title: 'string',
+      shortDescription: 'string',
+      content: 'string',
+      blogId: createdBlogResponseBody.id,
+    };
+    const createdPostResponseBody = await postsTestManager.createPost(postBody);
+
+    const usersAccessTokenBody =
+      await userTestManager.createAndLoginSeveralUsers(1);
+
+    const userAccessToken = usersAccessTokenBody[0].accessToken;
+
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.LIKE,
+      userAccessToken,
+    );
+    const getPostByIdUnauthorizedResponseBody =
+      await postsTestManager.getPostById(createdPostResponseBody.id);
+
+    expect(getPostByIdUnauthorizedResponseBody.extendedLikesInfo.myStatus).toBe(
+      LikeStatusEnum.NONE,
+    );
+
+    const getPostByIdAuthorizedResponseBody =
+      await postsTestManager.getPostById(
+        createdPostResponseBody.id,
+        HttpStatus.OK,
+        userAccessToken,
+      );
+
+    expect(getPostByIdAuthorizedResponseBody.extendedLikesInfo.myStatus).toBe(
+      LikeStatusEnum.LIKE,
+    );
+  });
+  it('should return error when try to create like for unexisting post', async () => {
+    const usersAccessTokenBody =
+      await userTestManager.createAndLoginSeveralUsers(1);
+
+    const userAccessToken = usersAccessTokenBody[0].accessToken;
+
+    await postsTestManager.makeLike(
+      '63189b06003380064c4193be',
+      LikeStatusEnum.LIKE,
+      userAccessToken,
+      HttpStatus.NOT_FOUND,
+    );
   });
 });

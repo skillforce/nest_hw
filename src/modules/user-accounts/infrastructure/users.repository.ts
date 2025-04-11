@@ -20,7 +20,7 @@ export class UsersRepository {
         code: DomainExceptionCode.BadRequest,
         extensions: [
           {
-            field: 'userId',
+            field: 'user',
             message: 'user with such id does not exist',
           },
         ],

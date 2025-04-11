@@ -7,6 +7,7 @@ import {
 } from '../../src/modules/bloggers-platform/api/input-dto/post-input-dto/post.input-dto';
 import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
 import { PostsViewDto } from '../../src/modules/bloggers-platform/api/view-dto/posts.view-dto';
+import { LikeStatusEnum } from '../../src/modules/bloggers-platform/domain/dto/like-domain.dto';
 
 export class PostsTestManager {
   constructor(private app: INestApplication) {}
@@ -78,6 +79,18 @@ export class PostsTestManager {
     await request(this.app.getHttpServer())
       .delete(`/${GLOBAL_PREFIX}/posts/${postId}`)
       .auth('admin', `qwerty`)
+      .expect(statusCode);
+  }
+  async makeLike(
+    postId: string,
+    likeStatus: LikeStatusEnum,
+    accessToken: string,
+    statusCode: number = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer())
+      .put(`/${GLOBAL_PREFIX}/posts/${postId}/like-status`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ likeStatus })
       .expect(statusCode);
   }
 }

@@ -19,7 +19,10 @@ import { CommandBus } from '@nestjs/cqrs';
 import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
 import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecase';
 import { LikeInputDto } from './input-dto/like-input-dto/like.input-dto';
-import { MakeLikeOperationCommand } from '../application/usecases/make-like-operation.usecase';
+import {
+  LikeParentInstanceEnum,
+  MakeLikeOperationCommand,
+} from '../application/usecases/make-like-operation.usecase';
 import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -75,7 +78,12 @@ export class CommentsController {
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     await this.commandBus.execute<MakeLikeOperationCommand, void>(
-      new MakeLikeOperationCommand(body, user.id, commentId),
+      new MakeLikeOperationCommand(
+        body,
+        user.id,
+        commentId,
+        LikeParentInstanceEnum.COMMENT,
+      ),
     );
   }
 

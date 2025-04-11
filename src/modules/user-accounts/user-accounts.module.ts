@@ -29,6 +29,7 @@ import { ConfirmRegistrationByCodeUseCase } from './application/usecases/confirm
 import { InitializePasswordRecoveryUseCase } from './application/usecases/initialize-password-recovery.usecase';
 import { ChangePasswordByRecoveryCodeUseCase } from './application/usecases/change-password-by-recovery-code.usecase';
 import { DeleteUserByIdUseCase } from './application/usecases/delete-user-by-id.usecase';
+import { CoreConfig, Environments } from '../../core/core.config';
 
 @Module({
   imports: [
@@ -40,13 +41,22 @@ import { DeleteUserByIdUseCase } from './application/usecases/delete-user-by-id.
       },
     ]),
     NotificationsModule,
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          ttl: 10000,
-          limit: 5,
-        },
-      ],
+    ThrottlerModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => {
+        const isTesting = coreConfig.env === Environments.TESTING;
+
+        return isTesting
+          ? []
+          : {
+              throttlers: [
+                {
+                  ttl: 10000,
+                  limit: 5,
+                },
+              ],
+            };
+      },
+      inject: [CoreConfig],
     }),
   ],
   controllers: [UsersController, AuthController],

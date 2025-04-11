@@ -11,7 +11,7 @@ import { CreateUserInputDto } from '../src/modules/user-accounts/api/input-dto/u
 
 describe('Users Controller (e2e)', () => {
   let app: INestApplication;
-  let userTestManger: UsersTestManager;
+  let userTestManager: UsersTestManager;
 
   beforeAll(async () => {
     const result = await initSettings((moduleBuilder) =>
@@ -30,7 +30,7 @@ describe('Users Controller (e2e)', () => {
         }),
     );
     app = result.app;
-    userTestManger = result.userTestManger;
+    userTestManager = result.userTestManager;
   });
 
   beforeEach(async () => {
@@ -69,7 +69,7 @@ describe('Users Controller (e2e)', () => {
       email: 'email@email.em',
     };
 
-    const response = await userTestManger.createUser(body);
+    const response = await userTestManager.createUser(body);
 
     expect(response).toEqual({
       id: expect.any(String),
@@ -119,15 +119,15 @@ describe('Users Controller (e2e)', () => {
       email: 'email@email.em',
     };
 
-    await userTestManger.createUser(body);
+    await userTestManager.createUser(body);
 
-    const userListAfterCreation = await userTestManger.getUsers();
+    const userListAfterCreation = await userTestManager.getUsers();
 
     expect(userListAfterCreation.length).toBe(1);
 
-    await userTestManger.deleteUser(userListAfterCreation[0].id);
+    await userTestManager.deleteUser(userListAfterCreation[0].id);
 
-    const userListAfterDelete = await userTestManger.getUsers();
+    const userListAfterDelete = await userTestManager.getUsers();
 
     expect(userListAfterDelete.length).toBe(0);
   });
@@ -138,13 +138,13 @@ describe('Users Controller (e2e)', () => {
       password: 'qwerty1',
       email: 'email@email.em',
     };
-    await userTestManger.createUser(body);
+    await userTestManager.createUser(body);
 
-    const userListAfterCreation = await userTestManger.getUsers();
+    const userListAfterCreation = await userTestManager.getUsers();
 
-    await userTestManger.deleteUser('wrong-user-id', HttpStatus.BAD_REQUEST);
-    await userTestManger.deleteUser(userListAfterCreation[0].id);
-    await userTestManger.deleteUser(
+    await userTestManager.deleteUser('wrong-user-id', HttpStatus.BAD_REQUEST);
+    await userTestManager.deleteUser(userListAfterCreation[0].id);
+    await userTestManager.deleteUser(
       userListAfterCreation[0].id,
       HttpStatus.NOT_FOUND,
     );

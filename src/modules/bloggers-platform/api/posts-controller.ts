@@ -33,7 +33,10 @@ import { JwtAuthGuard } from '../../user-accounts/guards/bearer/jwt-auth.guard';
 import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
 import { LikeInputDto } from './input-dto/like-input-dto/like.input-dto';
-import { MakeLikeOperationCommand } from '../application/usecases/make-like-operation.usecase';
+import {
+  LikeParentInstanceEnum,
+  MakeLikeOperationCommand,
+} from '../application/usecases/make-like-operation.usecase';
 import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -121,16 +124,16 @@ export class PostsController {
 
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard)
-  @Post(':postId/comments')
+  @Post(':id/comments')
   async commentPost(
     @Body() body: CreateCommentInputDto,
-    @Param('postId') postId: string,
+    @Param() { id }: IdParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
     const createdCommentId = await this.commandBus.execute<
       CreateCommentCommand,
       string
-    >(new CreateCommentCommand(body, postId, user.id));
+    >(new CreateCommentCommand(body, id, user.id));
 
     const createdComment =
       await this.commentsQueryRepository.getByIdOrNotFoundFail(
@@ -145,19 +148,19 @@ export class PostsController {
     return CommentViewDto.mapToViewWithLikesInfo(createdComment, likeInfo);
   }
 
-  @Get(':postId')
+  @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   async getPostById(
-    @Param('postId') postId: string,
+    @Param() { id }: IdParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PostsViewDto> {
-    const post = await this.postQueryRepository.getByIdOrNotFoundFail(postId);
+    const post = await this.postQueryRepository.getByIdOrNotFoundFail(id);
     const postLikesInfo = await this.likesQueryRepository.getEntityLikesInfo(
-      postId,
+      id,
       user?.id,
     );
     const newestLikes =
-      await this.likesQueryRepository.getNewestLikesForEntity(postId);
+      await this.likesQueryRepository.getNewestLikesForEntity(id);
 
     return PostsViewDto.mapToViewWithLikesInfo(
       post,
@@ -166,28 +169,33 @@ export class PostsController {
     );
   }
 
-  @Put(':postId')
+  @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updatePostById(
-    @Param('postId') postId: string,
+    @Param() { id }: IdParamDto,
     @Body() body: UpdatePostInputDto,
   ): Promise<void> {
     return await this.commandBus.execute<UpdatePostCommand, void>(
-      new UpdatePostCommand(postId, body),
+      new UpdatePostCommand(id, body),
     );
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
-  @Put(':postId/like-status')
+  @Put(':id/like-status')
   async makeLike(
     @Body() body: LikeInputDto,
-    @Param('postId') postId: string,
+    @Param() { id }: IdParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     await this.commandBus.execute<MakeLikeOperationCommand, void>(
-      new MakeLikeOperationCommand(body, user.id, postId),
+      new MakeLikeOperationCommand(
+        body,
+        user.id,
+        id,
+        LikeParentInstanceEnum.POST,
+      ),
     );
   }
 
