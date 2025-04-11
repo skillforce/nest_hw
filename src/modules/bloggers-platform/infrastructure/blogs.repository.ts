@@ -15,12 +15,17 @@ export class BlogsRepository {
   }
   async findOrNotFoundFail(id: string): Promise<BlogDocument> {
     const blog = await this.findById(id);
-    console.log(blog);
 
     if (!blog) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: `Blog with id ${id} not found`,
+        extensions: [
+          {
+            field: 'blog',
+            message: `Blog with id ${id} not found`,
+          },
+        ],
       });
     }
 

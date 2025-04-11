@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery } from 'mongoose';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { Post, PostModelType } from '../../domain/post.entity';
 import { GetPostsQueryParams } from '../../api/input-dto/post-input-dto/get-posts-query-params.input-dto';
 import { PostsViewDto } from '../../api/view-dto/posts.view-dto';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -20,7 +22,16 @@ export class PostsQueryRepository {
     });
 
     if (!post) {
-      throw new NotFoundException('post not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        extensions: [
+          {
+            field: 'post',
+            message: 'post not found',
+          },
+        ],
+        message: 'post not found',
+      });
     }
 
     return PostsViewDto.mapToViewDto(post);

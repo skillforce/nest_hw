@@ -11,7 +11,7 @@ export class PostsRepository {
   ) {}
 
   async findById(id: string) {
-    return this.PostModel.findById({ _id: id, deletedAt: null });
+    return this.PostModel.findOne({ _id: id, deletedAt: null });
   }
   async findOrNotFoundFail(id: string): Promise<PostDocument> {
     const post = await this.findById(id);
