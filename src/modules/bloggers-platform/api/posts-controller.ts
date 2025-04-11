@@ -38,6 +38,7 @@ import { LikesQueryRepository } from '../infrastructure/query/likes.query-reposi
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
+import { IdParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('posts')
@@ -191,12 +192,12 @@ export class PostsController {
   }
 
   @ApiParam({ name: 'id' })
-  @Delete(':postId')
+  @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlogById(@Param('postId') postId: string) {
+  async deleteBlogById(@Param() { id }: IdParamDto) {
     return await this.commandBus.execute<DeletePostCommand, void>(
-      new DeletePostCommand(postId),
+      new DeletePostCommand(id),
     );
   }
 }
