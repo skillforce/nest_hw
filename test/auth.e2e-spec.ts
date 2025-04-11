@@ -129,4 +129,7 @@ describe('Users Controller (e2e)', () => {
       email: user.email,
     });
   });
+  it('should create and login 5 users', async () => {
+    await userTestManger.createAndLoginSeveralUsers(5);
+  });
 });
