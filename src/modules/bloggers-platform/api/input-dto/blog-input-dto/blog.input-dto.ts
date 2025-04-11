@@ -4,7 +4,7 @@ import {
   blogNameConstraint,
   blogUrlConstraint,
 } from '../../../domain/blog.entity';
-import { IsUrl, Matches } from 'class-validator';
+import { Matches } from 'class-validator';
 
 export class CreateBlogInputDto {
   @IsFieldExistAndStringWithTrim(
@@ -13,14 +13,16 @@ export class CreateBlogInputDto {
     blogNameConstraint.maxLength,
   )
   name: string;
+
   @IsFieldExistAndStringWithTrim(
     'description',
     blogDescriptionConstraint.minLength,
     blogDescriptionConstraint.maxLength,
   )
   description: string;
+
   @IsFieldExistAndStringWithTrim(
-    'description',
+    'websiteUrl',
     blogUrlConstraint.minLength,
     blogUrlConstraint.maxLength,
   )
@@ -35,16 +37,19 @@ export class UpdateBlogInputDto {
     blogNameConstraint.maxLength,
   )
   name: string;
+
   @IsFieldExistAndStringWithTrim(
     'description',
     blogDescriptionConstraint.minLength,
     blogDescriptionConstraint.maxLength,
   )
   description: string;
+
   @IsFieldExistAndStringWithTrim(
-    'description',
+    'websiteUrl',
     blogUrlConstraint.minLength,
     blogUrlConstraint.maxLength,
   )
+  @Matches(blogUrlConstraint.pattern)
   websiteUrl: string;
 }

@@ -52,8 +52,10 @@ describe('Users Controller (e2e)', () => {
       user.login,
       userBody.password,
     );
+    console.log(loginResponseBody);
 
     expect(loginResponseBody.accessToken).toBeDefined();
+    expect(loginResponseBody.refreshToken).toBeDefined();
   });
   it("shouldn't login user with wrong password or email or login", async () => {
     const userBody = {

@@ -37,14 +37,17 @@ export class UsersTestManager {
     login: string,
     password: string,
     statusCode: number = HttpStatus.OK,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const response = await request(this.app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/auth/login`)
       .send({ loginOrEmail: login, password })
       .expect(statusCode);
 
+    const refreshToken = response.headers['set-cookie']?.[0].split('=')[1];
+
     return {
       accessToken: response.body.accessToken,
+      refreshToken,
     };
   }
 

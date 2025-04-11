@@ -201,4 +201,65 @@ describe('Blogs Controller (e2e)', () => {
       .get(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
       .expect(404);
   });
+  it('should return correct error response if try to CREATE blog with incorrect data', async () => {
+    const blogBody = {
+      nam: 'somename',
+      websiteUrl: 'invalid-url',
+      description: 'description',
+    };
+    const createdBlogResponse = await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/blogs`)
+      .auth('admin', 'qwerty')
+      .send(blogBody)
+      .expect(400);
+    expect(createdBlogResponse.body).toEqual({
+      errorsMessages: [
+        {
+          field: 'name',
+          message: expect.any(String),
+        },
+        {
+          field: 'websiteUrl',
+          message: expect.any(String),
+        },
+      ],
+    });
+  });
+  it('should return correct error response if try to UPDATE blog with incorrect data', async () => {
+    const blogBody = {
+      name: 'somename',
+      websiteUrl: 'https://www.websiteUrl.com',
+      description: 'description',
+    };
+    const createdBlogResponse = await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}/blogs`)
+      .auth('admin', 'qwerty')
+      .send(blogBody)
+      .expect(201);
+
+    const updateBlogIncorrectBody = {
+      nam: 'somename',
+      websiteUrl: 'invalid-url',
+      description: 'description',
+    };
+
+    const updatedBlogResponse = await request(app.getHttpServer())
+      .put(`/${GLOBAL_PREFIX}/blogs/${createdBlogResponse.body.id}`)
+      .auth('admin', 'qwerty')
+      .send(updateBlogIncorrectBody)
+      .expect(400);
+
+    expect(updatedBlogResponse.body).toEqual({
+      errorsMessages: [
+        {
+          field: 'name',
+          message: expect.any(String),
+        },
+        {
+          field: 'websiteUrl',
+          message: expect.any(String),
+        },
+      ],
+    });
+  });
 });

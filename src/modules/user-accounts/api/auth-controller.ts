@@ -55,8 +55,9 @@ export class AuthController {
       { accessToken: string; refreshToken: string }
     >(new LoginUserCommand(user.id));
 
-    res.cookie('refresh_token', refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true, // prevent JS access
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
