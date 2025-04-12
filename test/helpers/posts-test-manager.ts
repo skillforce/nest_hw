@@ -40,6 +40,22 @@ export class PostsTestManager {
     const response = await req.expect(statusCode);
     return response.body;
   }
+  async getPostsByBlogId(
+    blogId: string,
+    accessToken?: string,
+    statusCode: number = HttpStatus.OK,
+  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+    const req = request(this.app.getHttpServer()).get(
+      `/${GLOBAL_PREFIX}/blogs/${blogId}/posts`,
+    );
+
+    if (accessToken) {
+      req.set('Authorization', `Bearer ${accessToken}`);
+    }
+
+    const response = await req.expect(statusCode);
+    return response.body;
+  }
 
   async getPostById(
     postId: string,

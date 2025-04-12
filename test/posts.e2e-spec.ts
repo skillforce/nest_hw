@@ -243,4 +243,245 @@ describe('Posts Controller (e2e)', () => {
       HttpStatus.NOT_FOUND,
     );
   });
+  it('should show correct extended likes info for different users', async () => {
+    const [
+      { accessToken: user1AccessToken },
+      { accessToken: user2AccessToken },
+      { accessToken: user3AccessToken },
+    ] = await userTestManager.createAndLoginSeveralUsers(3);
+
+    const blogBody = {
+      name: 'somename',
+      websiteUrl: 'https://www.websiteUrl.com',
+      description: 'description',
+    };
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
+
+    const postBody = {
+      title: 'string',
+      shortDescription: 'string',
+      content: 'string',
+      blogId: createdBlogResponseBody.id,
+    };
+    const createdPostResponseBody = await postsTestManager.createPost(postBody);
+
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.LIKE,
+      user1AccessToken,
+    );
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.LIKE,
+      user3AccessToken,
+    );
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.DISLIKE,
+      user2AccessToken,
+    );
+
+    const getPostByIdResponseBodyForUser3 = await postsTestManager.getPostById(
+      createdPostResponseBody.id,
+      HttpStatus.OK,
+      user3AccessToken,
+    );
+    const getPostByIdResponseBodyForUser2 = await postsTestManager.getPostById(
+      createdPostResponseBody.id,
+      HttpStatus.OK,
+      user2AccessToken,
+    );
+    const getPostByIdResponseBodyForUser1 = await postsTestManager.getPostById(
+      createdPostResponseBody.id,
+      HttpStatus.OK,
+      user1AccessToken,
+    );
+    const getPostByIdResponseBodyForUnauthorized =
+      await postsTestManager.getPostById(
+        createdPostResponseBody.id,
+        HttpStatus.OK,
+      );
+
+    expect(
+      getPostByIdResponseBodyForUnauthorized.extendedLikesInfo.myStatus,
+    ).toBe(LikeStatusEnum.NONE);
+    expect(
+      getPostByIdResponseBodyForUnauthorized.extendedLikesInfo.likesCount,
+    ).toBe(2);
+    expect(
+      getPostByIdResponseBodyForUnauthorized.extendedLikesInfo.dislikesCount,
+    ).toBe(1);
+    expect(getPostByIdResponseBodyForUser1.extendedLikesInfo.myStatus).toBe(
+      LikeStatusEnum.LIKE,
+    );
+    expect(getPostByIdResponseBodyForUser2.extendedLikesInfo.myStatus).toBe(
+      LikeStatusEnum.DISLIKE,
+    );
+    expect(getPostByIdResponseBodyForUser3.extendedLikesInfo.myStatus).toBe(
+      LikeStatusEnum.LIKE,
+    );
+
+    expect(
+      getPostByIdResponseBodyForUnauthorized.extendedLikesInfo.newestLikes,
+    ).toHaveLength(2);
+  });
+  it('should show correct extended likes info for different users when try to get posts array by blog id', async () => {
+    const [
+      { accessToken: user1AccessToken },
+      { accessToken: user2AccessToken },
+      { accessToken: user3AccessToken },
+    ] = await userTestManager.createAndLoginSeveralUsers(3);
+
+    const blogBody = {
+      name: 'somename',
+      websiteUrl: 'https://www.websiteUrl.com',
+      description: 'description',
+    };
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
+
+    const postBody = {
+      title: 'string',
+      shortDescription: 'string',
+      content: 'string',
+      blogId: createdBlogResponseBody.id,
+    };
+    const createdPostResponseBody = await postsTestManager.createPost(postBody);
+
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.LIKE,
+      user1AccessToken,
+    );
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.LIKE,
+      user3AccessToken,
+    );
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.DISLIKE,
+      user2AccessToken,
+    );
+
+    const getPostByBlogIdResponseBodyForUser3 =
+      await postsTestManager.getPostsByBlogId(
+        createdBlogResponseBody.id,
+        user3AccessToken,
+      );
+    const getPostByBlogIdResponseBodyForUser2 =
+      await postsTestManager.getPostsByBlogId(
+        createdBlogResponseBody.id,
+        user2AccessToken,
+      );
+    const getPostByBlogIdResponseBodyForUser1 =
+      await postsTestManager.getPostsByBlogId(
+        createdBlogResponseBody.id,
+        user1AccessToken,
+      );
+
+    const getPostByBlogIdResponseBodyForUnauthorized =
+      await postsTestManager.getPostsByBlogId(createdBlogResponseBody.id);
+
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .myStatus,
+    ).toBe(LikeStatusEnum.NONE);
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .likesCount,
+    ).toBe(2);
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .dislikesCount,
+    ).toBe(1);
+    expect(
+      getPostByBlogIdResponseBodyForUser1.items[0].extendedLikesInfo.myStatus,
+    ).toBe(LikeStatusEnum.LIKE);
+    expect(
+      getPostByBlogIdResponseBodyForUser2.items[0].extendedLikesInfo.myStatus,
+    ).toBe(LikeStatusEnum.DISLIKE);
+    expect(
+      getPostByBlogIdResponseBodyForUser3.items[0].extendedLikesInfo.myStatus,
+    ).toBe(LikeStatusEnum.LIKE);
+
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .newestLikes,
+    ).toHaveLength(2);
+  });
+  it('should show correct extended likes info for different users when try to get posts arrayby get all posts request', async () => {
+    const [
+      { accessToken: user1AccessToken },
+      { accessToken: user2AccessToken },
+      { accessToken: user3AccessToken },
+    ] = await userTestManager.createAndLoginSeveralUsers(3);
+
+    const blogBody = {
+      name: 'somename',
+      websiteUrl: 'https://www.websiteUrl.com',
+      description: 'description',
+    };
+    const createdBlogResponseBody = await blogsTestManager.createBlog(blogBody);
+
+    const postBody = {
+      title: 'string',
+      shortDescription: 'string',
+      content: 'string',
+      blogId: createdBlogResponseBody.id,
+    };
+    const createdPostResponseBody = await postsTestManager.createPost(postBody);
+
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.LIKE,
+      user1AccessToken,
+    );
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.LIKE,
+      user3AccessToken,
+    );
+    await postsTestManager.makeLike(
+      createdPostResponseBody.id,
+      LikeStatusEnum.DISLIKE,
+      user2AccessToken,
+    );
+
+    const getPostByBlogIdResponseBodyForUser3 =
+      await postsTestManager.getPosts(user3AccessToken);
+    const getPostByBlogIdResponseBodyForUser2 =
+      await postsTestManager.getPosts(user2AccessToken);
+    const getPostByBlogIdResponseBodyForUser1 =
+      await postsTestManager.getPosts(user1AccessToken);
+
+    const getPostByBlogIdResponseBodyForUnauthorized =
+      await postsTestManager.getPosts();
+
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .myStatus,
+    ).toBe(LikeStatusEnum.NONE);
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .likesCount,
+    ).toBe(2);
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .dislikesCount,
+    ).toBe(1);
+    expect(
+      getPostByBlogIdResponseBodyForUser1.items[0].extendedLikesInfo.myStatus,
+    ).toBe(LikeStatusEnum.LIKE);
+    expect(
+      getPostByBlogIdResponseBodyForUser2.items[0].extendedLikesInfo.myStatus,
+    ).toBe(LikeStatusEnum.DISLIKE);
+    expect(
+      getPostByBlogIdResponseBodyForUser3.items[0].extendedLikesInfo.myStatus,
+    ).toBe(LikeStatusEnum.LIKE);
+
+    expect(
+      getPostByBlogIdResponseBodyForUnauthorized.items[0].extendedLikesInfo
+        .newestLikes,
+    ).toHaveLength(2);
+  });
 });

@@ -60,6 +60,7 @@ export class PostsController {
     @Param('postId') postId: string,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    await this.postQueryRepository.getByIdOrNotFoundFail(postId);
     const commentsPaginatedData = await this.commentsQueryRepository.getAll(
       query,
       {

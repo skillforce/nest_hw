@@ -1,11 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery } from 'mongoose';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
 import { CommentViewDto } from '../../api/view-dto/comments.view-dto';
 import { GetCommentsQueryParams } from '../../api/input-dto/comment-input-dto/get-comments-query-params.input-dto';
-import { LikesInfoViewDto } from '../../api/view-dto/like-view-dto/like-info.view-dto';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -21,7 +22,16 @@ export class CommentsQueryRepository {
     });
 
     if (!comment) {
-      throw new NotFoundException('comment not found');
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        extensions: [
+          {
+            field: 'comment',
+            message: 'comment not found',
+          },
+        ],
+        message: 'comment not found',
+      });
     }
 
     return CommentViewDto.mapToViewDto(comment);

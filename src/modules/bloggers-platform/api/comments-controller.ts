@@ -47,7 +47,7 @@ export class CommentsController {
       await this.commentsQueryRepository.getByIdOrNotFoundFail(commentId);
     const commentLikesInfo = await this.likesQueryRepository.getEntityLikesInfo(
       commentId,
-      user.id,
+      user?.id,
     );
 
     return {

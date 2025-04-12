@@ -8,7 +8,7 @@ import { NewestLikeViewDto } from '../../api/view-dto/like-view-dto/newest-like.
 import { PipelineStage } from 'mongoose';
 
 export interface AggregatedLikeInfo {
-  parentId: string;
+  _id: string;
   likesCount: number;
   dislikesCount: number;
   myStatus: LikeStatusEnum;
@@ -171,7 +171,8 @@ export class LikesQueryRepository {
     });
 
     likesInfo.forEach((info) => {
-      result[info.parentId] = {
+      console.log(info);
+      result[info._id] = {
         likesCount: info.likesCount,
         dislikesCount: info.dislikesCount,
         myStatus: info.myStatus,
@@ -237,7 +238,6 @@ export class LikesQueryRepository {
       );
     });
 
-    // Fill in empty arrays for parentIds that had no likes
     parentIds.forEach((id) => {
       if (!resultMap[id]) {
         resultMap[id] = [];

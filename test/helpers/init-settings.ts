@@ -10,6 +10,7 @@ import { initAppModule } from '../../src/init-app-module';
 import { CoreConfig } from '../../src/core/core.config';
 import { BlogsTestManager } from './blogs-test-manager';
 import { PostsTestManager } from './posts-test-manager';
+import { CommentsTestManager } from './comments-test-manager';
 
 export const initSettings = async (
   //передаем callback, который получает ModuleBuilder, если хотим изменить настройку тестового модуля
@@ -40,6 +41,7 @@ export const initSettings = async (
   const userTestManager = new UsersTestManager(app);
   const blogsTestManager = new BlogsTestManager(app);
   const postsTestManager = new PostsTestManager(app);
+  const commentsTestManager = new CommentsTestManager(app);
 
   await deleteAllData(app);
 
@@ -50,5 +52,6 @@ export const initSettings = async (
     userTestManager,
     blogsTestManager,
     postsTestManager,
+    commentsTestManager,
   };
 };
