@@ -59,6 +59,21 @@ describe('Comments Controller (e2e)', () => {
     );
   });
 
+  it('should return error if user try to create comment for not existing post', async () => {
+    const [{ accessToken }] =
+      await userTestManager.createAndLoginSeveralUsers(1);
+
+    const createCommentBody = {
+      content: 'Nice post content lalalalalalaldddddddd!',
+    };
+    await commentsTestManager.createComment(
+      '63189b06003380064c4193be',
+      createCommentBody,
+      accessToken,
+      HttpStatus.NOT_FOUND,
+    );
+  });
+
   it('should create comment for existing post', async () => {
     const { id: blogId } = await blogsTestManager.createBlog({
       name: 'Blog',

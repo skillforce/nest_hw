@@ -14,12 +14,13 @@ export class CommentsTestManager {
     postId: string,
     body: CreateCommentInputDto,
     accessToken: string,
+    statusCode: number = HttpStatus.CREATED,
   ): Promise<CommentViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${GLOBAL_PREFIX}/posts/${postId}/comments`)
       .send(body)
       .set('Authorization', `Bearer ${accessToken}`)
-      .expect(HttpStatus.CREATED);
+      .expect(statusCode);
 
     return response.body;
   }

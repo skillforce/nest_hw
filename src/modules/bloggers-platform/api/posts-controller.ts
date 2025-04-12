@@ -131,6 +131,7 @@ export class PostsController {
     @Param() { id }: IdParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
+    await this.postQueryRepository.getByIdOrNotFoundFail(id);
     const createdCommentId = await this.commandBus.execute<
       CreateCommentCommand,
       string
