@@ -171,7 +171,6 @@ export class LikesQueryRepository {
     });
 
     likesInfo.forEach((info) => {
-      console.log(info);
       result[info._id] = {
         likesCount: info.likesCount,
         dislikesCount: info.dislikesCount,

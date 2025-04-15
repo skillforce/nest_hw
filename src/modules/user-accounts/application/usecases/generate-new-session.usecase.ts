@@ -69,7 +69,6 @@ export class GenerateNewSessionUseCase
       id: userId,
       deviceId: newDeviceId,
     });
-    console.log(newDeviceId);
 
     return { accessToken, refreshToken };
   }

@@ -30,10 +30,6 @@ export class DeleteSessionUseCase
       iat: number;
     } = this.refreshTokenContext.decode(refreshToken);
 
-    console.log(userId);
-    console.log(deviceId);
-    console.log(this.transformTimestampsToIsoString(iat));
-
     const session =
       await this.authMetaRepository.findByDeviceIdAndUserIdAndIatOrNotFoundFail(
         deviceId,
