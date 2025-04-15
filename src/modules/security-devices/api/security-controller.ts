@@ -14,7 +14,10 @@ import { JwtRefreshGuard } from '../../user-accounts/guards/refreshToken/refresh
 import { DevicesViewDto } from './view-dto/devices.view-dto';
 import { AuthMetaQueryRepository } from '../infrastructure/query/auth-meta.query-repository';
 import { ApiParam } from '@nestjs/swagger';
-import { IdParamDto } from '../../../core/decorators/validation/objectIdDto';
+import {
+  IdMongoParamDto,
+  IdUuidParamDto,
+} from '../../../core/decorators/validation/objectIdDto';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteSessionByDeviceIdCommand } from '../application/usecases/delete-session-by-device-id.usecase';
 import { DeleteAllUserDevicesExceptCurrentOneCommand } from '../application/usecases/delete-all-devices-except-current-one.usecase';
@@ -61,7 +64,7 @@ export class SecurityController {
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteSessionById(
-    @Param() { id }: IdParamDto,
+    @Param() { id }: IdUuidParamDto,
     @ExtractRefreshTokenDataFromRequest()
     refreshTokenPayload: UserRefreshContextDto,
   ) {

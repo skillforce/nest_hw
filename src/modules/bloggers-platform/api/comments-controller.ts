@@ -26,7 +26,7 @@ import {
 import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
-import { IdParamDto } from '../../../core/decorators/validation/objectIdDto';
+import { IdMongoParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('comments')
@@ -91,7 +91,7 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteComment(
-    @Param() { id }: IdParamDto,
+    @Param() { id }: IdMongoParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     await this.commandBus.execute<DeleteCommentCommand, void>(

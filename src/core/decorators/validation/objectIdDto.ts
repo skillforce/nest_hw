@@ -1,6 +1,10 @@
-import { IsMongoId } from 'class-validator';
+import { IsMongoId, IsUUID } from 'class-validator';
 
-export class IdParamDto {
+export class IdMongoParamDto {
   @IsMongoId()
+  id: string;
+}
+export class IdUuidParamDto {
+  @IsUUID()
   id: string;
 }
