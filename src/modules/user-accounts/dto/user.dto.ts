@@ -3,8 +3,3 @@ export class UserDto {
   email: string;
   password: string;
 }
-
-export class UpdateUserPasswordDto {
-  recoveryCode: string;
-  newPassword: string;
-}

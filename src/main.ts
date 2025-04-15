@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(DynamicAppModule);
 
   const coreConfig = app.get<CoreConfig>(CoreConfig);
-  app.enableCors();
+
   appSetup(app, coreConfig);
 
   const port = coreConfig.port;

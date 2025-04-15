@@ -32,6 +32,14 @@ import { Response } from 'express';
 import { ConfirmRegistrationByCodeCommand } from '../application/usecases/confirm-registration-by-code.usecase';
 import { InitializePasswordRecoveryCommand } from '../application/usecases/initialize-password-recovery.usecase';
 import { ChangePasswordByRecoveryCodeCommand } from '../application/usecases/change-password-by-recovery-code.usecase';
+import {
+  ClientInfo,
+  GetClientInfo,
+} from '../../../core/decorators/getClientInfo/get-client-info.decorator';
+import { JwtRefreshGuard } from '../guards/refreshToken/refresh-token.guard';
+import { ExtractRefreshTokenFromCookie } from '../guards/decorators/param/extract-refresh-token-from-request-cookie.decorator';
+import { UpdateSessionCommand } from '../application/usecases/update-session-usecase';
+import { DeleteSessionCommand } from '../application/usecases/delete-session-usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -41,24 +49,25 @@ export class AuthController {
     private readonly commandBus: CommandBus,
   ) {}
 
-  @SkipThrottle()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   async login(
     @Body() _: LoginInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
-    @Res({ passthrough: true }) res: Response,
+    @GetClientInfo() clientInfo: ClientInfo,
+    @Res({ passthrough: true })
+    res: Response,
   ) {
     const { refreshToken, accessToken } = await this.commandBus.execute<
       LoginUserCommand,
       { accessToken: string; refreshToken: string }
-    >(new LoginUserCommand(user.id));
+    >(new LoginUserCommand(user.id, clientInfo.userAgent, clientInfo.ip));
 
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true, // prevent JS access
+      httpOnly: true,
       secure: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return { accessToken };
@@ -73,6 +82,40 @@ export class AuthController {
     >(new CreateUserCommand(dto));
 
     return await this.usersQueryRepository.getByIdOrNotFoundFail(createdUserId);
+  }
+
+  @SkipThrottle()
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtRefreshGuard)
+  async refreshTokens(
+    @ExtractRefreshTokenFromCookie() refreshToken: string,
+    @Res({ passthrough: true })
+    res: Response,
+  ) {
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.commandBus.execute<
+        UpdateSessionCommand,
+        { accessToken: string; refreshToken: string }
+      >(new UpdateSessionCommand(refreshToken));
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    console.log(newRefreshToken);
+    return { accessToken };
+  }
+
+  @SkipThrottle()
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtRefreshGuard)
+  async logout(@ExtractRefreshTokenFromCookie() refreshToken: string) {
+    return await this.commandBus.execute<DeleteSessionCommand, void>(
+      new DeleteSessionCommand(refreshToken),
+    );
   }
 
   @Post('registration-confirmation')

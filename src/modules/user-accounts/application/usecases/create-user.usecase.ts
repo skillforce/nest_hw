@@ -1,9 +1,4 @@
-import {
-  CommandBus,
-  CommandHandler,
-  EventBus,
-  ICommandHandler,
-} from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserDto } from '../../dto/user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../../domain/user.entity';

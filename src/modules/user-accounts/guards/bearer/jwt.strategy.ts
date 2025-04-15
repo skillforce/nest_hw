@@ -6,12 +6,13 @@ import { UserAccountsConfig } from '../../config/user-accounts.config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(private readonly userAccountsConfig: UserAccountsConfig) {
+  constructor(readonly userAccountsConfig: UserAccountsConfig) {
     super({
       jwtFromRequest: ExtractJwt?.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: userAccountsConfig.accessTokenSecret,
     });
+    this.userAccountsConfig = userAccountsConfig;
   }
 
   async validate(payload: UserContextDto): Promise<UserContextDto> {

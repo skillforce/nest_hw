@@ -21,7 +21,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteUserByIdCommand } from '../application/usecases/delete-user-by-id.usecase';
 import { CreateUserCommand } from '../application/usecases/create-user.usecase';
-import { IsMongoId } from 'class-validator';
 import { IdParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()

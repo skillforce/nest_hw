@@ -30,6 +30,12 @@ import { InitializePasswordRecoveryUseCase } from './application/usecases/initia
 import { ChangePasswordByRecoveryCodeUseCase } from './application/usecases/change-password-by-recovery-code.usecase';
 import { DeleteUserByIdUseCase } from './application/usecases/delete-user-by-id.usecase';
 import { CoreConfig, Environments } from '../../core/core.config';
+import { AuthMeta, AuthMetaSchema } from './domain/auth-meta.entity';
+import { AuthMetaRepository } from './infrastructure/auth-meta.repository';
+import { UpdateSessionUseCase } from './application/usecases/update-session-usecase';
+import { GenerateNewSessionUseCase } from './application/usecases/generate-new-session.usecase';
+import { DeleteSessionUseCase } from './application/usecases/delete-session-usecase';
+import { JwtRefreshStrategy } from './guards/refreshToken/refreshJwt.strategy';
 
 @Module({
   imports: [
@@ -38,6 +44,10 @@ import { CoreConfig, Environments } from '../../core/core.config';
       {
         name: User.name,
         schema: UserSchema,
+      },
+      {
+        name: AuthMeta.name,
+        schema: AuthMetaSchema,
       },
     ]),
     NotificationsModule,
@@ -63,12 +73,14 @@ import { CoreConfig, Environments } from '../../core/core.config';
   providers: [
     UsersQueryRepository,
     AuthQueryRepository,
+    AuthMetaRepository,
     UsersRepository,
     BcryptService,
     EmailService,
     AuthService,
     LocalStrategy,
     JwtStrategy,
+    JwtRefreshStrategy,
     UserAccountsConfig,
     CreateUserUseCase,
     InitializeConfirmRegistrationUseCase,
@@ -77,6 +89,9 @@ import { CoreConfig, Environments } from '../../core/core.config';
     ConfirmRegistrationByCodeUseCase,
     InitializePasswordRecoveryUseCase,
     ChangePasswordByRecoveryCodeUseCase,
+    UpdateSessionUseCase,
+    GenerateNewSessionUseCase,
+    DeleteSessionUseCase,
     DeleteUserByIdUseCase,
     {
       provide: APP_GUARD,
