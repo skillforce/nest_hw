@@ -17,8 +17,14 @@ import {
   RegistrationResendingInputDto,
 } from './input-dto/auth-input-dto/auth.input-dto';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
-import { ExtractUserFromRequest } from '../guards/decorators/param/extract-user-from-request.decorator';
-import { UserContextDto } from '../guards/dto/user-context.dto';
+import {
+  ExtractRefreshTokenDataFromRequest,
+  ExtractUserFromRequest,
+} from '../guards/decorators/param/extract-user-from-request.decorator';
+import {
+  UserContextDto,
+  UserRefreshContextDto,
+} from '../guards/dto/user-context.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../guards/bearer/jwt-auth.guard';
 import { AuthQueryRepository } from '../infrastructure/query/auth.query-repository';
@@ -37,9 +43,8 @@ import {
   GetClientInfo,
 } from '../../../core/decorators/getClientInfo/get-client-info.decorator';
 import { JwtRefreshGuard } from '../guards/refreshToken/refresh-token.guard';
-import { ExtractRefreshTokenFromCookie } from '../guards/decorators/param/extract-refresh-token-from-request-cookie.decorator';
-import { UpdateSessionCommand } from '../application/usecases/update-session-usecase';
-import { DeleteSessionCommand } from '../application/usecases/delete-session-usecase';
+import { UpdateRefreshTokenCommand } from '../application/usecases/update-refresh-token.usecase';
+import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 
 @Controller('auth')
 export class AuthController {
@@ -89,15 +94,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   async refreshTokens(
-    @ExtractRefreshTokenFromCookie() refreshToken: string,
+    @ExtractRefreshTokenDataFromRequest()
+    refreshTokenPayload: UserRefreshContextDto,
     @Res({ passthrough: true })
     res: Response,
   ) {
     const { accessToken, refreshToken: newRefreshToken } =
       await this.commandBus.execute<
-        UpdateSessionCommand,
+        UpdateRefreshTokenCommand,
         { accessToken: string; refreshToken: string }
-      >(new UpdateSessionCommand(refreshToken));
+      >(new UpdateRefreshTokenCommand(refreshTokenPayload));
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
@@ -111,9 +117,12 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtRefreshGuard)
-  async logout(@ExtractRefreshTokenFromCookie() refreshToken: string) {
-    return await this.commandBus.execute<DeleteSessionCommand, void>(
-      new DeleteSessionCommand(refreshToken),
+  async logout(
+    @ExtractRefreshTokenDataFromRequest()
+    refreshTokenPayload: UserRefreshContextDto,
+  ) {
+    return await this.commandBus.execute<LogoutUserCommand, void>(
+      new LogoutUserCommand(refreshTokenPayload),
     );
   }
 
@@ -162,6 +171,6 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMe(@ExtractUserFromRequest() user: UserContextDto) {
-    return this.authQueryRepository.Me(user.id);
+    return this.authQueryRepository.getMe(user.id);
   }
 }

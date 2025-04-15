@@ -1,23 +1,26 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserContextDto } from '../../guards/dto/user-context.dto';
+import {
+  UserContextDto,
+  UserRefreshContextDto,
+} from '../../guards/dto/user-context.dto';
 import { Inject } from '@nestjs/common';
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from '../../constants/auth-tokens.inject-contants';
 import { JwtService } from '@nestjs/jwt';
-import { AuthMetaDocument } from '../../domain/auth-meta.entity';
-import { AuthMetaRepository } from '../../infrastructure/auth-meta.repository';
+import { AuthMetaDocument } from '../../../security-devices/domain/auth-meta.entity';
+import { ExternalAuthMetaRepository } from '../../../security-devices/infrastructure/external/external.auth-meta.repository';
 
-export class UpdateSessionCommand {
-  constructor(public refreshToken: string) {}
+export class UpdateRefreshTokenCommand {
+  constructor(public refreshTokenPayload: UserRefreshContextDto) {}
 }
 
-@CommandHandler(UpdateSessionCommand)
-export class UpdateSessionUseCase
+@CommandHandler(UpdateRefreshTokenCommand)
+export class UpdateRefreshTokenUsecase
   implements
     ICommandHandler<
-      UpdateSessionCommand,
+      UpdateRefreshTokenCommand,
       { accessToken: string; refreshToken: string }
     >
 {
@@ -28,22 +31,14 @@ export class UpdateSessionUseCase
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private refreshTokenContext: JwtService,
 
-    private authMetaRepository: AuthMetaRepository,
+    private authMetaRepository: ExternalAuthMetaRepository,
   ) {}
 
-  async execute({ refreshToken }: UpdateSessionCommand): Promise<{
+  async execute({ refreshTokenPayload }: UpdateRefreshTokenCommand): Promise<{
     accessToken: string;
     refreshToken: string;
   }> {
-    const {
-      id: userId,
-      deviceId,
-      iat,
-    }: {
-      id: string;
-      deviceId: string;
-      iat: number;
-    } = this.refreshTokenContext.decode(refreshToken);
+    const { id: userId, deviceId, iat } = refreshTokenPayload;
 
     const session =
       await this.authMetaRepository.findByDeviceIdAndUserIdAndIatOrNotFoundFail(

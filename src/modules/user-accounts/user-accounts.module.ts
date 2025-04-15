@@ -30,12 +30,15 @@ import { InitializePasswordRecoveryUseCase } from './application/usecases/initia
 import { ChangePasswordByRecoveryCodeUseCase } from './application/usecases/change-password-by-recovery-code.usecase';
 import { DeleteUserByIdUseCase } from './application/usecases/delete-user-by-id.usecase';
 import { CoreConfig, Environments } from '../../core/core.config';
-import { AuthMeta, AuthMetaSchema } from './domain/auth-meta.entity';
-import { AuthMetaRepository } from './infrastructure/auth-meta.repository';
-import { UpdateSessionUseCase } from './application/usecases/update-session-usecase';
-import { GenerateNewSessionUseCase } from './application/usecases/generate-new-session.usecase';
-import { DeleteSessionUseCase } from './application/usecases/delete-session-usecase';
+import {
+  AuthMeta,
+  AuthMetaSchema,
+} from '../security-devices/domain/auth-meta.entity';
+import { UpdateRefreshTokenUsecase } from './application/usecases/update-refresh-token.usecase';
+import { GenerateNewTokensUsecase } from './application/usecases/generate-new-tokens.usecase';
+import { LogoutUserUsecase } from './application/usecases/logout-user.usecase';
 import { JwtRefreshStrategy } from './guards/refreshToken/refreshJwt.strategy';
+import { SecurityDevicesModule } from '../security-devices/security-devices.module';
 
 @Module({
   imports: [
@@ -50,6 +53,7 @@ import { JwtRefreshStrategy } from './guards/refreshToken/refreshJwt.strategy';
         schema: AuthMetaSchema,
       },
     ]),
+    SecurityDevicesModule,
     NotificationsModule,
     ThrottlerModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {
@@ -73,7 +77,6 @@ import { JwtRefreshStrategy } from './guards/refreshToken/refreshJwt.strategy';
   providers: [
     UsersQueryRepository,
     AuthQueryRepository,
-    AuthMetaRepository,
     UsersRepository,
     BcryptService,
     EmailService,
@@ -89,9 +92,9 @@ import { JwtRefreshStrategy } from './guards/refreshToken/refreshJwt.strategy';
     ConfirmRegistrationByCodeUseCase,
     InitializePasswordRecoveryUseCase,
     ChangePasswordByRecoveryCodeUseCase,
-    UpdateSessionUseCase,
-    GenerateNewSessionUseCase,
-    DeleteSessionUseCase,
+    UpdateRefreshTokenUsecase,
+    GenerateNewTokensUsecase,
+    LogoutUserUsecase,
     DeleteUserByIdUseCase,
     {
       provide: APP_GUARD,

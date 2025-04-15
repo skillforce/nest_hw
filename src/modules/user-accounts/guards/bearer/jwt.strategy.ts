@@ -12,7 +12,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       ignoreExpiration: false,
       secretOrKey: userAccountsConfig.accessTokenSecret,
     });
-    this.userAccountsConfig = userAccountsConfig;
   }
 
   async validate(payload: UserContextDto): Promise<UserContextDto> {

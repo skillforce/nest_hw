@@ -14,6 +14,7 @@ import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exc
 import { CoreConfig } from './core/core.config';
 import { CoreModule } from './core/core.module';
 import { SWAGGER_PREFIX } from './setup/swagger.setup';
+import { SecurityDevicesModule } from './modules/security-devices/security-devices.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { SWAGGER_PREFIX } from './setup/swagger.setup';
       inject: [CoreConfig],
     }),
     UserAccountsModule,
+    SecurityDevicesModule,
     BloggersPlatformModule,
     CoreModule,
   ],

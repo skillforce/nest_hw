@@ -9,12 +9,15 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthMetaDto } from '../../dto/auth-meta.dto';
 import { randomUUID } from 'node:crypto';
 import { InjectModel } from '@nestjs/mongoose';
-import { AuthMeta, AuthMetaModelType } from '../../domain/auth-meta.entity';
-import { AuthMetaRepository } from '../../infrastructure/auth-meta.repository';
 import {
-  GenerateNewSessionCommand,
-  GenerateNewSessionUseCase,
-} from './generate-new-session.usecase';
+  AuthMeta,
+  AuthMetaModelType,
+} from '../../../security-devices/domain/auth-meta.entity';
+import { AuthMetaRepository } from '../../../security-devices/infrastructure/auth-meta.repository';
+import {
+  GenerateNewTokensCommand,
+  GenerateNewTokensUsecase,
+} from './generate-new-tokens.usecase';
 
 export class LoginUserCommand {
   constructor(
@@ -32,15 +35,7 @@ export class LoginUserUseCase
       { accessToken: string; refreshToken: string }
     >
 {
-  constructor(
-    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
-    private accessTokenContext: JwtService,
-
-    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
-    private refreshTokenContext: JwtService,
-
-    private commandBus: CommandBus,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
 
   async execute({
     userId,
@@ -48,9 +43,9 @@ export class LoginUserUseCase
     userAgent,
   }: LoginUserCommand): Promise<{ accessToken: string; refreshToken: string }> {
     const { refreshToken, accessToken } = await this.commandBus.execute<
-      GenerateNewSessionCommand,
+      GenerateNewTokensCommand,
       { accessToken: string; refreshToken: string }
-    >(new GenerateNewSessionCommand(userId, ipAddress, userAgent));
+    >(new GenerateNewTokensCommand(userId, ipAddress, userAgent));
 
     return { accessToken, refreshToken };
   }

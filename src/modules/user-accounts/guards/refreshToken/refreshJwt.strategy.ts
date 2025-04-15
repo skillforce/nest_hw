@@ -1,11 +1,12 @@
 // jwt-refresh.strategy.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import { UserAccountsConfig } from '../../config/user-accounts.config';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { UserRefreshContextDto } from '../dto/user-context.dto';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
@@ -23,7 +24,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: Request, payload: any) {
+  async validate(req: Request, payload: UserRefreshContextDto) {
     if (!req.cookies?.refreshToken) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,

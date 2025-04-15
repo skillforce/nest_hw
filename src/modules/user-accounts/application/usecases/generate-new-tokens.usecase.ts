@@ -9,10 +9,13 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthMetaDto } from '../../dto/auth-meta.dto';
 import { randomUUID } from 'node:crypto';
 import { InjectModel } from '@nestjs/mongoose';
-import { AuthMeta, AuthMetaModelType } from '../../domain/auth-meta.entity';
-import { AuthMetaRepository } from '../../infrastructure/auth-meta.repository';
+import {
+  AuthMeta,
+  AuthMetaModelType,
+} from '../../../security-devices/domain/auth-meta.entity';
+import { ExternalAuthMetaRepository } from '../../../security-devices/infrastructure/external/external.auth-meta.repository';
 
-export class GenerateNewSessionCommand {
+export class GenerateNewTokensCommand {
   constructor(
     public userId: string,
     public userAgent: string,
@@ -20,11 +23,11 @@ export class GenerateNewSessionCommand {
   ) {}
 }
 
-@CommandHandler(GenerateNewSessionCommand)
-export class GenerateNewSessionUseCase
+@CommandHandler(GenerateNewTokensCommand)
+export class GenerateNewTokensUsecase
   implements
     ICommandHandler<
-      GenerateNewSessionCommand,
+      GenerateNewTokensCommand,
       { accessToken: string; refreshToken: string }
     >
 {
@@ -38,14 +41,14 @@ export class GenerateNewSessionUseCase
     @InjectModel(AuthMeta.name)
     private readonly AuthMetaModel: AuthMetaModelType,
 
-    private authMetaRepository: AuthMetaRepository,
+    private authMetaRepository: ExternalAuthMetaRepository,
   ) {}
 
   async execute({
     userId,
     ipAddress,
     userAgent,
-  }: GenerateNewSessionCommand): Promise<{
+  }: GenerateNewTokensCommand): Promise<{
     accessToken: string;
     refreshToken: string;
   }> {
