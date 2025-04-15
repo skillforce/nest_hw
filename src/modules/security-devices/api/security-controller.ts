@@ -20,14 +20,14 @@ import { DeleteSessionByDeviceIdCommand } from '../application/usecases/delete-s
 import { DeleteAllUserDevicesExceptCurrentOneCommand } from '../application/usecases/delete-all-devices-except-current-one.usecase';
 
 @SkipThrottle()
-@Controller('security/devices')
+@Controller('security')
 export class SecurityController {
   constructor(
     private authMetaQueryRepository: AuthMetaQueryRepository,
     private commandBus: CommandBus,
   ) {}
 
-  @Get()
+  @Get('/devices')
   @UseGuards(JwtRefreshGuard)
   async getCommentById(
     @ExtractRefreshTokenDataFromRequest()
@@ -38,7 +38,7 @@ export class SecurityController {
     );
   }
 
-  @Delete()
+  @Delete('/devices')
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteAllSessions(
@@ -57,7 +57,7 @@ export class SecurityController {
   }
 
   @ApiParam({ name: 'id' })
-  @Delete(':id')
+  @Delete('/devices/:id')
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteSessionById(

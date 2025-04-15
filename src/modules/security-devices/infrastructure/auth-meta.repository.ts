@@ -19,7 +19,7 @@ export class AuthMetaRepository {
       device_id,
       deletedAt: null,
     });
-    if (!sessions) {
+    if (!sessions.length) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         extensions: [
