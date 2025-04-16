@@ -3,10 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
-import { UserAccountsConfig } from '../../config/user-accounts.config';
+import { UserAccountsConfig } from '../../../user-accounts/config/user-accounts.config';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { UserRefreshContextDto } from '../dto/user-context.dto';
+import { UserRefreshContextDto } from '../../../user-accounts/guards/dto/user-context.dto';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(

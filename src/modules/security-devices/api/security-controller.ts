@@ -10,12 +10,13 @@ import {
 import { ExtractRefreshTokenDataFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
 import { UserRefreshContextDto } from '../../user-accounts/guards/dto/user-context.dto';
 import { SkipThrottle } from '@nestjs/throttler';
-import { JwtRefreshGuard } from '../../user-accounts/guards/refreshToken/refresh-token.guard';
+import { JwtRefreshGuard } from '../guards/refreshToken/refresh-token.guard';
 import { DevicesViewDto } from './view-dto/devices.view-dto';
 import { AuthMetaQueryRepository } from '../infrastructure/query/auth-meta.query-repository';
 import { ApiParam } from '@nestjs/swagger';
 import {
   IdMongoParamDto,
+  IdStringParamDto,
   IdUuidParamDto,
 } from '../../../core/decorators/validation/objectIdDto';
 import { CommandBus } from '@nestjs/cqrs';
@@ -64,7 +65,7 @@ export class SecurityController {
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteSessionById(
-    @Param() { id }: IdUuidParamDto,
+    @Param() { id }: IdStringParamDto,
     @ExtractRefreshTokenDataFromRequest()
     refreshTokenPayload: UserRefreshContextDto,
   ) {

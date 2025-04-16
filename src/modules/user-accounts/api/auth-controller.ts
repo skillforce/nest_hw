@@ -42,7 +42,7 @@ import {
   ClientInfo,
   GetClientInfo,
 } from '../../../core/decorators/getClientInfo/get-client-info.decorator';
-import { JwtRefreshGuard } from '../guards/refreshToken/refresh-token.guard';
+import { JwtRefreshGuard } from '../../security-devices/guards/refreshToken/refresh-token.guard';
 import { UpdateRefreshTokenCommand } from '../application/usecases/update-refresh-token.usecase';
 import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 

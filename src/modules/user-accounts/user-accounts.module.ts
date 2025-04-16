@@ -37,7 +37,7 @@ import {
 import { UpdateRefreshTokenUsecase } from './application/usecases/update-refresh-token.usecase';
 import { GenerateNewTokensUsecase } from './application/usecases/generate-new-tokens.usecase';
 import { LogoutUserUsecase } from './application/usecases/logout-user.usecase';
-import { JwtRefreshStrategy } from './guards/refreshToken/refreshJwt.strategy';
+import { JwtRefreshStrategy } from '../security-devices/guards/refreshToken/refreshJwt.strategy';
 import { SecurityDevicesModule } from '../security-devices/security-devices.module';
 
 @Module({

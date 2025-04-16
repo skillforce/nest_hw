@@ -8,3 +8,7 @@ export class IdUuidParamDto {
   @IsUUID()
   id: string;
 }
+
+export class IdStringParamDto {
+  id: string;
+}
