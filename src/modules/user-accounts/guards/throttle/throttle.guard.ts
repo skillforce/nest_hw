@@ -1,9 +1,9 @@
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class CustomThrottlerGuard extends ThrottlerGuard {
   protected throwThrottlingException(): Promise<void> {
     throw new DomainException({

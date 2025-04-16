@@ -14,11 +14,7 @@ import { JwtRefreshGuard } from '../guards/refreshToken/refresh-token.guard';
 import { DevicesViewDto } from './view-dto/devices.view-dto';
 import { AuthMetaQueryRepository } from '../infrastructure/query/auth-meta.query-repository';
 import { ApiParam } from '@nestjs/swagger';
-import {
-  IdMongoParamDto,
-  IdStringParamDto,
-  IdUuidParamDto,
-} from '../../../core/decorators/validation/objectIdDto';
+import { IdStringParamDto } from '../../../core/decorators/validation/objectIdDto';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteSessionByDeviceIdCommand } from '../application/usecases/delete-session-by-device-id.usecase';
 import { DeleteAllUserDevicesExceptCurrentOneCommand } from '../application/usecases/delete-all-devices-except-current-one.usecase';
