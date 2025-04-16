@@ -1,15 +1,15 @@
 import { pipesSetup } from './pipes.setup';
-import { INestApplication } from '@nestjs/common';
 import { swaggerSetup } from './swagger.setup';
 import { globalPrefixSetup } from './global-prefix.setup';
 import { CoreConfig } from '../core/core.config';
 import cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
-export function appSetup(app: INestApplication, coreConfig: CoreConfig) {
+export function appSetup(app: NestExpressApplication, coreConfig: CoreConfig) {
   app.enableCors();
-  //eslint-disable-next-line
+
   app.use(cookieParser());
-  app.getHttpAdapter().getInstance().set('trust proxy', true);
+  app.set('trust proxy', true);
   pipesSetup(app);
   globalPrefixSetup(app);
   swaggerSetup(app, coreConfig);
