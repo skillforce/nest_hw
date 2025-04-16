@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser';
 
 export function appSetup(app: INestApplication, coreConfig: CoreConfig) {
   app.enableCors();
-
   app.use(cookieParser());
   app.getHttpAdapter().getInstance().set('trust proxy', true);
   pipesSetup(app);
