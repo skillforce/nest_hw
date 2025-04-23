@@ -7,6 +7,9 @@ import { BcryptService } from '../bcrypt-service';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { InitializeConfirmRegistrationCommand } from './initialize-confirm-registration.usecase';
+import { EmailConfirmation } from '../../domain/schemas/email-confirmation.schema';
+import { EmailConfirmationRepository } from '../../infrastructure/email-confirmation.repository';
+import { CreateUserDomainDto } from '../../domain/dto/create-user.domain.dto';
 
 export class CreateUserCommand {
   constructor(
@@ -23,6 +26,7 @@ export class CreateUserUseCase
     @InjectModel(User.name)
     private UserModel: UserModelType,
     private usersRepository: UsersRepository,
+    private emailConfirmationRepository: EmailConfirmationRepository,
     private bcryptService: BcryptService,
     private commandBus: CommandBus,
   ) {}
@@ -30,23 +34,28 @@ export class CreateUserUseCase
   async execute({ dto, isConfirmed }: CreateUserCommand): Promise<string> {
     await this.checkUserDtoForUniqueFields(dto);
     const passwordHash = await this.bcryptService.hashPassword(dto.password);
-    const user = this.UserModel.createInstance({
+    const newUser = this.createUser({
       login: dto.login,
       email: dto.email,
       passwordHash,
     });
-    if (isConfirmed) {
-      user.confirmRegistration();
-    }
-    await this.usersRepository.save(user);
 
-    if (!isConfirmed) {
-      await this.commandBus.execute(
-        new InitializeConfirmRegistrationCommand(user._id.toString()),
+    const createdUserId = await this.usersRepository.save(newUser);
+    if (isConfirmed) {
+      const autoConfirmedEmailConfirmation =
+        this.createConfirmedUser(createdUserId);
+      await this.emailConfirmationRepository.save(
+        autoConfirmedEmailConfirmation,
       );
     }
 
-    return user._id.toString();
+    if (!isConfirmed) {
+      await this.commandBus.execute(
+        new InitializeConfirmRegistrationCommand(createdUserId),
+      );
+    }
+
+    return createdUserId;
   }
 
   private async checkUserDtoForUniqueFields(dto: UserDto) {
@@ -77,5 +86,22 @@ export class CreateUserUseCase
         message: 'user with this email already exists',
       });
     }
+  }
+  private createConfirmedUser(userId: string): EmailConfirmation {
+    return {
+      confirmationCode: null,
+      confirmationExpiresAt: null,
+      isConfirmed: true,
+      userId,
+    };
+  }
+
+  private createUser(dto: CreateUserDomainDto): Omit<User, 'id'> {
+    return {
+      login: dto.login,
+      email: dto.email,
+      passwordHash: dto.passwordHash,
+      deletedAt: null,
+    };
   }
 }

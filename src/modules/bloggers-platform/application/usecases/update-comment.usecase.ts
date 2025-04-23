@@ -3,7 +3,7 @@ import { UpdateCommentDto } from '../../domain/dto/comment-domain.dto';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
 import { CommentDocument } from '../../domain/comment.entity';
-import { UserDocument } from '../../../user-accounts/domain/user.entity';
+import { User, UserDocument } from '../../../user-accounts/domain/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
@@ -30,7 +30,7 @@ export class UpdateCommentUseCase
     userId,
   }: UpdateCommentCommand): Promise<void> {
     const comment = await this.commentsRepository.findOrNotFoundFail(commentId);
-    const user = await this.usersRepository.findOrNotFoundFail(userId);
+    const user = await this.usersRepository.findByIdOrNotFoundFail(userId);
 
     if (!this.isUserOwnUpdatedComment(comment, user)) {
       throw new DomainException({
@@ -44,10 +44,7 @@ export class UpdateCommentUseCase
     await this.commentsRepository.save(comment);
   }
 
-  private isUserOwnUpdatedComment(
-    comment: CommentDocument,
-    user: UserDocument,
-  ) {
+  private isUserOwnUpdatedComment(comment: CommentDocument, user: User) {
     return comment.commentatorInfo.userId === user.id;
   }
 }

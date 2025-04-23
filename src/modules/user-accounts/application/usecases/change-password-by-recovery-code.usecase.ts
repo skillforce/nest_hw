@@ -3,6 +3,8 @@ import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { BcryptService } from '../bcrypt-service';
+import { PasswordRecoveryConfirmation } from '../../domain/schemas/password-recovery-confirmation.schema';
+import { PasswordRecoveryConfirmationRepository } from '../../infrastructure/password-recovery-confirmation.repository';
 
 export class ChangePasswordByRecoveryCodeCommand {
   constructor(
@@ -17,6 +19,7 @@ export class ChangePasswordByRecoveryCodeUseCase
 {
   constructor(
     private usersRepository: UsersRepository,
+    private passwordRecoveryConfirmationRepository: PasswordRecoveryConfirmationRepository,
     private bcryptService: BcryptService,
   ) {}
 
@@ -24,12 +27,14 @@ export class ChangePasswordByRecoveryCodeUseCase
     newPassword,
     recoveryCode,
   }: ChangePasswordByRecoveryCodeCommand): Promise<void> {
-    const user =
-      await this.usersRepository.findByPasswordRecoveryCodeOrNotFoundFail(
+    const passwordRecoveryConfirmation =
+      await this.passwordRecoveryConfirmationRepository.findByRecoveryCodeOrNotFoundFail(
         recoveryCode,
       );
 
-    const isConfirmationCodeLegit = user.isPasswordRecoveryConfirmationValid();
+    const isConfirmationCodeLegit = this.isPasswordRecoveryConfirmationValid(
+      passwordRecoveryConfirmation,
+    );
 
     if (!isConfirmationCodeLegit) {
       throw new DomainException({
@@ -43,8 +48,39 @@ export class ChangePasswordByRecoveryCodeUseCase
         message: 'recoveryCode is not valid',
       });
     }
+
+    const user = await this.usersRepository.findByIdOrNotFoundFail(
+      passwordRecoveryConfirmation.userId,
+    );
+
     const newPasswordHash = await this.bcryptService.hashPassword(newPassword);
-    user.confirmPasswordRecovery(newPasswordHash);
-    await this.usersRepository.save(user);
+    const confirmedPasswordRecovery = this.createConfirmedPasswordRecovery(
+      passwordRecoveryConfirmation.userId,
+    );
+
+    await this.passwordRecoveryConfirmationRepository.save(
+      confirmedPasswordRecovery,
+    );
+    await this.usersRepository.save({ ...user, passwordHash: newPasswordHash });
+  }
+
+  private isPasswordRecoveryConfirmationValid(
+    passwordRecoveryConfirmation: PasswordRecoveryConfirmation,
+  ): boolean {
+    if (!passwordRecoveryConfirmation?.confirmationExpiresAt) {
+      return false;
+    }
+
+    return passwordRecoveryConfirmation.confirmationExpiresAt > new Date();
+  }
+  private createConfirmedPasswordRecovery(
+    userId: string,
+  ): PasswordRecoveryConfirmation {
+    return {
+      confirmationCode: null,
+      confirmationExpiresAt: null,
+      userId,
+      isConfirmed: true,
+    };
   }
 }

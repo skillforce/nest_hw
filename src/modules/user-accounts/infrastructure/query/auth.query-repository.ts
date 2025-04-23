@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { MeViewDto } from '../../api/view-dto/users-view-dto/users.view-dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../../domain/user.entity';
+import { User } from '../../domain/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AuthQueryRepository {
-  constructor(
-    @InjectModel(User.name) private readonly UserModel: UserModelType,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async getMe(userId: string): Promise<MeViewDto> {
-    const user = await this.UserModel.findOne({ _id: userId, deletedAt: null });
-    if (!user) {
+    const userResult = await this.dataSource.query<User[]>(
+      'SELECT * FROM "Users" WHERE "id" = $1 AND "deletedAt" IS NULL',
+      [userId],
+    );
+    if (!userResult.length) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -26,6 +28,6 @@ export class AuthQueryRepository {
       });
     }
 
-    return MeViewDto.mapToViewDto(user);
+    return MeViewDto.mapToViewDto(userResult[0]);
   }
 }

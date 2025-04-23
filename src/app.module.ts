@@ -15,6 +15,7 @@ import { CoreConfig } from './core/core.config';
 import { CoreModule } from './core/core.module';
 import { SWAGGER_PREFIX } from './setup/swagger.setup';
 import { SecurityDevicesModule } from './modules/security-devices/security-devices.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -30,6 +31,30 @@ import { SecurityDevicesModule } from './modules/security-devices/security-devic
 
         return {
           uri: uri,
+        };
+      },
+      inject: [CoreConfig],
+    }),
+    TypeOrmModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => {
+        console.log('PG_DB_URI', coreConfig.postgresHost);
+        console.log('PG_DB_PORT', coreConfig.postgresPort);
+        console.log('PG_DB_USER', coreConfig.postgresUser);
+        console.log('PG_DB_PASSWORD', coreConfig.postgresPassword);
+        console.log('PG_DB_NAME', coreConfig.postgresDatabase);
+
+        return {
+          type: 'postgres',
+          host: coreConfig.postgresHost,
+          port: coreConfig.postgresPort,
+          username: coreConfig.postgresUser,
+          password: coreConfig.postgresPassword,
+          database: coreConfig.postgresDatabase,
+          ssl: {
+            rejectUnauthorized: false,
+          },
+          autoLoadEntities: false,
+          synchronize: false,
         };
       },
       inject: [CoreConfig],

@@ -1,7 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { EmailConfirmation } from '../../domain/schemas/email-confirmation.schema';
+import { EmailConfirmationRepository } from '../../infrastructure/email-confirmation.repository';
 
 export class ConfirmRegistrationByCodeCommand {
   constructor(public code: string) {}
@@ -11,12 +12,19 @@ export class ConfirmRegistrationByCodeCommand {
 export class ConfirmRegistrationByCodeUseCase
   implements ICommandHandler<ConfirmRegistrationByCodeCommand, void>
 {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(
+    private emailConfirmationRepository: EmailConfirmationRepository,
+  ) {}
 
   async execute({ code }: ConfirmRegistrationByCodeCommand): Promise<void> {
-    const user =
-      await this.usersRepository.findByConfirmationCodeOrNotFoundFail(code);
-    const isConfirmationCodeLegit = user.isEmailConfirmationValid(code);
+    const userEmailConfirmation =
+      await this.emailConfirmationRepository.findByConfirmationCodeOrNotFoundFail(
+        code,
+      );
+    const isConfirmationCodeLegit = this.isEmailConfirmationValid(
+      userEmailConfirmation,
+      code,
+    );
 
     if (!isConfirmationCodeLegit) {
       throw new DomainException({
@@ -31,7 +39,37 @@ export class ConfirmRegistrationByCodeUseCase
       });
     }
 
-    user.confirmRegistration();
-    await this.usersRepository.save(user);
+    const confirmedEmailConfirmation = this.confirmRegistration(
+      userEmailConfirmation,
+    );
+    await this.emailConfirmationRepository.save(confirmedEmailConfirmation);
+  }
+
+  private isEmailConfirmationValid(
+    emailConfirmation: EmailConfirmation,
+    code: string,
+  ): boolean {
+    if (
+      !emailConfirmation.confirmationCode ||
+      !emailConfirmation.confirmationExpiresAt ||
+      emailConfirmation.isConfirmed
+    ) {
+      return false;
+    }
+    return (
+      emailConfirmation.confirmationCode === code &&
+      emailConfirmation.confirmationExpiresAt > new Date()
+    );
+  }
+
+  private confirmRegistration(
+    emailConfirmation: EmailConfirmation,
+  ): EmailConfirmation {
+    return {
+      ...emailConfirmation,
+      confirmationExpiresAt: null,
+      confirmationCode: null,
+      isConfirmed: true,
+    };
   }
 }

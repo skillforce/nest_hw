@@ -31,6 +31,27 @@ export class CoreConfig {
   })
   env: Environments;
 
+  @IsNotEmpty({
+    message: 'Set host to connect to postgres DB',
+  })
+  postgresHost: string;
+  @IsNotEmpty({
+    message: 'Set port to connect to postgres DB',
+  })
+  postgresPort: number;
+  @IsNotEmpty({
+    message: 'Set correct user to connect to postgres DB',
+  })
+  postgresUser: string;
+  @IsNotEmpty({
+    message: 'Set correct password to connect to postgres DB',
+  })
+  postgresPassword: string;
+  @IsNotEmpty({
+    message: 'Set correct database name to connect to postgres DB',
+  })
+  postgresDatabase: string;
+
   @IsBoolean({
     message:
       'Set Env variable IS_SWAGGER_ENABLED to enable/disable Swagger, example: true, false',
@@ -53,6 +74,13 @@ export class CoreConfig {
     this.port = Number(this.configService.get('PORT'));
     this.mongoURI = this.configService.get('MONGO_URI');
     this.env = this.configService.get('NODE_ENV');
+
+    this.postgresHost = this.configService.get('POSTGRES_HOST');
+    this.postgresPort = this.configService.get('POSTGRES_PORT');
+    this.postgresUser = this.configService.get('POSTGRES_USER');
+    this.postgresPassword = this.configService.get('POSTGRES_PASSWORD');
+    this.postgresDatabase = this.configService.get('POSTGRES_DATABASE');
+
     this.isSwaggerEnabled = configValidationUtility.convertToBoolean(
       this.configService.get('IS_SWAGGER_ENABLED'),
     ) as boolean;

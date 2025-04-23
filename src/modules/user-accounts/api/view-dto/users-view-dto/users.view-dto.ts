@@ -1,4 +1,4 @@
-import { UserDocument } from '../../../domain/user.entity';
+import { User } from '../../../domain/user.entity';
 import { OmitType } from '@nestjs/swagger';
 
 export class UserViewDto {
@@ -7,10 +7,10 @@ export class UserViewDto {
   email: string;
   createdAt: Date;
 
-  static mapToViewDto(user: UserDocument): UserViewDto {
+  static mapToViewDto(user: User): UserViewDto {
     const dto = new UserViewDto();
 
-    dto.id = user._id.toString();
+    dto.id = user.id;
     dto.login = user.login;
     dto.email = user.email;
     dto.createdAt = user.createdAt ?? new Date();
@@ -24,10 +24,10 @@ export class MeViewDto extends OmitType(UserViewDto, [
 ] as const) {
   userId: string;
 
-  static mapToViewDto(user: UserDocument): MeViewDto {
+  static mapToViewDto(user: User): MeViewDto {
     const dto = new MeViewDto();
 
-    dto.userId = user._id.toString();
+    dto.userId = user.id;
     dto.login = user.login;
     dto.email = user.email;
     return dto;

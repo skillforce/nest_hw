@@ -39,6 +39,8 @@ import { GenerateNewTokensUsecase } from './application/usecases/generate-new-to
 import { LogoutUserUsecase } from './application/usecases/logout-user.usecase';
 import { JwtRefreshStrategy } from '../security-devices/guards/refreshToken/refreshJwt.strategy';
 import { SecurityDevicesModule } from '../security-devices/security-devices.module';
+import { EmailConfirmationRepository } from './infrastructure/email-confirmation.repository';
+import { PasswordRecoveryConfirmationRepository } from './infrastructure/password-recovery-confirmation.repository';
 
 @Module({
   imports: [
@@ -76,6 +78,8 @@ import { SecurityDevicesModule } from '../security-devices/security-devices.modu
   controllers: [UsersController, AuthController],
   providers: [
     UsersQueryRepository,
+    EmailConfirmationRepository,
+    PasswordRecoveryConfirmationRepository,
     AuthQueryRepository,
     UsersRepository,
     BcryptService,
