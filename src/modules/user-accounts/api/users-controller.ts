@@ -24,7 +24,7 @@ import { CreateUserCommand } from '../application/usecases/create-user.usecase';
 import { IdStringParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
-@Controller('users')
+@Controller('sa/users')
 @UseGuards(BasicAuthGuard)
 export class UsersController {
   constructor(
