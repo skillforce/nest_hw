@@ -42,6 +42,7 @@ export class ConfirmRegistrationByCodeUseCase
     const confirmedEmailConfirmation = this.confirmRegistration(
       userEmailConfirmation,
     );
+
     await this.emailConfirmationRepository.save(confirmedEmailConfirmation);
   }
 

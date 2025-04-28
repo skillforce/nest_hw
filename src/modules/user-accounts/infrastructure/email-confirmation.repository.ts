@@ -34,42 +34,44 @@ export class EmailConfirmationRepository {
     return result[0];
   }
 
+  async findByUserIdOrNotFoundFail(userId: string): Promise<EmailConfirmation> {
+    const query = 'SELECT * FROM "EmailConfirmations" WHERE "userId" = $1';
+    const result = await this.dataSource.query<EmailConfirmation[]>(query, [
+      userId,
+    ]);
+    if (!result[0]) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        extensions: [
+          {
+            field: 'userId',
+            message: 'user id is not valid',
+          },
+        ],
+        message: 'user id is not valid',
+      });
+    }
+
+    return result[0];
+  }
+
   async save(emailConfirmation: EmailConfirmation): Promise<string> {
-    let query: string;
-    let values: any[];
-
-    const hasId = !!emailConfirmation.id;
-
-    if (hasId) {
-      query = `
-      INSERT INTO "EmailConfirmations" ("id", "confirmationCode", "confirmationExpiresAt", "isConfirmed", "userId")
-      VALUES ($1, $2, $3, $4, $5)
+    const query = `
+      INSERT INTO "EmailConfirmations" ( "confirmationCode", "confirmationExpiresAt", "isConfirmed", "userId")
+      VALUES ($1, $2, $3, $4)
       ON CONFLICT ("userId") DO UPDATE SET
         "confirmationCode" = EXCLUDED."confirmationCode",
         "confirmationExpiresAt" = EXCLUDED."confirmationExpiresAt",
         "isConfirmed" = EXCLUDED."isConfirmed"
         RETURNING "id";
     `;
-      values = [
-        emailConfirmation.id,
-        emailConfirmation.confirmationCode,
-        emailConfirmation.confirmationExpiresAt,
-        emailConfirmation.isConfirmed,
-        emailConfirmation.userId,
-      ];
-    } else {
-      query = `
-          INSERT INTO "EmailConfirmations" ("confirmationCode", "confirmationExpiresAt", "isConfirmed", "userId")
-          VALUES ($1, $2, $3, $4)
-           RETURNING "id";
-    `;
-      values = [
-        emailConfirmation.confirmationCode,
-        emailConfirmation.confirmationExpiresAt,
-        emailConfirmation.isConfirmed,
-        emailConfirmation.userId,
-      ];
-    }
+
+    const values = [
+      emailConfirmation.confirmationCode,
+      emailConfirmation.confirmationExpiresAt,
+      emailConfirmation.isConfirmed,
+      emailConfirmation.userId,
+    ];
 
     const result = await this.dataSource.query(query, values);
 

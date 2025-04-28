@@ -45,14 +45,20 @@ export class UsersQueryRepository {
     const values: any[] = [];
     let whereClause = `"deletedAt" IS NULL`;
 
-    if (query.searchLoginTerm) {
-      values.push(`%${query.searchLoginTerm}%`);
-      whereClause += ` AND "login" ILIKE $${values.length}`;
-    }
+    if (query.searchLoginTerm || query.searchEmailTerm) {
+      const searchConditions: string[] = [];
 
-    if (query.searchEmailTerm) {
-      values.push(`%${query.searchEmailTerm}%`);
-      whereClause += ` AND "email" ILIKE $${values.length}`;
+      if (query.searchLoginTerm) {
+        values.push(`%${query.searchLoginTerm}%`);
+        searchConditions.push(`"login" ILIKE $${values.length}`);
+      }
+
+      if (query.searchEmailTerm) {
+        values.push(`%${query.searchEmailTerm}%`);
+        searchConditions.push(`"email" ILIKE $${values.length}`);
+      }
+
+      whereClause += ` AND (${searchConditions.join(' OR ')})`;
     }
 
     // Count query for pagination

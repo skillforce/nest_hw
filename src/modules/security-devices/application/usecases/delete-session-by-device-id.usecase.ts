@@ -35,7 +35,7 @@ export class DeleteSessionByDeviceIdUseCase
     }
 
     const deletedSession = this.makeDeleted(sessionToDelete);
-
+    console.log(deletedSession);
     await this.authMetaRepository.save(deletedSession);
   }
 

@@ -42,48 +42,27 @@ export class AuthMetaRepository {
   }
 
   async save(session: Omit<AuthMeta, 'id'> & { id?: string }): Promise<string> {
-    let query: string;
-    let values: any[];
-
-    const hasId = !!session.id;
-
-    if (hasId) {
-      query = `
-      INSERT INTO "UserSessions" 
-        ("id", "iat", "exp", "deletedAt")
-      VALUES 
-        ($1, $2, $3, $4)
-      ON CONFLICT ("id") DO UPDATE SET
+    const query = `
+      INSERT INTO "UserSessions"
+      ("iat", "userId", "deviceId", "exp", "deviceName", "ipAddress", "deletedAt", "createdAt")
+      VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8)
+      ON CONFLICT ("deviceId") DO UPDATE SET
         "iat" = EXCLUDED."iat",
         "exp" = EXCLUDED."exp",
         "deletedAt" = EXCLUDED."deletedAt"
       RETURNING "id";
     `;
-      values = [
-        session.id,
-        session.iat,
-        session.exp,
-        session.deletedAt ?? null,
-      ];
-    } else {
-      query = `
-      INSERT INTO "UserSessions" 
-        ("iat", "userId", "deviceId", "exp", "deviceName", "ipAddress", "deletedAt", "createdAt")
-      VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING "id";
-    `;
-      values = [
-        session.iat,
-        session.userId,
-        session.deviceId,
-        session.exp,
-        session.deviceName,
-        session.ipAddress,
-        session.deletedAt ?? null,
-        session.createdAt ?? new Date(),
-      ];
-    }
+    const values = [
+      session.iat,
+      session.userId,
+      session.deviceId,
+      session.exp,
+      session.deviceName,
+      session.ipAddress,
+      session.deletedAt ?? null,
+      session.createdAt ?? new Date(),
+    ];
 
     const result = await this.dataSource.query<{ id: string }[]>(query, values);
 
