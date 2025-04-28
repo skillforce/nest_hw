@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './api/users-controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './domain/user.entity';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { BcryptService } from './application/bcrypt-service';
 import { UsersRepository } from './infrastructure/users.repository';
@@ -30,10 +28,6 @@ import { InitializePasswordRecoveryUseCase } from './application/usecases/initia
 import { ChangePasswordByRecoveryCodeUseCase } from './application/usecases/change-password-by-recovery-code.usecase';
 import { DeleteUserByIdUseCase } from './application/usecases/delete-user-by-id.usecase';
 import { CoreConfig, Environments } from '../../core/core.config';
-import {
-  AuthMeta,
-  AuthMetaSchema,
-} from '../security-devices/domain/auth-meta.entity';
 import { UpdateRefreshTokenUsecase } from './application/usecases/update-refresh-token.usecase';
 import { GenerateNewTokensUsecase } from './application/usecases/generate-new-tokens.usecase';
 import { LogoutUserUsecase } from './application/usecases/logout-user.usecase';
@@ -45,16 +39,6 @@ import { PasswordRecoveryConfirmationRepository } from './infrastructure/passwor
 @Module({
   imports: [
     JwtModule,
-    MongooseModule.forFeature([
-      {
-        name: User.name,
-        schema: UserSchema,
-      },
-      {
-        name: AuthMeta.name,
-        schema: AuthMetaSchema,
-      },
-    ]),
     SecurityDevicesModule,
     NotificationsModule,
     ThrottlerModule.forRootAsync({

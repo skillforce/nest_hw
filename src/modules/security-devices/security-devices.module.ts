@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthMeta, AuthMetaSchema } from './domain/auth-meta.entity';
 import { AuthMetaRepository } from './infrastructure/auth-meta.repository';
 import { ExternalAuthMetaRepository } from './infrastructure/external/external.auth-meta.repository';
 import { AuthMetaQueryRepository } from './infrastructure/query/auth-meta.query-repository';
@@ -9,14 +7,7 @@ import { DeleteSessionByDeviceIdUseCase } from './application/usecases/delete-se
 import { DeleteAllUserDevicesExceptCurrentOneUseCase } from './application/usecases/delete-all-devices-except-current-one.usecase';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      {
-        name: AuthMeta.name,
-        schema: AuthMetaSchema,
-      },
-    ]),
-  ],
+  imports: [],
   controllers: [SecurityController],
   providers: [
     AuthMetaRepository,

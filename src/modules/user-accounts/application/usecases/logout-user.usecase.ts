@@ -1,6 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserRefreshContextDto } from '../../guards/dto/user-context.dto';
 import { ExternalAuthMetaRepository } from '../../../security-devices/infrastructure/external/external.auth-meta.repository';
+import { AuthMeta } from '../../../security-devices/domain/auth-meta.entity';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 export class LogoutUserCommand {
   constructor(public refreshTokenPayload: UserRefreshContextDto) {}
@@ -22,11 +25,17 @@ export class LogoutUserUsecase
         this.transformTimestampsToIsoString(iat),
       );
 
-    session.makeDeleted();
+    const deletedSession = this.makeDeleted(session);
 
-    await this.authMetaRepository.save(session);
+    await this.authMetaRepository.save(deletedSession);
   }
-  transformTimestampsToIsoString(timestamp: number) {
+  private transformTimestampsToIsoString(timestamp: number) {
     return new Date(timestamp * 1000).toISOString();
+  }
+  private makeDeleted(session: AuthMeta) {
+    return {
+      ...session,
+      deletedAt: new Date(),
+    };
   }
 }

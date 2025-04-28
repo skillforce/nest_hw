@@ -9,7 +9,7 @@ import {
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
 } from '../../constants/auth-tokens.inject-contants';
 import { JwtService } from '@nestjs/jwt';
-import { AuthMetaDocument } from '../../../security-devices/domain/auth-meta.entity';
+import { AuthMeta } from '../../../security-devices/domain/auth-meta.entity';
 import { ExternalAuthMetaRepository } from '../../../security-devices/infrastructure/external/external.auth-meta.repository';
 
 export class UpdateRefreshTokenCommand {
@@ -85,14 +85,14 @@ export class UpdateRefreshTokenUsecase
     return { accessToken, refreshToken };
   }
 
-  async updateSession(
-    session: AuthMetaDocument,
-    newIat: string,
-    newExp: string,
-  ) {
-    session.updateInstance({ iat: newIat, exp: newExp });
+  async updateSession(session: AuthMeta, newIat: string, newExp: string) {
+    const updatedSession: AuthMeta = {
+      ...session,
+      iat: newIat,
+      exp: newExp,
+    };
 
-    await this.authMetaRepository.save(session);
+    await this.authMetaRepository.save(updatedSession);
   }
   transformTimestampsToIsoString(timestamp: number) {
     return new Date(timestamp * 1000).toISOString();

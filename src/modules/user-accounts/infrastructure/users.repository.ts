@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../domain/user.entity';
+import { User } from '../domain/user.entity';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -8,10 +7,7 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UsersRepository {
-  constructor(
-    @InjectModel(User.name) private readonly UserModel: UserModelType,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findById(id: string): Promise<User | null> {
     const query =

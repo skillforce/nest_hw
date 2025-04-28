@@ -1,23 +1,5 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserContextDto } from '../../guards/dto/user-context.dto';
-import { Inject } from '@nestjs/common';
-import {
-  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from '../../constants/auth-tokens.inject-contants';
-import { JwtService } from '@nestjs/jwt';
-import { AuthMetaDto } from '../../dto/auth-meta.dto';
-import { randomUUID } from 'node:crypto';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  AuthMeta,
-  AuthMetaModelType,
-} from '../../../security-devices/domain/auth-meta.entity';
-import { AuthMetaRepository } from '../../../security-devices/infrastructure/auth-meta.repository';
-import {
-  GenerateNewTokensCommand,
-  GenerateNewTokensUsecase,
-} from './generate-new-tokens.usecase';
+import { GenerateNewTokensCommand } from './generate-new-tokens.usecase';
 
 export class LoginUserCommand {
   constructor(

@@ -8,12 +8,9 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { AuthMetaDto } from '../../dto/auth-meta.dto';
 import { randomUUID } from 'node:crypto';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  AuthMeta,
-  AuthMetaModelType,
-} from '../../../security-devices/domain/auth-meta.entity';
+import { AuthMeta } from '../../../security-devices/domain/auth-meta.entity';
 import { ExternalAuthMetaRepository } from '../../../security-devices/infrastructure/external/external.auth-meta.repository';
+import { CreateAuthMetaDomainDto } from '../../../security-devices/domain/dto/create-auth-meta.domain.dto';
 
 export class GenerateNewTokensCommand {
   constructor(
@@ -37,9 +34,6 @@ export class GenerateNewTokensUsecase
 
     @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
     private refreshTokenContext: JwtService,
-
-    @InjectModel(AuthMeta.name)
-    private readonly AuthMetaModel: AuthMetaModelType,
 
     private authMetaRepository: ExternalAuthMetaRepository,
   ) {}
@@ -91,18 +85,31 @@ export class GenerateNewTokensUsecase
     const expIso = this.transformTimestampsToIsoString(decodedRefreshToken.exp);
     const authMetaSession: AuthMetaDto = {
       iat: iatIso,
-      user_id: decodedRefreshToken.id,
-      device_id: decodedRefreshToken.deviceId,
+      userId: decodedRefreshToken.id,
+      deviceId: decodedRefreshToken.deviceId,
       exp: expIso,
-      device_name: userAgent,
-      ip_address: ipAddress,
+      deviceName: userAgent,
+      ipAddress: ipAddress,
     };
 
-    const newSession = this.AuthMetaModel.createInstance(authMetaSession);
-
+    const newSession = this.createInstance(authMetaSession);
     await this.authMetaRepository.save(newSession);
   }
   transformTimestampsToIsoString(timestamp: number) {
     return new Date(timestamp * 1000).toISOString();
+  }
+
+  private createInstance(authMetaDto: CreateAuthMetaDomainDto): AuthMeta {
+    const authMetaSession = new AuthMeta();
+
+    authMetaSession.iat = authMetaDto.iat;
+    authMetaSession.userId = authMetaDto.userId;
+    authMetaSession.deviceId = authMetaDto.deviceId;
+    authMetaSession.exp = authMetaDto.exp;
+    authMetaSession.deviceName = authMetaDto.deviceName;
+    authMetaSession.ipAddress = authMetaDto.ipAddress;
+    authMetaSession.deletedAt = null;
+
+    return authMetaSession;
   }
 }

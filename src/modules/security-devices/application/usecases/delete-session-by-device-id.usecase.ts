@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AuthMetaRepository } from '../../infrastructure/auth-meta.repository';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { AuthMeta } from '../../domain/auth-meta.entity';
 
 export class DeleteSessionByDeviceIdCommand {
   constructor(
@@ -24,7 +25,7 @@ export class DeleteSessionByDeviceIdUseCase
       await this.authMetaRepository.findManyByDeviceIdOrNotFoundFail(deviceId);
 
     const sessionToDelete = sessions.find(
-      (session) => session.user_id === userId,
+      (session) => session.userId === userId,
     );
     if (!sessionToDelete) {
       throw new DomainException({
@@ -33,8 +34,15 @@ export class DeleteSessionByDeviceIdUseCase
       });
     }
 
-    sessionToDelete.makeDeleted();
+    const deletedSession = this.makeDeleted(sessionToDelete);
 
-    await this.authMetaRepository.save(sessionToDelete);
+    await this.authMetaRepository.save(deletedSession);
+  }
+
+  private makeDeleted(session: AuthMeta) {
+    return {
+      ...session,
+      deletedAt: new Date(),
+    };
   }
 }

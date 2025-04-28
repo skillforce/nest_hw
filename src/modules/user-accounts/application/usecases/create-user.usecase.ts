@@ -1,7 +1,7 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserDto } from '../../dto/user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../../domain/user.entity';
+import { User } from '../../domain/user.entity';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { BcryptService } from '../bcrypt-service';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
@@ -23,8 +23,6 @@ export class CreateUserUseCase
   implements ICommandHandler<CreateUserCommand, string>
 {
   constructor(
-    @InjectModel(User.name)
-    private UserModel: UserModelType,
     private usersRepository: UsersRepository,
     private emailConfirmationRepository: EmailConfirmationRepository,
     private bcryptService: BcryptService,

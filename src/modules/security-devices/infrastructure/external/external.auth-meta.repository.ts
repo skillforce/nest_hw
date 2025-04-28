@@ -1,31 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  AuthMeta,
-  AuthMetaDocument,
-  AuthMetaModelType,
-} from '../../domain/auth-meta.entity';
+import { AuthMeta } from '../../domain/auth-meta.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class ExternalAuthMetaRepository {
-  constructor(
-    @InjectModel(AuthMeta.name)
-    private readonly AuthMetaModel: AuthMetaModelType,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
   async findByDeviceIdAndUserIdAndIatOrNotFoundFail(
     device_id: string,
     user_id: string,
     iat: string,
   ) {
-    const session = await this.AuthMetaModel.findOne({
-      device_id,
+    const query =
+      'SELECT * FROM "UserSessions" WHERE "userId"= $1 AND "deviceId" =$2 AND iat=$3 AND "deletedAt" IS NULL';
+    const session = await this.dataSource.query<AuthMeta[]>(query, [
       user_id,
+      device_id,
       iat,
-      deletedAt: null,
-    });
-    if (!session) {
+    ]);
+    if (!session.length) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
         extensions: [
@@ -38,10 +33,60 @@ export class ExternalAuthMetaRepository {
       });
     }
 
-    return session;
+    return session[0];
   }
 
-  async save(session: AuthMetaDocument) {
-    return session.save();
+  async save(session: Omit<AuthMeta, 'id'> & { id?: string }): Promise<string> {
+    let query: string;
+    let values: any[];
+
+    const hasId = !!session.id;
+
+    if (hasId) {
+      query = `
+      INSERT INTO "UserSessions" 
+        ("id","iat", "userId", "deviceId", "exp", "deviceName", "ipAddress", "deletedAt", "createdAt")
+      VALUES 
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT ("id") DO UPDATE SET
+        "iat" = EXCLUDED."iat",
+        "exp" = EXCLUDED."exp",
+        "deletedAt" = EXCLUDED."deletedAt"
+      RETURNING "id";
+    `;
+      values = [
+        session.id,
+        session.iat,
+        session.userId,
+        session.deviceId,
+        session.exp,
+        session.deviceName,
+        session.ipAddress,
+        session.deletedAt ?? null,
+        session.createdAt ?? null,
+      ];
+    } else {
+      query = `
+      INSERT INTO "UserSessions" 
+        ("iat", "userId", "deviceId", "exp", "deviceName", "ipAddress", "deletedAt", "createdAt")
+      VALUES 
+        ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING "id";
+    `;
+      values = [
+        session.iat,
+        session.userId,
+        session.deviceId,
+        session.exp,
+        session.deviceName,
+        session.ipAddress,
+        session.deletedAt ?? null,
+        session.createdAt ?? new Date(),
+      ];
+    }
+
+    const result = await this.dataSource.query<{ id: string }[]>(query, values);
+
+    return result[0].id;
   }
 }

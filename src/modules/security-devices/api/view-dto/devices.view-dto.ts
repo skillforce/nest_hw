@@ -1,4 +1,4 @@
-import { AuthMetaDocument } from '../../domain/auth-meta.entity';
+import { AuthMeta } from '../../domain/auth-meta.entity';
 
 export class DevicesViewDto {
   ip: string;
@@ -6,13 +6,13 @@ export class DevicesViewDto {
   lastActiveDate: string;
   deviceId: string;
 
-  static mapToViewDto(user: AuthMetaDocument): DevicesViewDto {
+  static mapToViewDto(user: AuthMeta): DevicesViewDto {
     const dto = new DevicesViewDto();
 
-    dto.ip = user.ip_address;
-    dto.title = user.device_name;
+    dto.ip = user.ipAddress;
+    dto.title = user.deviceName;
     dto.lastActiveDate = user.iat;
-    dto.deviceId = user.device_id;
+    dto.deviceId = user.deviceId;
     return dto;
   }
 }
