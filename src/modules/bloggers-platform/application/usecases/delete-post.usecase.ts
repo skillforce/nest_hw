@@ -3,7 +3,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 import { Post } from '../../domain/post.entity';
 
 export class DeletePostCommand {
-  constructor(public id: string) {}
+  constructor(public id: number) {}
 }
 
 @CommandHandler(DeletePostCommand)

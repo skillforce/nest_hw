@@ -7,7 +7,7 @@ import { Post } from '../../domain/post.entity';
 
 export class UpdatePostCommand {
   constructor(
-    public postId: string,
+    public postId: number,
     public updatePostDto: Omit<UpdatePostDto, 'blogName'>,
   ) {}
 }
@@ -27,12 +27,12 @@ export class UpdatePostUseCase
     );
     const post = await this.postRepository.findOrNotFoundFail(postId);
 
-    const newPost = this.updatePost(post, {
+    const updatedPost = this.updatePost(post, {
       ...updatePostDto,
       blogName: blog.name,
     });
 
-    await this.postRepository.save(newPost);
+    await this.postRepository.save(updatedPost);
   }
 
   private updatePost(prevPost: Post, dto: UpdatePostDomainDto): Post {

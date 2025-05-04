@@ -4,7 +4,7 @@ import {
   shortDescriptionConstraints,
   titleConstraints,
 } from '../../../domain/post.entity';
-import { IsMongoId } from 'class-validator';
+import { IsMongoId, IsNumber } from 'class-validator';
 
 export class CreatePostInputDto {
   @IsFieldExistAndStringWithTrim(
@@ -27,8 +27,8 @@ export class CreatePostInputDto {
   )
   content: string;
 
-  @IsFieldExistAndStringWithTrim('blogId')
-  blogId: string;
+  @IsNumber()
+  blogId: number;
 }
 
 export class CreatePostByBlogIdInputDto {
@@ -72,7 +72,6 @@ export class UpdatePostInputDto {
   )
   content: string;
 
-  @IsFieldExistAndStringWithTrim('blogId')
-  @IsMongoId()
-  blogId: string;
+  @IsNumber()
+  blogId: number;
 }

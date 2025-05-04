@@ -10,13 +10,16 @@ import { User } from '../../user-accounts/domain/user.entity';
 export class PostsRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findById(id: string): Promise<Post | null> {
+  async findById(id: number): Promise<Post | null> {
+    if (!Number.isInteger(Number(id))) {
+      return null;
+    }
     const query =
       'SELECT * FROM "Posts" WHERE "id" = $1 AND "deletedAt" IS NULL';
     const result = await this.dataSource.query<Post[]>(query, [id]);
     return result[0] ?? null;
   }
-  async findOrNotFoundFail(id: string): Promise<Post> {
+  async findOrNotFoundFail(id: number): Promise<Post> {
     const post = await this.findById(id);
 
     if (!post) {

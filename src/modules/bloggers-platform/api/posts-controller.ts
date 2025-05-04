@@ -41,7 +41,10 @@ import { LikesQueryRepository } from '../infrastructure/query/likes.query-reposi
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
-import { IdStringParamDto } from '../../../core/decorators/validation/objectIdDto';
+import {
+  IdNumberParamDto,
+  IdStringParamDto,
+} from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('posts')
@@ -175,7 +178,7 @@ export class PostsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updatePostById(
-    @Param() { id }: IdStringParamDto,
+    @Param() { id }: IdNumberParamDto,
     @Body() body: UpdatePostInputDto,
   ): Promise<void> {
     return await this.commandBus.execute<UpdatePostCommand, void>(
@@ -188,7 +191,7 @@ export class PostsController {
   @Put(':id/like-status')
   async makeLike(
     @Body() body: LikeInputDto,
-    @Param() { id }: IdStringParamDto,
+    @Param() { id }: IdNumberParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     await this.commandBus.execute<MakeLikeOperationCommand, void>(
@@ -205,7 +208,7 @@ export class PostsController {
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlogById(@Param() { id }: IdStringParamDto) {
+  async deleteBlogById(@Param() { id }: IdNumberParamDto) {
     return await this.commandBus.execute<DeletePostCommand, void>(
       new DeletePostCommand(id),
     );

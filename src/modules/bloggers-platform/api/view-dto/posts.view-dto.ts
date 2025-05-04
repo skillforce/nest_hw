@@ -22,7 +22,7 @@ export class PostsViewDto {
     dto.title = post.title;
     dto.shortDescription = post.shortDescription;
     dto.content = post.content;
-    dto.blogId = post.blogId;
+    dto.blogId = post.blogId.toString();
     dto.blogName = post.blogName;
     dto.createdAt = post.createdAt ?? new Date();
 

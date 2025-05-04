@@ -12,3 +12,6 @@ export class IdUuidParamDto {
 export class IdStringParamDto {
   id: string;
 }
+export class IdNumberParamDto {
+  id: number;
+}

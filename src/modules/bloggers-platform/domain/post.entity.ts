@@ -24,7 +24,7 @@ export class Post {
   title: string;
   shortDescription: string;
   content: string;
-  blogId: string;
+  blogId: number;
   deletedAt: Date | null;
   createdAt?: Date;
   updatedAt?: Date;

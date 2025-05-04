@@ -16,7 +16,7 @@ export class MakeLikeOperationCommand {
   constructor(
     public likeDto: MakeLikeDto,
     public userId: string,
-    public parentId: string,
+    public parentId: number,
     public parentInstance: LikeParentInstanceEnum,
   ) {}
 }
@@ -43,16 +43,16 @@ export class MakeLikeOperationUseCase
     if (parentInstance === LikeParentInstanceEnum.POST) {
       await this.postsRepository.findOrNotFoundFail(parentId);
     } else if (parentInstance === LikeParentInstanceEnum.COMMENT) {
-      await this.commentsRepository.findOrNotFoundFail(parentId);
+      await this.commentsRepository.findOrNotFoundFail(parentId.toString());
     }
 
     const like = await this.likesRepository.findByUserIdAndParentId(
       userId,
-      parentId,
+      parentId.toString(),
     );
 
     if (!like) {
-      await this.createLike(likeDto, userId, parentId);
+      await this.createLike(likeDto, userId, parentId.toString());
     } else {
       await this.updateLike(likeDto, like);
     }

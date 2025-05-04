@@ -3,7 +3,7 @@ import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { Blog } from '../../domain/blog.entity';
 
 export class DeleteBlogCommand {
-  constructor(public id: string) {}
+  constructor(public id: number) {}
 }
 
 @CommandHandler(DeleteBlogCommand)

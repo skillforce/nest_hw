@@ -74,7 +74,7 @@ export class CommentsController {
   @Put(':commentId/like-status')
   async makeLike(
     @Body() body: LikeInputDto,
-    @Param('commentId') commentId: string,
+    @Param('commentId') commentId: number,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     await this.commandBus.execute<MakeLikeOperationCommand, void>(

@@ -6,7 +6,7 @@ import { UpdateBlogDomainDto } from '../../domain/dto/blog-domain.dto';
 
 export class UpdateBlogCommand {
   constructor(
-    public id: string,
+    public id: number,
     public updateBlogDto: UpdateBlogDto,
   ) {}
 }

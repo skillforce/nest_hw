@@ -38,7 +38,7 @@ import { ExtractUserFromRequest } from '../../../user-accounts/guards/decorators
 import { UserContextDto } from '../../../user-accounts/guards/dto/user-context.dto';
 import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
-import { IdStringParamDto } from '../../../../core/decorators/validation/objectIdDto';
+import { IdNumberParamDto } from '../../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('sa/blogs')
@@ -103,7 +103,7 @@ export class BlogsController {
   @Post(':blogId/posts')
   @UseGuards(BasicAuthGuard)
   async createPostByBlogId(
-    @Param('blogId') blogId: string,
+    @Param('blogId') blogId: number,
     @Body() body: CreatePostByBlogIdInputDto,
   ): Promise<PostsViewDto> {
     const postDto: CreatePostInputDto = {
@@ -142,7 +142,7 @@ export class BlogsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updateBlogById(
-    @Param('blogId') blogId: string,
+    @Param('blogId') blogId: number,
     @Body() body: UpdateBlogInputDto,
   ) {
     await this.commandBus.execute<UpdateBlogCommand, string>(
@@ -154,7 +154,7 @@ export class BlogsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async deleteBlogById(@Param() { id }: IdStringParamDto) {
+  async deleteBlogById(@Param() { id }: IdNumberParamDto) {
     await this.commandBus.execute<DeleteBlogCommand, void>(
       new DeleteBlogCommand(id),
     );

@@ -9,16 +9,17 @@ import { DataSource } from 'typeorm';
 export class BlogsRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findById(id: string): Promise<Blog | null> {
+  async findById(id: number): Promise<Blog | null> {
+    if (!Number.isInteger(Number(id))) {
+      return null;
+    }
     const query =
       'SELECT * FROM "Blogs" WHERE "id" = $1 AND "deletedAt" IS NULL';
     const result = await this.dataSource.query<Blog[]>(query, [id]);
-
     return result[0] ?? null;
   }
-  async findOrNotFoundFail(id: string): Promise<Blog> {
+  async findOrNotFoundFail(id: number): Promise<Blog> {
     const blog = await this.findById(id);
-
     if (!blog) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
