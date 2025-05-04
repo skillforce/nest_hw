@@ -87,8 +87,6 @@ export class PostsQueryRepository {
             LIMIT $${values.length - 1}
     OFFSET $${values.length}`;
 
-    console.log(postsQuery);
-
     const posts = await this.dataSource.query<
       Array<Post & { blogName: string }>
     >(postsQuery, values);
