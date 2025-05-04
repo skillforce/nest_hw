@@ -1,19 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostDocument, PostModelType } from '../domain/post.entity';
+import { Post } from '../domain/post.entity';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { User } from '../../user-accounts/domain/user.entity';
 
 @Injectable()
 export class PostsRepository {
-  constructor(
-    @InjectModel(Post.name) private readonly PostModel: PostModelType,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findById(id: string) {
-    return this.PostModel.findOne({ _id: id, deletedAt: null });
+  async findById(id: string): Promise<Post | null> {
+    const query =
+      'SELECT * FROM "Posts" WHERE "id" = $1 AND "deletedAt" IS NULL';
+    const result = await this.dataSource.query<Post[]>(query, [id]);
+    return result[0] ?? null;
   }
-  async findOrNotFoundFail(id: string): Promise<PostDocument> {
+  async findOrNotFoundFail(id: string): Promise<Post> {
     const post = await this.findById(id);
 
     if (!post) {
@@ -32,7 +35,49 @@ export class PostsRepository {
     return post;
   }
 
-  async save(post: PostDocument) {
-    return post.save();
+  async save(post: Omit<Post, 'id'> & { id?: number }): Promise<number> {
+    let query: string;
+    let values: any[];
+
+    const hasId = !!post.id;
+
+    if (hasId) {
+      query = `
+      INSERT INTO "Posts" ("id", "title", "shortDescription", "content", "blogId", "deletedAt")
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT ("id") DO UPDATE SET
+        "title" = EXCLUDED."title",
+        "shortDescription" = EXCLUDED."shortDescription",
+        "content" = EXCLUDED."content",
+        "blogId" = EXCLUDED."blogId",
+        "deletedAt" = EXCLUDED."deletedAt"
+        RETURNING "id";
+    `;
+      values = [
+        post.id,
+        post.title,
+        post.shortDescription,
+        post.content,
+        post.blogId,
+        post.deletedAt ?? null,
+      ];
+    } else {
+      query = `
+        INSERT INTO "Posts" ("title", "shortDescription", "content", "blogId", "deletedAt")
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING "id";
+    `;
+      values = [
+        post.title,
+        post.shortDescription,
+        post.content,
+        post.blogId,
+        post.deletedAt ?? null,
+      ];
+    }
+
+    const result = await this.dataSource.query<User[]>(query, values);
+
+    return +result[0].id;
   }
 }

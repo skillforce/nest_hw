@@ -1,5 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
+import { Post } from '../../domain/post.entity';
 
 export class DeletePostCommand {
   constructor(public id: string) {}
@@ -14,8 +15,15 @@ export class DeletePostUseCase
   async execute({ id }: DeletePostCommand): Promise<void> {
     const post = await this.postsRepository.findOrNotFoundFail(id);
 
-    post.makeDeleted();
+    const deletedPost = this.makeDeleted(post);
 
-    await this.postsRepository.save(post);
+    await this.postsRepository.save(deletedPost);
+  }
+
+  private makeDeleted(postToDelete: Post): Post {
+    return {
+      ...postToDelete,
+      deletedAt: new Date(),
+    };
   }
 }

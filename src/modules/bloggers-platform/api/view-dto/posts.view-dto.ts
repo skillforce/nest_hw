@@ -1,4 +1,4 @@
-import { PostDocument } from '../../domain/post.entity';
+import { Post } from '../../domain/post.entity';
 import { ExtendedLikesInfoViewDto } from './like-view-dto/extended-like-info.view-dto';
 import { LikesInfoViewDto } from './like-view-dto/like-info.view-dto';
 import { NewestLikeViewDto } from './like-view-dto/newest-like.view-dto';
@@ -14,11 +14,11 @@ export class PostsViewDto {
   extendedLikesInfo: ExtendedLikesInfoViewDto;
 
   static mapToViewDto(
-    post: PostDocument,
+    post: Post & { blogName: string },
   ): Omit<PostsViewDto, 'extendedLikesInfo'> {
     const dto = new PostsViewDto();
 
-    dto.id = post._id.toString();
+    dto.id = post.id.toString();
     dto.title = post.title;
     dto.shortDescription = post.shortDescription;
     dto.content = post.content;

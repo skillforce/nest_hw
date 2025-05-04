@@ -28,7 +28,6 @@ export class CreatePostInputDto {
   content: string;
 
   @IsFieldExistAndStringWithTrim('blogId')
-  @IsMongoId()
   blogId: string;
 }
 

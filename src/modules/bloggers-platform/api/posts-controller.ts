@@ -41,7 +41,7 @@ import { LikesQueryRepository } from '../infrastructure/query/likes.query-reposi
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
-import { IdMongoParamDto } from '../../../core/decorators/validation/objectIdDto';
+import { IdStringParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('posts')
@@ -128,7 +128,7 @@ export class PostsController {
   @Post(':id/comments')
   async commentPost(
     @Body() body: CreateCommentInputDto,
-    @Param() { id }: IdMongoParamDto,
+    @Param() { id }: IdStringParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
     await this.postQueryRepository.getByIdOrNotFoundFail(id);
@@ -153,7 +153,7 @@ export class PostsController {
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   async getPostById(
-    @Param() { id }: IdMongoParamDto,
+    @Param() { id }: IdStringParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PostsViewDto> {
     const post = await this.postQueryRepository.getByIdOrNotFoundFail(id);
@@ -175,7 +175,7 @@ export class PostsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
   async updatePostById(
-    @Param() { id }: IdMongoParamDto,
+    @Param() { id }: IdStringParamDto,
     @Body() body: UpdatePostInputDto,
   ): Promise<void> {
     return await this.commandBus.execute<UpdatePostCommand, void>(
@@ -188,7 +188,7 @@ export class PostsController {
   @Put(':id/like-status')
   async makeLike(
     @Body() body: LikeInputDto,
-    @Param() { id }: IdMongoParamDto,
+    @Param() { id }: IdStringParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     await this.commandBus.execute<MakeLikeOperationCommand, void>(
@@ -205,7 +205,7 @@ export class PostsController {
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlogById(@Param() { id }: IdMongoParamDto) {
+  async deleteBlogById(@Param() { id }: IdStringParamDto) {
     return await this.commandBus.execute<DeletePostCommand, void>(
       new DeletePostCommand(id),
     );

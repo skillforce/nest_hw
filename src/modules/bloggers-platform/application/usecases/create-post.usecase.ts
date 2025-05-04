@@ -1,8 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostDto } from '../../dto/post.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../../domain/post.entity';
+import { Post } from '../../domain/post.entity';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
+import { CreatePostDomainDto } from '../../domain/dto/post-domain.dto';
+import { PostsRepository } from '../../infrastructure/posts.repository';
 
 export class CreatePostCommand {
   constructor(public createPostDto: Omit<PostDto, 'blogName'>) {}
@@ -13,8 +14,7 @@ export class CreatePostUseCase
   implements ICommandHandler<CreatePostCommand, string>
 {
   constructor(
-    @InjectModel(Post.name)
-    private PostModel: PostModelType,
+    private postRepository: PostsRepository,
     private blogsRepository: BlogsRepository,
   ) {}
 
@@ -22,13 +22,24 @@ export class CreatePostUseCase
     const blog = await this.blogsRepository.findOrNotFoundFail(
       createPostDto.blogId,
     );
-    const newPost = this.PostModel.createInstance({
+    const newPost = this.createInstance({
       ...createPostDto,
       blogName: blog.name,
     });
 
-    await newPost.save();
+    const newPostId = await this.postRepository.save(newPost);
 
-    return newPost._id.toString();
+    return newPostId.toString();
+  }
+
+  private createInstance(postDTO: CreatePostDomainDto): Post {
+    const post = new Post();
+
+    post.title = postDTO.title;
+    post.shortDescription = postDTO.shortDescription;
+    post.content = postDTO.content;
+    post.blogId = postDTO.blogId;
+
+    return post;
   }
 }

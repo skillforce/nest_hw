@@ -11,37 +11,37 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
-import { GetBlogsQueryParams } from './input-dto/blog-input-dto/get-blogs-query-params.input-dto';
-import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
-import { GetPostsQueryParams } from './input-dto/post-input-dto/get-posts-query-params.input-dto';
+import { BlogsQueryRepository } from '../../infrastructure/query/blogs.query-repository';
+import { GetBlogsQueryParams } from '../input-dto/blog-input-dto/get-blogs-query-params.input-dto';
+import { PostsQueryRepository } from '../../infrastructure/query/posts.query-repository';
+import { GetPostsQueryParams } from '../input-dto/post-input-dto/get-posts-query-params.input-dto';
 import {
   CreateBlogInputDto,
   UpdateBlogInputDto,
-} from './input-dto/blog-input-dto/blog.input-dto';
+} from '../input-dto/blog-input-dto/blog.input-dto';
 import { ApiParam } from '@nestjs/swagger';
 import {
   CreatePostByBlogIdInputDto,
   CreatePostInputDto,
-} from './input-dto/post-input-dto/post.input-dto';
-import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
-import { BlogsViewDto } from './view-dto/blogs.view-dto';
-import { PostsViewDto } from './view-dto/posts.view-dto';
+} from '../input-dto/post-input-dto/post.input-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
+import { BlogsViewDto } from '../view-dto/blogs.view-dto';
+import { PostsViewDto } from '../view-dto/posts.view-dto';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreatePostCommand } from '../application/usecases/create-post.usecase';
-import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
-import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
-import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
-import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
-import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
-import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
-import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
-import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
+import { CreatePostCommand } from '../../application/usecases/create-post.usecase';
+import { CreateBlogCommand } from '../../application/usecases/create-blog.usecase';
+import { UpdateBlogCommand } from '../../application/usecases/update-blog.usecase';
+import { DeleteBlogCommand } from '../../application/usecases/delete-blog.usecase';
+import { LikesQueryRepository } from '../../infrastructure/query/likes.query-repository';
+import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/bearer/jwt-optional-auth.guard';
+import { ExtractUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
+import { UserContextDto } from '../../../user-accounts/guards/dto/user-context.dto';
+import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
-import { IdMongoParamDto } from '../../../core/decorators/validation/objectIdDto';
+import { IdStringParamDto } from '../../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
-@Controller('blogs')
+@Controller('sa/blogs')
 export class BlogsController {
   constructor(
     private readonly blogsQueryRepository: BlogsQueryRepository,
@@ -51,6 +51,7 @@ export class BlogsController {
   ) {}
 
   @Get()
+  @UseGuards(BasicAuthGuard)
   async getAllBlogs(
     @Query() query: GetBlogsQueryParams,
   ): Promise<PaginatedViewDto<BlogsViewDto[]>> {
@@ -70,6 +71,7 @@ export class BlogsController {
 
   @Get(':blogId/posts')
   @UseGuards(JwtOptionalAuthGuard)
+  @UseGuards(BasicAuthGuard)
   async getPostsByBlogId(
     @Param('blogId') blogId: string,
     @Query() query: GetPostsQueryParams,
@@ -130,6 +132,7 @@ export class BlogsController {
   }
 
   @ApiParam({ name: 'id' })
+  @UseGuards(BasicAuthGuard)
   @Get(':blogId')
   async getBlogById(@Param('blogId') blogId: string): Promise<BlogsViewDto> {
     return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
@@ -151,7 +154,7 @@ export class BlogsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async deleteBlogById(@Param() { id }: IdMongoParamDto) {
+  async deleteBlogById(@Param() { id }: IdStringParamDto) {
     await this.commandBus.execute<DeleteBlogCommand, void>(
       new DeleteBlogCommand(id),
     );

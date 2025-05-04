@@ -2,6 +2,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdatePostDto } from '../../dto/post.dto';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
+import { UpdatePostDomainDto } from '../../domain/dto/post-domain.dto';
+import { Post } from '../../domain/post.entity';
 
 export class UpdatePostCommand {
   constructor(
@@ -25,8 +27,18 @@ export class UpdatePostUseCase
     );
     const post = await this.postRepository.findOrNotFoundFail(postId);
 
-    post.update({ ...updatePostDto, blogName: blog.name });
+    const newPost = this.updatePost(post, {
+      ...updatePostDto,
+      blogName: blog.name,
+    });
 
-    await this.postRepository.save(post);
+    await this.postRepository.save(newPost);
+  }
+
+  private updatePost(prevPost: Post, dto: UpdatePostDomainDto): Post {
+    return {
+      ...prevPost,
+      ...dto,
+    };
   }
 }

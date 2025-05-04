@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import { BlogsController } from './api/blogs-controller';
+import { BlogsController } from './api/blogs/blogs-controller';
 import { PostsController } from './api/posts-controller';
 import { CommentsController } from './api/comments-controller';
 import { CommentsService } from './application/comments-service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user-accounts/domain/user.entity';
-import { Post, PostSchema } from './domain/post.entity';
-import { Blog, BlogSchema } from './domain/blog.entity';
 import { Comment, CommentSchema } from './domain/comment.entity';
 import { BlogsRepository } from './infrastructure/blogs.repository';
 import { BlogsQueryRepository } from './infrastructure/query/blogs.query-repository';
@@ -28,6 +26,7 @@ import { MakeLikeOperationUseCase } from './application/usecases/make-like-opera
 import { LikesRepository } from './infrastructure/like.repository';
 import { Like, LikeSchema } from './domain/like.entity';
 import { LikesQueryRepository } from './infrastructure/query/likes.query-repository';
+import { BlogsPublicController } from './api/blogs/blogs-controller.public';
 
 @Module({
   imports: [
@@ -35,14 +34,6 @@ import { LikesQueryRepository } from './infrastructure/query/likes.query-reposit
       {
         name: User.name,
         schema: UserSchema,
-      },
-      {
-        name: Blog.name,
-        schema: BlogSchema,
-      },
-      {
-        name: Post.name,
-        schema: PostSchema,
       },
       {
         name: Comment.name,
@@ -54,7 +45,12 @@ import { LikesQueryRepository } from './infrastructure/query/likes.query-reposit
       },
     ]),
   ],
-  controllers: [BlogsController, PostsController, CommentsController],
+  controllers: [
+    BlogsController,
+    BlogsPublicController,
+    PostsController,
+    CommentsController,
+  ],
   providers: [
     CommentsService,
     BlogsRepository,
