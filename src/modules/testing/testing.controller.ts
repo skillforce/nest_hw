@@ -16,6 +16,7 @@ export class TestingController {
   async deleteAllData() {
     await this.databaseConnection.dropDatabase();
     await this.dataSource.query('TRUNCATE TABLE "Users" CASCADE');
+    await this.dataSource.query('TRUNCATE TABLE "Blogs" CASCADE');
     return {
       status: 'succeeded',
     };
