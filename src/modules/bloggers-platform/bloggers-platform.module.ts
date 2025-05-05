@@ -27,6 +27,7 @@ import { LikesRepository } from './infrastructure/like.repository';
 import { Like, LikeSchema } from './domain/like.entity';
 import { LikesQueryRepository } from './infrastructure/query/likes.query-repository';
 import { BlogsPublicController } from './api/blogs/blogs-controller.public';
+import { DeletePostByBlogIdUseCase } from './application/usecases/delete-post-by-blog-id.usecase';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { BlogsPublicController } from './api/blogs/blogs-controller.public';
     UpdateCommentUseCase,
     DeleteCommentUseCase,
     MakeLikeOperationUseCase,
+    DeletePostByBlogIdUseCase,
   ],
   exports: [],
 })

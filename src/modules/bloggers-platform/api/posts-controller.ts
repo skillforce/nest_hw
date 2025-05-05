@@ -208,7 +208,7 @@ export class PostsController {
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlogById(@Param() { id }: IdNumberParamDto) {
+  async deletePostById(@Param() { id }: IdNumberParamDto) {
     return await this.commandBus.execute<DeletePostCommand, void>(
       new DeletePostCommand(id),
     );

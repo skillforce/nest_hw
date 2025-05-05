@@ -23,6 +23,8 @@ import { ApiParam } from '@nestjs/swagger';
 import {
   CreatePostByBlogIdInputDto,
   CreatePostInputDto,
+  UpdatePostByBlogIdInputDto,
+  UpdatePostInputDto,
 } from '../input-dto/post-input-dto/post.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { BlogsViewDto } from '../view-dto/blogs.view-dto';
@@ -39,6 +41,10 @@ import { UserContextDto } from '../../../user-accounts/guards/dto/user-context.d
 import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { IdNumberParamDto } from '../../../../core/decorators/validation/objectIdDto';
+import { UpdatePostCommand } from '../../application/usecases/update-post.usecase';
+import { UpdatePostDto } from '../../dto/post.dto';
+import { DeletePostCommand } from '../../application/usecases/delete-post.usecase';
+import { DeletePostByBlogIdCommand } from '../../application/usecases/delete-post-by-blog-id.usecase';
 
 @SkipThrottle()
 @Controller('sa/blogs')
@@ -69,35 +75,26 @@ export class BlogsController {
     return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
   }
 
-  @Get(':blogId/posts')
-  @UseGuards(JwtOptionalAuthGuard)
+  @Put(':blogId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async getPostsByBlogId(
-    @Param('blogId') blogId: string,
-    @Query() query: GetPostsQueryParams,
-    @ExtractUserFromRequest() user: UserContextDto,
-  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+  async updateBlogById(
+    @Param('blogId') blogId: number,
+    @Body() body: UpdateBlogInputDto,
+  ) {
+    await this.commandBus.execute<UpdateBlogCommand, string>(
+      new UpdateBlogCommand(blogId, body),
+    );
+  }
 
-    const paginatedPosts = await this.postQueryRepository.getAll(query, {
-      blogId,
-    });
-    const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
-      parentIds: paginatedPosts.items.map((post) => post.id),
-      userId: user?.id,
-    });
-    const postsNewestLikes =
-      await this.likesQueryRepository.getBulkNewestLikesInfo(
-        paginatedPosts.items.map((post) => post.id),
-      );
-    return {
-      ...paginatedPosts,
-      items: PostsViewDto.mapPostsToViewWithLikesInfo(
-        paginatedPosts.items,
-        postsLikesInfo,
-        postsNewestLikes,
-      ),
-    };
+  @ApiParam({ name: 'id' })
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(BasicAuthGuard)
+  async deleteBlogById(@Param() { id }: IdNumberParamDto) {
+    await this.commandBus.execute<DeleteBlogCommand, void>(
+      new DeleteBlogCommand(id),
+    );
   }
 
   @Post(':blogId/posts')
@@ -131,32 +128,63 @@ export class BlogsController {
     );
   }
 
-  @ApiParam({ name: 'id' })
+  @Get(':blogId/posts')
+  @UseGuards(JwtOptionalAuthGuard)
   @UseGuards(BasicAuthGuard)
-  @Get(':blogId')
-  async getBlogById(@Param('blogId') blogId: string): Promise<BlogsViewDto> {
-    return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+  async getPostsByBlogId(
+    @Param('blogId') blogId: string,
+    @Query() query: GetPostsQueryParams,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+    await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+
+    const paginatedPosts = await this.postQueryRepository.getAll(query, {
+      blogId,
+    });
+    const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
+      parentIds: paginatedPosts.items.map((post) => post.id),
+      userId: user?.id,
+    });
+    const postsNewestLikes =
+      await this.likesQueryRepository.getBulkNewestLikesInfo(
+        paginatedPosts.items.map((post) => post.id),
+      );
+    return {
+      ...paginatedPosts,
+      items: PostsViewDto.mapPostsToViewWithLikesInfo(
+        paginatedPosts.items,
+        postsLikesInfo,
+        postsNewestLikes,
+      ),
+    };
   }
 
-  @Put(':blogId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async updateBlogById(
+  @Put(':blogId/posts/:postId')
+  async updatePostById(
     @Param('blogId') blogId: number,
-    @Body() body: UpdateBlogInputDto,
-  ) {
-    await this.commandBus.execute<UpdateBlogCommand, string>(
-      new UpdateBlogCommand(blogId, body),
+    @Param('postId') postId: number,
+    @Body() body: UpdatePostByBlogIdInputDto,
+  ): Promise<void> {
+    const updatePostDto: Omit<UpdatePostDto, 'blogName'> = {
+      ...body,
+      blogId,
+    };
+    return await this.commandBus.execute<UpdatePostCommand, void>(
+      new UpdatePostCommand(postId, updatePostDto),
     );
   }
 
-  @ApiParam({ name: 'id' })
-  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(BasicAuthGuard)
-  async deleteBlogById(@Param() { id }: IdNumberParamDto) {
-    await this.commandBus.execute<DeleteBlogCommand, void>(
-      new DeleteBlogCommand(id),
+  @Delete(':blogId/posts/:postId')
+  async deletePostById(
+    @Param('blogId') blogId: number,
+    @Param('postId') postId: number,
+  ): Promise<void> {
+    return await this.commandBus.execute<DeletePostByBlogIdCommand, void>(
+      new DeletePostByBlogIdCommand(postId, blogId),
     );
   }
 }

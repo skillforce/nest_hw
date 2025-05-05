@@ -75,3 +75,24 @@ export class UpdatePostInputDto {
   @IsNumber()
   blogId: number;
 }
+
+export class UpdatePostByBlogIdInputDto {
+  @IsFieldExistAndStringWithTrim(
+    'title',
+    titleConstraints.minLength,
+    titleConstraints.maxLength,
+  )
+  title: string;
+  @IsFieldExistAndStringWithTrim(
+    'shortDescription',
+    shortDescriptionConstraints.minLength,
+    shortDescriptionConstraints.maxLength,
+  )
+  shortDescription: string;
+  @IsFieldExistAndStringWithTrim(
+    'content',
+    contentConstraints.minLength,
+    contentConstraints.maxLength,
+  )
+  content: string;
+}

@@ -43,11 +43,10 @@ export class PostsRepository {
     let values: any[];
 
     const hasId = !!post.id;
-
     if (hasId) {
       query = `
       INSERT INTO "Posts" ("id", "title", "shortDescription", "content", "blogId", "deletedAt")
-      VALUES ($1, $2, $3, $4, $5)
+      VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT ("id") DO UPDATE SET
         "title" = EXCLUDED."title",
         "shortDescription" = EXCLUDED."shortDescription",
