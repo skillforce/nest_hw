@@ -17,7 +17,7 @@ export class PostsQueryRepository {
     id: string,
   ): Promise<Omit<PostsViewDto, 'extendedLikesInfo'>> {
     const query =
-      'SELECT p."id", p."title",  p."shortDescription", p."content", p."blogId",  b."name" as "blogName", p."createdAt" FROM "Posts" p LEFT JOIN "Blogs" b ON p."blogId"=b."id" WHERE p."id"= $1';
+      'SELECT p."id", p."title",  p."shortDescription", p."content", p."blogId",  b."name" as "blogName", p."createdAt" FROM "Posts" p LEFT JOIN "Blogs" b ON p."blogId"=b."id" WHERE p."id"= $1 AND p."deletedAt" IS NULL';
 
     const [post] = await this.dataSource.query<
       Array<Post & { blogName: string }>
