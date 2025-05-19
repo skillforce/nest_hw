@@ -1,10 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
-import { CommentDocument } from '../../domain/comment.entity';
-import { User, UserDocument } from '../../../user-accounts/domain/user.entity';
+import { User } from '../../../user-accounts/domain/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { Comment } from '../../domain/comment.entity';
 
 export class DeleteCommentCommand {
   constructor(
@@ -31,13 +31,22 @@ export class DeleteCommentUseCase
         message: 'user is not owner of the comment',
       });
     }
+    const deletedComment = this.makeDeleted(comment);
 
-    comment.makeDeleted();
-
-    await this.commentsRepository.save(comment);
+    await this.commentsRepository.save(deletedComment);
   }
 
-  private isUserOwnDeletedComment(comment: CommentDocument, user: User) {
-    return comment.commentatorInfo.userId === user.id;
+  private isUserOwnDeletedComment(comment: Comment, user: User) {
+    return comment.creatorId === user.id;
+  }
+
+  private makeDeleted(commentToDelete: Comment): Comment {
+    if (commentToDelete.deletedAt !== null) {
+      throw new Error('Comment already deleted');
+    }
+    return {
+      ...commentToDelete,
+      deletedAt: new Date(),
+    };
   }
 }

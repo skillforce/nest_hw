@@ -1,11 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
 import { MakeLikeDto } from '../../dto/like.dto';
-import { Like, LikeDocument, LikeModelType } from '../../domain/like.entity';
+import { Like } from '../../domain/like.entity';
 import { LikesRepository } from '../../infrastructure/like.repository';
-import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { PostsRepository } from '../../infrastructure/posts.repository';
+import { LikeDomainDto } from '../../domain/dto/like-domain.dto';
 
 export enum LikeParentInstanceEnum {
   POST = 'Post',
@@ -26,10 +25,7 @@ export class MakeLikeOperationUseCase
   implements ICommandHandler<MakeLikeOperationCommand, void>
 {
   constructor(
-    @InjectModel(Like.name)
-    private LikeModel: LikeModelType,
     private likesRepository: LikesRepository,
-    private usersRepository: UsersRepository,
     private commentsRepository: CommentsRepository,
     private postsRepository: PostsRepository,
   ) {}
@@ -62,17 +58,31 @@ export class MakeLikeOperationUseCase
     userId: string,
     parentId: string,
   ) {
-    const newLike = this.LikeModel.createInstance({
+    const newLike = this.createInstance({
       ...likeDto,
       userId,
       parentId,
     });
     await this.likesRepository.save(newLike);
   }
-  private async updateLike(likeDto: MakeLikeDto, like: LikeDocument) {
-    if (like.likeStatus !== likeDto.likeStatus) {
-      like.likeStatus = likeDto.likeStatus;
-      await this.likesRepository.save(like);
+
+  private async updateLike(likeDto: MakeLikeDto, likeToUpdate: Like) {
+    if (likeToUpdate.likeStatus !== likeDto.likeStatus) {
+      const updatedLike = {
+        ...likeToUpdate,
+        likeStatus: likeDto.likeStatus,
+      };
+      await this.likesRepository.save(updatedLike);
     }
+  }
+
+  private createInstance(likeDTO: LikeDomainDto): Like {
+    const like = new Like();
+
+    like.parentId = likeDTO.parentId;
+    like.userId = likeDTO.userId;
+    like.likeStatus = likeDTO.likeStatus;
+
+    return like;
   }
 }

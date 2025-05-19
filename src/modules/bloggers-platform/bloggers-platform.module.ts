@@ -4,8 +4,6 @@ import { PostsController } from './api/posts-controller';
 import { CommentsController } from './api/comments-controller';
 import { CommentsService } from './application/comments-service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../user-accounts/domain/user.entity';
-import { Comment, CommentSchema } from './domain/comment.entity';
 import { BlogsRepository } from './infrastructure/blogs.repository';
 import { BlogsQueryRepository } from './infrastructure/query/blogs.query-repository';
 import { PostsRepository } from './infrastructure/posts.repository';
@@ -24,28 +22,12 @@ import { UpdateCommentUseCase } from './application/usecases/update-comment.usec
 import { DeleteCommentUseCase } from './application/usecases/delete-comment.usecase';
 import { MakeLikeOperationUseCase } from './application/usecases/make-like-operation.usecase';
 import { LikesRepository } from './infrastructure/like.repository';
-import { Like, LikeSchema } from './domain/like.entity';
 import { LikesQueryRepository } from './infrastructure/query/likes.query-repository';
 import { BlogsPublicController } from './api/blogs/blogs-controller.public';
 import { DeletePostByBlogIdUseCase } from './application/usecases/delete-post-by-blog-id.usecase';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      {
-        name: User.name,
-        schema: UserSchema,
-      },
-      {
-        name: Comment.name,
-        schema: CommentSchema,
-      },
-      {
-        name: Like.name,
-        schema: LikeSchema,
-      },
-    ]),
-  ],
+  imports: [MongooseModule.forFeature([])],
   controllers: [
     BlogsController,
     BlogsPublicController,

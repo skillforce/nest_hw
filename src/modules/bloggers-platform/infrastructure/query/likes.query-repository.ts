@@ -1,18 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Like, LikeModelType } from '../../domain/like.entity';
+import { Like } from '../../domain/like.entity';
 import { LikeStatusEnum } from '../../domain/dto/like-domain.dto';
 import { LikesInfoViewDto } from '../../api/view-dto/like-view-dto/like-info.view-dto';
-import { User, UserModelType } from '../../../user-accounts/domain/user.entity';
 import { NewestLikeViewDto } from '../../api/view-dto/like-view-dto/newest-like.view-dto';
-import { PipelineStage } from 'mongoose';
-
-export interface AggregatedLikeInfo {
-  _id: string;
-  likesCount: number;
-  dislikesCount: number;
-  myStatus: LikeStatusEnum;
-}
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 export interface AggregatedNewestLike {
   userId: string;
@@ -26,73 +18,80 @@ export interface AggregatedNewestLikesData {
 
 @Injectable()
 export class LikesQueryRepository {
-  constructor(
-    @InjectModel(Like.name) private readonly LikeModel: LikeModelType,
-    @InjectModel(User.name) private readonly UserModel: UserModelType,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async getEntityLikesCount(parentId: string): Promise<number> {
-    return this.LikeModel.countDocuments({
+    const query =
+      'SELECT COUNT(*) AS total FROM "Likes" WHERE "parentId" = $1 AND "likeStatus" = $2';
+
+    const result = await this.dataSource.query<{ total: number }[]>(query, [
       parentId,
-      likeStatus: LikeStatusEnum.LIKE,
-    });
+      LikeStatusEnum.LIKE,
+    ]);
+    if (!result[0].total) return 0;
+    return result[0]?.total;
   }
   async getEntityDislikesCount(parentId: string): Promise<number> {
-    return this.LikeModel.countDocuments({
+    const query =
+      'SELECT COUNT(*) AS total FROM "Likes" WHERE "parentId" = $1 AND "likeStatus" = $2';
+
+    const result = await this.dataSource.query<{ total: number }[]>(query, [
       parentId,
-      likeStatus: LikeStatusEnum.DISLIKE,
-    });
+      LikeStatusEnum.DISLIKE,
+    ]);
+    if (!result[0].total) return 0;
+    return result[0]?.total;
   }
   async getUserLikeStatusForEntity(
     parentId: string,
-    userId: string,
+    userId?: string,
   ): Promise<LikeStatusEnum> {
-    const likeData = await this.LikeModel.findOne({
+    if (!userId) return LikeStatusEnum.NONE;
+    const query =
+      'SELECT * FROM "Likes" WHERE "parentId" = $1 AND "userId" = $2';
+    const result = await this.dataSource.query<Like[]>(query, [
       parentId,
       userId,
-    });
-    if (likeData) {
-      return likeData.likeStatus;
-    }
-    return LikeStatusEnum.NONE;
+    ]);
+    return result[0].likeStatus;
   }
 
   async getNewestLikesForEntity(
-    parentId: string,
+    parentId: number,
   ): Promise<NewestLikeViewDto[]> {
-    const lastLikes = await this.LikeModel.find({
-      parentId,
-      likeStatus: LikeStatusEnum.LIKE,
-    })
-      .sort({ createdAt: -1 })
-      .limit(3)
-      .lean();
+    const likeQuery = `SELECT
+  l."createdAt" AS "addedAt", l."userId", u."login" 
+   FROM "Likes" l 
+   LEFT JOIN "Users" u 
+   ON l."userId" = u."id"
+   WHERE l."parentId" = $1 AND l."likeStatus" = $2 AND l."deletedAt" IS NULL
+   ORDER BY l."createdAt" DESC 
+   LIMIT 3`;
 
-    const userIds = lastLikes.map((like) => like.userId);
-    const users = await this.UserModel.find({ _id: { $in: userIds } })
-      .select('login')
-      .lean();
-
-    const userMap = new Map(
-      users.map((user) => [user._id.toString(), user.login]),
-    );
-
-    return lastLikes.map((like) => ({
-      addedAt: like.createdAt || new Date(),
-      userId: like.userId,
-      login: userMap.get(like.userId) || 'Unknown User',
-    }));
+    return await this.dataSource.query<
+      { addedAt: Date; userId: string; login: string }[]
+    >(likeQuery, [parentId, LikeStatusEnum.LIKE]);
   }
 
   async getEntityLikesInfo(
-    parentId: string,
+    parentId: number,
     userId?: string,
   ): Promise<LikesInfoViewDto> {
-    const likesCount = await this.getEntityLikesCount(parentId);
-    const dislikesCount = await this.getEntityDislikesCount(parentId);
-    const likeStatus = userId
-      ? await this.getUserLikeStatusForEntity(parentId, userId)
-      : LikeStatusEnum.NONE;
+    const query = `SELECT 
+      COUNT(*) FILTER (WHERE "likeStatus" = $1) AS "likesCount",
+      COUNT(*) FILTER (WHERE "likeStatus" = $2) AS "dislikesCount",
+      COALESCE(MAX(CASE WHEN "userId" = $3 THEN "likeStatus" END), $4) AS "myStatus"
+      FROM "Likes" WHERE "parentId" = $5;`;
+
+    const result = await this.dataSource.query<LikesInfoViewDto[]>(query, [
+      LikeStatusEnum.LIKE,
+      LikeStatusEnum.DISLIKE,
+      userId ?? null,
+      LikeStatusEnum.NONE,
+      parentId,
+    ]);
+
+    const { likesCount, dislikesCount, myStatus: likeStatus } = result[0];
     return {
       likesCount: Number(likesCount),
       dislikesCount: Number(dislikesCount),
@@ -104,77 +103,39 @@ export class LikesQueryRepository {
     parentIds,
     userId,
   }: {
-    parentIds: string[];
+    parentIds: number[];
     userId?: string;
   }): Promise<Record<string, LikesInfoViewDto>> {
-    const pipeline = [
-      {
-        $match: {
-          parentId: { $in: parentIds },
-        },
-      },
-      {
-        $group: {
-          _id: '$parentId',
-          likesCount: {
-            $sum: {
-              $cond: [{ $eq: ['$likeStatus', LikeStatusEnum.LIKE] }, 1, 0],
-            },
-          },
-          dislikesCount: {
-            $sum: {
-              $cond: [{ $eq: ['$likeStatus', LikeStatusEnum.DISLIKE] }, 1, 0],
-            },
-          },
-          myStatuses: {
-            $push: {
-              $cond: [{ $eq: ['$userId', userId] }, '$likeStatus', null],
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          likesCount: 1,
-          dislikesCount: 1,
-          myStatus: {
-            $ifNull: [
-              {
-                $arrayElemAt: [
-                  {
-                    $filter: {
-                      input: '$myStatuses',
-                      cond: { $ne: ['$$this', null] },
-                    },
-                  },
-                  0,
-                ],
-              },
-              LikeStatusEnum.NONE,
-            ],
-          },
-        },
-      },
-    ];
+    const likesQuery = `SELECT 
+       l."likeStatus", l."userId", l."parentId"
+       FROM "Likes" l
+       LEFT JOIN "Users" u ON l."userId" = u."id"
+       WHERE l."parentId" = ANY($1::int[]) AND l."deletedAt" IS NULL`;
 
-    const likesInfo: AggregatedLikeInfo[] =
-      await this.LikeModel.aggregate(pipeline);
+    const likesUsersResult = await this.dataSource.query<
+      { likeStatus: LikeStatusEnum; userId: string; parentId: number }[]
+    >(likesQuery, [parentIds]);
 
     const result: Record<string, LikesInfoViewDto> = {};
 
-    parentIds.forEach((commentId) => {
-      result[commentId] = {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: LikeStatusEnum.NONE,
-      };
-    });
-
-    likesInfo.forEach((info) => {
-      result[info._id] = {
-        likesCount: info.likesCount,
-        dislikesCount: info.dislikesCount,
-        myStatus: info.myStatus,
+    parentIds.forEach((entityId) => {
+      const userLikeForEntity = likesUsersResult.find(
+        (like) => like.parentId === entityId && like.userId === userId,
+      );
+      result[entityId] = {
+        likesCount: likesUsersResult.filter(
+          (like) =>
+            like.parentId === entityId &&
+            like.likeStatus === LikeStatusEnum.LIKE,
+        ).length,
+        dislikesCount: likesUsersResult.filter(
+          (like) =>
+            like.parentId === entityId &&
+            like.likeStatus === LikeStatusEnum.DISLIKE,
+        ).length,
+        myStatus: userLikeForEntity
+          ? userLikeForEntity.likeStatus
+          : LikeStatusEnum.NONE,
       };
     });
 
@@ -182,67 +143,33 @@ export class LikesQueryRepository {
   }
 
   async getBulkNewestLikesInfo(
-    parentIds: string[],
+    parentIds: number[],
   ): Promise<Record<string, NewestLikeViewDto[]>> {
-    const pipeline: PipelineStage[] = [
-      {
-        $match: {
-          parentId: { $in: parentIds },
-          likeStatus: { $in: [LikeStatusEnum.LIKE] },
-        },
-      },
-      {
-        $sort: { createdAt: -1 },
-      },
-      {
-        $group: {
-          _id: '$parentId',
-          likes: {
-            $push: {
-              userId: '$userId',
-              createdAt: '$createdAt',
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          likes: { $slice: ['$likes', 3] },
-        },
-      },
-    ];
+    const likesUsersQuery = `WITH ranked_likes AS 
+      ( SELECT * ,
+       ROW_NUMBER() OVER (PARTITION BY l."parentId" ORDER BY l."createdAt" DESC) as rl
+       FROM "Likes" l
+       WHERE "parentId" = ANY(ARRAY [$1::int[]]) AND "likeStatus" = $2 )
+       SELECT rl."parentId", u."id" as "userId", u."login", rl."createdAt" AS "addedAt"
+       FROM ranked_likes rl LEFT JOIN  "Users" u ON rl."userId" = u."id"
+       WHERE rl <= 3;`;
 
-    const results: AggregatedNewestLikesData[] =
-      await this.LikeModel.aggregate(pipeline);
-    const userIds = results.flatMap((result) =>
-      result.likes.map((like) => like.userId),
+    const likesUsersResult = await this.dataSource.query<
+      { parentId: number; userId: string; login: string; addedAt: Date }[]
+    >(likesUsersQuery, [parentIds, LikeStatusEnum.LIKE]);
+
+    return parentIds.reduce(
+      (acc, parentId) => ({
+        ...acc,
+        [parentId]: likesUsersResult
+          .filter((like) => like.parentId === parentId)
+          .map((like) => ({
+            addedAt: like.addedAt,
+            userId: like.userId,
+            login: like.login,
+          })),
+      }),
+      {},
     );
-    const users = await this.UserModel.find({ _id: { $in: userIds } })
-      .select('login')
-      .lean();
-
-    const userMap = new Map(
-      users.map((user) => [user._id.toString(), user.login]),
-    );
-
-    const resultMap: Record<string, NewestLikeViewDto[]> = {};
-    results.forEach((result) => {
-      resultMap[result._id] = result.likes.map(
-        (like: { userId: string; createdAt: Date }) => ({
-          addedAt: like.createdAt || new Date(),
-          userId: like.userId,
-          login: userMap.get(like.userId) || 'Unknown User',
-        }),
-      );
-    });
-
-    parentIds.forEach((id) => {
-      if (!resultMap[id]) {
-        resultMap[id] = [];
-      }
-    });
-
-    return resultMap;
   }
 }

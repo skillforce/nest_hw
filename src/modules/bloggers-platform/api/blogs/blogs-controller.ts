@@ -110,7 +110,7 @@ export class BlogsController {
 
     const createdPostId = await this.commandBus.execute<
       CreatePostCommand,
-      string
+      number
     >(new CreatePostCommand(postDto));
 
     const post =
@@ -142,12 +142,12 @@ export class BlogsController {
       blogId,
     });
     const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
-      parentIds: paginatedPosts.items.map((post) => post.id),
+      parentIds: paginatedPosts.items.map((post) => Number(post.id)),
       userId: user?.id,
     });
     const postsNewestLikes =
       await this.likesQueryRepository.getBulkNewestLikesInfo(
-        paginatedPosts.items.map((post) => post.id),
+        paginatedPosts.items.map((post) => Number(post.id)),
       );
     return {
       ...paginatedPosts,

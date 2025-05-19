@@ -40,7 +40,7 @@ export class CommentsController {
   @Get(':commentId')
   @UseGuards(JwtOptionalAuthGuard)
   async getCommentById(
-    @Param('commentId') commentId: string,
+    @Param('commentId') commentId: number,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
     const comment =

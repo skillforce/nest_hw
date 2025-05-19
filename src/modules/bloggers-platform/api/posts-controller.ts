@@ -41,10 +41,7 @@ import { LikesQueryRepository } from '../infrastructure/query/likes.query-reposi
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../user-accounts/guards/basic/basic-auth.guard';
-import {
-  IdNumberParamDto,
-  IdStringParamDto,
-} from '../../../core/decorators/validation/objectIdDto';
+import { IdNumberParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('posts')
@@ -60,7 +57,7 @@ export class PostsController {
   @UseGuards(JwtOptionalAuthGuard)
   async getCommentsByPostId(
     @Query() query: GetCommentsQueryParams,
-    @Param('postId') postId: string,
+    @Param('postId') postId: number,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
     await this.postQueryRepository.getByIdOrNotFoundFail(postId);
@@ -71,7 +68,9 @@ export class PostsController {
       },
     );
     const commentsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
-      parentIds: commentsPaginatedData.items.map((comment) => comment.id),
+      parentIds: commentsPaginatedData.items.map((comment) =>
+        Number(comment.id),
+      ),
       userId: user?.id,
     });
     return {
@@ -91,11 +90,11 @@ export class PostsController {
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
     const paginatedPosts = await this.postQueryRepository.getAll(query);
     const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
-      parentIds: paginatedPosts.items.map((post) => post.id),
+      parentIds: paginatedPosts.items.map((post) => Number(post.id)),
       userId: user?.id,
     });
     const newestLikes = await this.likesQueryRepository.getBulkNewestLikesInfo(
-      paginatedPosts.items.map((post) => post.id),
+      paginatedPosts.items.map((post) => Number(post.id)),
     );
     return {
       ...paginatedPosts,
@@ -113,7 +112,7 @@ export class PostsController {
   async createPost(@Body() body: CreatePostInputDto): Promise<PostsViewDto> {
     const createPostId = await this.commandBus.execute<
       CreatePostCommand,
-      string
+      number
     >(new CreatePostCommand(body));
 
     const post =
@@ -131,13 +130,13 @@ export class PostsController {
   @Post(':id/comments')
   async commentPost(
     @Body() body: CreateCommentInputDto,
-    @Param() { id }: IdStringParamDto,
+    @Param() { id }: IdNumberParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
     await this.postQueryRepository.getByIdOrNotFoundFail(id);
     const createdCommentId = await this.commandBus.execute<
       CreateCommentCommand,
-      string
+      number
     >(new CreateCommentCommand(body, id, user.id));
 
     const createdComment =
@@ -156,12 +155,12 @@ export class PostsController {
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   async getPostById(
-    @Param() { id }: IdStringParamDto,
+    @Param() { id }: IdNumberParamDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PostsViewDto> {
     const post = await this.postQueryRepository.getByIdOrNotFoundFail(id);
     const postLikesInfo = await this.likesQueryRepository.getEntityLikesInfo(
-      id,
+      Number(id),
       user?.id,
     );
     const newestLikes =

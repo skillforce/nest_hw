@@ -1,6 +1,6 @@
 import { CommentatorInfo } from '../../domain/schemas/commentator-info.schema';
-import { CommentDocument } from '../../domain/comment.entity';
 import { LikesInfoViewDto } from './like-view-dto/like-info.view-dto';
+import { Comment } from '../../domain/comment.entity';
 
 export class CommentViewDto {
   id: string;
@@ -10,14 +10,17 @@ export class CommentViewDto {
   likesInfo: LikesInfoViewDto;
 
   static mapToViewDto(
-    comment: CommentDocument,
+    commentWithCreatorInfo: Comment & { login: string },
   ): Omit<CommentViewDto, 'likesInfo'> {
     const dto = new CommentViewDto();
 
-    dto.id = comment._id.toString();
-    dto.content = comment.content;
-    dto.commentatorInfo = comment.commentatorInfo;
-    dto.createdAt = comment.createdAt ?? new Date();
+    dto.id = commentWithCreatorInfo.creatorId.toString();
+    dto.content = commentWithCreatorInfo.content;
+    dto.commentatorInfo = {
+      userId: commentWithCreatorInfo.creatorId.toString(),
+      userLogin: commentWithCreatorInfo.login,
+    };
+    dto.createdAt = commentWithCreatorInfo.createdAt ?? new Date();
 
     return dto;
   }

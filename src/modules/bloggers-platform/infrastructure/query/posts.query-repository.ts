@@ -14,7 +14,7 @@ export class PostsQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async getByIdOrNotFoundFail(
-    id: string,
+    id: number,
   ): Promise<Omit<PostsViewDto, 'extendedLikesInfo'>> {
     const query =
       'SELECT p."id", p."title",  p."shortDescription", p."content", p."blogId",  b."name" as "blogName", p."createdAt" FROM "Posts" p LEFT JOIN "Blogs" b ON p."blogId"=b."id" WHERE p."id"= $1 AND p."deletedAt" IS NULL';

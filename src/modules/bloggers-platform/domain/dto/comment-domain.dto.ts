@@ -1,10 +1,8 @@
-import { CommentatorInfo } from '../schemas/commentator-info.schema';
-
 export class CommentDomainDto {
   content: string;
-  commentatorInfo: CommentatorInfo;
+  creatorId: string;
   createdAt?: string;
-  postId: string;
+  postId: number;
 }
 
 export class CreateCommentDto {

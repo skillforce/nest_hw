@@ -24,17 +24,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       rootPath: join(__dirname, '..', 'swagger-static'),
       serveRoot: SWAGGER_PREFIX,
     }),
-    MongooseModule.forRootAsync({
-      useFactory: (coreConfig: CoreConfig) => {
-        const uri = coreConfig.mongoURI;
-        console.log('DB_URI', uri);
-
-        return {
-          uri: uri,
-        };
-      },
-      inject: [CoreConfig],
-    }),
+    // MongooseModule.forRootAsync({
+    //   useFactory: (coreConfig: CoreConfig) => {
+    //     const uri = coreConfig.mongoURI;
+    //     console.log('DB_URI', uri);
+    //
+    //     return {
+    //       uri: uri,
+    //     };
+    //   },
+    //   inject: [CoreConfig],
+    // }),
     TypeOrmModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {
         console.log('PG_DB_URI', coreConfig.postgresHost);

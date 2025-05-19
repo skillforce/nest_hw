@@ -1,23 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Comment,
-  CommentDocument,
-  CommentModelType,
-} from '../domain/comment.entity';
+import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { Comment } from '../domain/comment.entity';
+import { Like } from '../domain/like.entity';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(
-    @InjectModel(Comment.name) private readonly CommentModel: CommentModelType,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findById(id: string) {
-    return this.CommentModel.findOne({ _id: id, deletedAt: null });
+  async findById(id: string): Promise<Comment | null> {
+    const query =
+      'SELECT * FROM "Comments" WHERE "id" = $1 AND "deletedAt" IS NULL';
+
+    const result = await this.dataSource.query<Comment[]>(query, [id]);
+    return result[0] ?? null;
   }
-  async findOrNotFoundFail(id: string): Promise<CommentDocument> {
+  async findOrNotFoundFail(id: string): Promise<Comment> {
     const comment = await this.findById(id);
 
     if (!comment) {
@@ -36,7 +36,44 @@ export class CommentsRepository {
     return comment;
   }
 
-  async save(comment: CommentDocument) {
-    return comment.save();
+  async save(comment: Comment) {
+    let query: string;
+    let values: any[];
+
+    const hasId = !!comment.id;
+    if (hasId) {
+      query = `
+      INSERT INTO "Comments" ("id", "content", "creatorId", "postId", "deletedAt")
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT ("id") DO UPDATE SET
+        "content" = EXCLUDED."content",
+        "deletedAt" = EXCLUDED."deletedAt"
+        RETURNING "id";
+    `;
+      values = [
+        comment.id,
+        comment.content,
+        comment.creatorId,
+        comment.postId,
+        comment.deletedAt ?? null,
+      ];
+    } else {
+      query = `
+        INSERT INTO "Comments" ("id", "content", "creatorId", "postId", "deletedAt")
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING "id";
+    `;
+      values = [
+        comment.id,
+        comment.content,
+        comment.creatorId,
+        comment.postId,
+        comment.deletedAt ?? null,
+      ];
+    }
+
+    const result = await this.dataSource.query<Like[]>(query, values);
+
+    return +result[0].id;
   }
 }

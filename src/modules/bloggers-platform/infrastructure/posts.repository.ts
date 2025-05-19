@@ -4,7 +4,6 @@ import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { User } from '../../user-accounts/domain/user.entity';
 
 @Injectable()
 export class PostsRepository {
@@ -78,7 +77,7 @@ export class PostsRepository {
       ];
     }
 
-    const result = await this.dataSource.query<User[]>(query, values);
+    const result = await this.dataSource.query<Post[]>(query, values);
 
     return +result[0].id;
   }

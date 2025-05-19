@@ -1,11 +1,3 @@
-import { SchemaFactory } from '@nestjs/mongoose';
-
-import { HydratedDocument, Model } from 'mongoose';
-import {
-  CreatePostDomainDto,
-  UpdatePostDomainDto,
-} from './dto/post-domain.dto';
-
 export const titleConstraints = {
   minLength: 1,
   maxLength: 30,
@@ -28,29 +20,4 @@ export class Post {
   deletedAt: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
-
-  // static createInstance(postDTO: CreatePostDomainDto): PostDocument {
-  //   const post = new this() as PostDocument;
-  //
-  //   post.title = postDTO.title;
-  //   post.shortDescription = postDTO.shortDescription;
-  //   post.content = postDTO.content;
-  //   post.blogId = postDTO.blogId;
-  //
-  //   return post;
-  // }
-  //
-  // makeDeleted() {
-  //   if (this.deletedAt !== null) {
-  //     throw new Error('Post already deleted');
-  //   }
-  //   this.deletedAt = new Date();
-  // }
-  //
-  // update(dto: UpdatePostDomainDto) {
-  //   this.title = dto.title;
-  //   this.shortDescription = dto.shortDescription;
-  //   this.content = dto.content;
-  //   this.blogId = dto.blogId;
-  // }
 }

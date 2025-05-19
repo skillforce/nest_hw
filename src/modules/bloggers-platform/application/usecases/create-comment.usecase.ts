@@ -1,15 +1,16 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { CreateCommentDto } from '../../domain/dto/comment-domain.dto';
-import { Comment, CommentModelType } from '../../domain/comment.entity';
+import {
+  CommentDomainDto,
+  CreateCommentDto,
+} from '../../domain/dto/comment-domain.dto';
+import { Comment } from '../../domain/comment.entity';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
-import { CommentatorInfo } from '../../domain/schemas/commentator-info.schema';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 
 export class CreateCommentCommand {
   constructor(
     public createCommentDto: CreateCommentDto,
-    public postId: string,
+    public postId: number,
     public userId: string,
   ) {}
 }
@@ -19,8 +20,6 @@ export class CreateCommentUseCase
   implements ICommandHandler<CreateCommentCommand, string>
 {
   constructor(
-    @InjectModel(Comment.name)
-    private CommentModel: CommentModelType,
     private userRepository: UsersRepository,
     private commentsRepository: CommentsRepository,
   ) {}
@@ -32,19 +31,25 @@ export class CreateCommentUseCase
   }: CreateCommentCommand): Promise<string> {
     const commentator =
       await this.userRepository.findByIdOrNotFoundFail(userId);
-    const commentatorInfo: CommentatorInfo = {
-      userId: commentator.id,
-      userLogin: commentator.login,
-    };
 
-    const comment = this.CommentModel.createInstance({
+    const comment = this.createInstance({
       ...createCommentDto,
-      commentatorInfo,
+      creatorId: commentator.id,
       postId,
     });
 
-    await this.commentsRepository.save(comment);
+    const createdCommentId = await this.commentsRepository.save(comment);
 
-    return comment._id.toString();
+    return createdCommentId.toString();
+  }
+
+  private createInstance(commentDto: CommentDomainDto): Comment {
+    const comment = new Comment();
+
+    comment.content = commentDto.content;
+    comment.creatorId = commentDto.creatorId;
+    comment.postId = commentDto.postId;
+
+    return comment;
   }
 }

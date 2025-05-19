@@ -2,8 +2,8 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentDto } from '../../domain/dto/comment-domain.dto';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
-import { CommentDocument } from '../../domain/comment.entity';
-import { User, UserDocument } from '../../../user-accounts/domain/user.entity';
+import { Comment } from '../../domain/comment.entity';
+import { User } from '../../../user-accounts/domain/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
@@ -39,12 +39,21 @@ export class UpdateCommentUseCase
       });
     }
 
-    comment.update(updateCommentDto);
+    const updatedComment = this.updateComment(comment, updateCommentDto);
 
-    await this.commentsRepository.save(comment);
+    await this.commentsRepository.save(updatedComment);
   }
 
-  private isUserOwnUpdatedComment(comment: CommentDocument, user: User) {
-    return comment.commentatorInfo.userId === user.id;
+  private isUserOwnUpdatedComment(comment: Comment, user: User) {
+    return comment.creatorId === user.id;
+  }
+  private updateComment(
+    commentToUpdate: Comment,
+    updateCommentDto: UpdateCommentDto,
+  ) {
+    return {
+      ...commentToUpdate,
+      content: updateCommentDto.content,
+    };
   }
 }

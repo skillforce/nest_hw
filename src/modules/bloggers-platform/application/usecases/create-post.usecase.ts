@@ -11,14 +11,14 @@ export class CreatePostCommand {
 
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase
-  implements ICommandHandler<CreatePostCommand, string>
+  implements ICommandHandler<CreatePostCommand, number>
 {
   constructor(
     private postRepository: PostsRepository,
     private blogsRepository: BlogsRepository,
   ) {}
 
-  async execute({ createPostDto }: CreatePostCommand): Promise<string> {
+  async execute({ createPostDto }: CreatePostCommand): Promise<number> {
     const blog = await this.blogsRepository.findOrNotFoundFail(
       createPostDto.blogId,
     );
@@ -27,9 +27,7 @@ export class CreatePostUseCase
       blogName: blog.name,
     });
 
-    const newPostId = await this.postRepository.save(newPost);
-
-    return newPostId.toString();
+    return await this.postRepository.save(newPost);
   }
 
   private createInstance(postDTO: CreatePostDomainDto): Post {
