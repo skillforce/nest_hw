@@ -17,7 +17,7 @@ export class CommentsQueryRepository {
     id: number,
   ): Promise<Omit<CommentViewDto, 'likesInfo'>> {
     const query =
-      'SELECT * FROM "Comments" c INNER JOIN "Users" u ON c."creatorId" = u."id" WHERE c."id" = $1 AND c."deletedAt" IS NULL';
+      'SELECT *,c."createdAt",u."createdAt" as "userCreatedAt",c."id",u."id" as "userId" FROM "Comments" c INNER JOIN "Users" u ON c."creatorId" = u."id" WHERE c."id" = $1 AND c."deletedAt" IS NULL';
 
     const result = await this.dataSource.query<Array<Comment & User>>(query, [
       id,

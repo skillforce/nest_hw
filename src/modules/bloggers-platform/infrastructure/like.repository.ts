@@ -8,7 +8,7 @@ export class LikesRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
   async findByUserIdAndParentId(userId: string, parentId: string) {
     const query =
-      'SELECT * FROM "Likes" WHERE "userId" = $1 AND "parentId" = $2';
+      'SELECT * FROM "Likes" WHERE "userId" = $1 AND "parentId" = $2 AND "deletedAt" IS NULL';
     const result = await this.dataSource.query<Like[]>(query, [
       userId,
       parentId,
@@ -39,13 +39,13 @@ export class LikesRepository {
         like.deletedAt ?? null,
       ];
     } else {
+      console.log(like);
       query = `
-        INSERT INTO "Likes" ("id", "likeStatus", "userId", "parentId", "deletedAt")
-      VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO "Likes" ("likeStatus", "userId", "parentId", "deletedAt")
+      VALUES ( $1, $2, $3, $4)
       RETURNING "id";
     `;
       values = [
-        like.id,
         like.likeStatus,
         like.userId,
         like.parentId,

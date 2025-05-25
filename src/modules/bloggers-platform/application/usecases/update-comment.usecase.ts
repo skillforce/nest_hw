@@ -10,7 +10,7 @@ import { DomainExceptionCode } from '../../../../core/exceptions/domain-exceptio
 export class UpdateCommentCommand {
   constructor(
     public updateCommentDto: UpdateCommentDto,
-    public commentId: string,
+    public commentId: number,
     public userId: string,
   ) {}
 }
@@ -29,6 +29,18 @@ export class UpdateCommentUseCase
     commentId,
     userId,
   }: UpdateCommentCommand): Promise<void> {
+    if (isNaN(commentId)) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        extensions: [
+          {
+            field: 'comment',
+            message: 'comment not found',
+          },
+        ],
+        message: 'comment not found',
+      });
+    }
     const comment = await this.commentsRepository.findOrNotFoundFail(commentId);
     const user = await this.usersRepository.findByIdOrNotFoundFail(userId);
 

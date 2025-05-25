@@ -11,6 +11,7 @@ import { LikesQueryRepository } from '../../infrastructure/query/likes.query-rep
 import { ExtractUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../../../user-accounts/guards/dto/user-context.dto';
 import { SkipThrottle } from '@nestjs/throttler';
+import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 
 @SkipThrottle()
 @Controller('blogs')
@@ -29,6 +30,7 @@ export class BlogsPublicController {
   }
 
   @Get(':blogId/posts')
+  @UseGuards(JwtOptionalAuthGuard)
   async getPostsByBlogId(
     @Param('blogId') blogId: string,
     @Query() query: GetPostsQueryParams,

@@ -138,16 +138,19 @@ export class PostsController {
       CreateCommentCommand,
       number
     >(new CreateCommentCommand(body, id, user.id));
-
     const createdComment =
       await this.commentsQueryRepository.getByIdOrNotFoundFail(
         createdCommentId,
       );
+    console.log(createdComment);
 
     const likeInfo = await this.likesQueryRepository.getEntityLikesInfo(
       createdCommentId,
       user.id,
     );
+
+    console.log(createdComment);
+    console.log(likeInfo);
 
     return CommentViewDto.mapToViewWithLikesInfo(createdComment, likeInfo);
   }

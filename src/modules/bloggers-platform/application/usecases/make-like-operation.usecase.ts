@@ -39,7 +39,7 @@ export class MakeLikeOperationUseCase
     if (parentInstance === LikeParentInstanceEnum.POST) {
       await this.postsRepository.findOrNotFoundFail(parentId);
     } else if (parentInstance === LikeParentInstanceEnum.COMMENT) {
-      await this.commentsRepository.findOrNotFoundFail(parentId.toString());
+      await this.commentsRepository.findOrNotFoundFail(parentId);
     }
 
     const like = await this.likesRepository.findByUserIdAndParentId(
@@ -63,6 +63,8 @@ export class MakeLikeOperationUseCase
       userId,
       parentId,
     });
+
+    console.log(newLike);
     await this.likesRepository.save(newLike);
   }
 
@@ -72,6 +74,7 @@ export class MakeLikeOperationUseCase
         ...likeToUpdate,
         likeStatus: likeDto.likeStatus,
       };
+      console.log(updatedLike, 'ddd');
       await this.likesRepository.save(updatedLike);
     }
   }

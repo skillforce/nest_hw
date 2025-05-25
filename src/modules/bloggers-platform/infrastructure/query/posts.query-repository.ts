@@ -16,6 +16,18 @@ export class PostsQueryRepository {
   async getByIdOrNotFoundFail(
     id: number,
   ): Promise<Omit<PostsViewDto, 'extendedLikesInfo'>> {
+    if (isNaN(id)) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        extensions: [
+          {
+            field: 'post',
+            message: 'post not found',
+          },
+        ],
+        message: 'post not found',
+      });
+    }
     const query =
       'SELECT p."id", p."title",  p."shortDescription", p."content", p."blogId",  b."name" as "blogName", p."createdAt" FROM "Posts" p LEFT JOIN "Blogs" b ON p."blogId"=b."id" WHERE p."id"= $1 AND p."deletedAt" IS NULL';
 

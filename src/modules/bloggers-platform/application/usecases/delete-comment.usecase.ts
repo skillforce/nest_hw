@@ -8,7 +8,7 @@ import { Comment } from '../../domain/comment.entity';
 
 export class DeleteCommentCommand {
   constructor(
-    public commentId: string,
+    public commentId: number,
     public userId: string,
   ) {}
 }
@@ -23,6 +23,19 @@ export class DeleteCommentUseCase
   ) {}
 
   async execute({ commentId, userId }: DeleteCommentCommand): Promise<void> {
+    if (isNaN(commentId)) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        extensions: [
+          {
+            field: 'comment',
+            message: 'comment not found',
+          },
+        ],
+        message: 'comment not found',
+      });
+    }
+
     const comment = await this.commentsRepository.findOrNotFoundFail(commentId);
     const user = await this.usersRepository.findByIdOrNotFoundFail(userId);
     if (!this.isUserOwnDeletedComment(comment, user)) {

@@ -10,14 +10,14 @@ import { Like } from '../domain/like.entity';
 export class CommentsRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findById(id: string): Promise<Comment | null> {
+  async findById(id: number): Promise<Comment | null> {
     const query =
       'SELECT * FROM "Comments" WHERE "id" = $1 AND "deletedAt" IS NULL';
 
     const result = await this.dataSource.query<Comment[]>(query, [id]);
     return result[0] ?? null;
   }
-  async findOrNotFoundFail(id: string): Promise<Comment> {
+  async findOrNotFoundFail(id: number): Promise<Comment> {
     const comment = await this.findById(id);
 
     if (!comment) {
@@ -59,12 +59,11 @@ export class CommentsRepository {
       ];
     } else {
       query = `
-        INSERT INTO "Comments" ("id", "content", "creatorId", "postId", "deletedAt")
-      VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO "Comments" ("content", "creatorId", "postId", "deletedAt")
+      VALUES ($1, $2, $3, $4)
       RETURNING "id";
     `;
       values = [
-        comment.id,
         comment.content,
         comment.creatorId,
         comment.postId,

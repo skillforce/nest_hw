@@ -14,7 +14,7 @@ export class CommentViewDto {
   ): Omit<CommentViewDto, 'likesInfo'> {
     const dto = new CommentViewDto();
 
-    dto.id = commentWithCreatorInfo.creatorId.toString();
+    dto.id = commentWithCreatorInfo.id.toString();
     dto.content = commentWithCreatorInfo.content;
     dto.commentatorInfo = {
       userId: commentWithCreatorInfo.creatorId.toString(),
