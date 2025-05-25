@@ -5,6 +5,8 @@ import { LikesRepository } from '../../infrastructure/like.repository';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { LikeDomainDto } from '../../domain/dto/like-domain.dto';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 export enum LikeParentInstanceEnum {
   POST = 'Post',
@@ -36,6 +38,19 @@ export class MakeLikeOperationUseCase
     parentId,
     parentInstance,
   }: MakeLikeOperationCommand): Promise<void> {
+    if (isNaN(parentId)) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        extensions: [
+          {
+            field: parentInstance,
+            message: `${parentInstance} not found`,
+          },
+        ],
+        message: `${parentInstance} not found`,
+      });
+    }
+
     if (parentInstance === LikeParentInstanceEnum.POST) {
       await this.postsRepository.findOrNotFoundFail(parentId);
     } else if (parentInstance === LikeParentInstanceEnum.COMMENT) {

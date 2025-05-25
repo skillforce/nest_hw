@@ -10,9 +10,6 @@ export class PostsRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async findById(id: number): Promise<Post | null> {
-    if (!Number.isInteger(Number(id))) {
-      return null;
-    }
     const query =
       'SELECT * FROM "Posts" WHERE "id" = $1 AND "deletedAt" IS NULL';
     const result = await this.dataSource.query<Post[]>(query, [id]);
