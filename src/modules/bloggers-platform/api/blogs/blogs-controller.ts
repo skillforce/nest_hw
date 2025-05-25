@@ -24,7 +24,6 @@ import {
   CreatePostByBlogIdInputDto,
   CreatePostInputDto,
   UpdatePostByBlogIdInputDto,
-  UpdatePostInputDto,
 } from '../input-dto/post-input-dto/post.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { BlogsViewDto } from '../view-dto/blogs.view-dto';
@@ -43,7 +42,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { IdNumberParamDto } from '../../../../core/decorators/validation/objectIdDto';
 import { UpdatePostCommand } from '../../application/usecases/update-post.usecase';
 import { UpdatePostDto } from '../../dto/post.dto';
-import { DeletePostCommand } from '../../application/usecases/delete-post.usecase';
 import { DeletePostByBlogIdCommand } from '../../application/usecases/delete-post-by-blog-id.usecase';
 
 @SkipThrottle()
