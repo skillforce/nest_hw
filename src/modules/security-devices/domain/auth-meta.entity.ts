@@ -1,43 +1,28 @@
 import { SchemaFactory } from '@nestjs/mongoose';
-import { CreateAuthMetaDomainDto } from './dto/create-auth-meta.domain.dto';
-import { UpdateAuthMetaDomainDto } from './dto/update-auth-meta.domain.dto';
-import { DomainException } from '../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import { Column, Entity, ManyToOne } from 'typeorm';
+import { UuidEntity } from '../../common/domain/base.entity';
+import { User } from '../../user-accounts/domain/entities/user.entity';
 
-export class AuthMeta {
-  id: string;
+@Entity('UserSessions')
+export class AuthMeta extends UuidEntity {
+  @Column({ nullable: false })
   iat: string;
-  userId: string;
+  @Column({ nullable: false })
   deviceId: string;
+  @Column({ nullable: false })
   exp: string;
+  @Column({ nullable: false })
   deviceName: string;
+  @Column({ nullable: false })
   ipAddress: string;
-  deletedAt: Date | null;
-  createdAt?: Date;
 
-  // static createInstance(authMetaDto: CreateAuthMetaDomainDto): AuthMeta {
-  //   const authMetaSession = new this();
-  //
-  //   authMetaSession.iat = authMetaDto.iat;
-  //   authMetaSession.userId = authMetaDto.userId;
-  //   authMetaSession.deviceId = authMetaDto.deviceId;
-  //   authMetaSession.exp = authMetaDto.exp;
-  //   authMetaSession.deviceName = authMetaDto.deviceName;
-  //   authMetaSession.ipAddress = authMetaDto.ipAddress;
-  //   authMetaSession.deletedAt = null;
-  //
-  //   return authMetaSession;
-  // }
+  @ManyToOne(() => User, (user) => user.authMeta, {
+    onDelete: 'CASCADE',
+  })
+  user: User;
 
-  // makeDeleted() {
-  //   if (this.deletedAt !== null) {
-  //     throw new DomainException({
-  //       code: DomainExceptionCode.BadRequest,
-  //       message: 'Session already deleted',
-  //     });
-  //   }
-  //   this.deletedAt = new Date();
-  // }
+  @Column()
+  userId: number;
 }
 
 export const AuthMetaSchema = SchemaFactory.createForClass(AuthMeta);

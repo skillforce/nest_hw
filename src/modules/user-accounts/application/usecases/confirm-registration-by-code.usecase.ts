@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { EmailConfirmation } from '../../domain/schemas/email-confirmation.schema';
+import { EmailConfirmation } from '../../domain/entities/email-confirmation.entity';
 import { EmailConfirmationRepository } from '../../infrastructure/email-confirmation.repository';
 
 export class ConfirmRegistrationByCodeCommand {

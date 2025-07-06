@@ -1,23 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from '../../domain/user.entity';
+import { Injectable } from '@nestjs/common';
+import { User } from '../../domain/entities/user.entity';
 import { UserViewDto } from '../../api/view-dto/users-view-dto/users.view-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { GetUsersQueryParams } from '../../api/input-dto/users-input-dto/get-users-query-params.input-dto';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
-  async getByIdOrNotFoundFail(id: string): Promise<UserViewDto> {
-    const userResult = await this.dataSource.query<User[]>(
-      'SELECT * FROM "Users" WHERE "id" = $1 AND "deletedAt" IS NULL',
-      [id],
-    );
+  constructor(
+    @InjectRepository(User)
+    private readonly usersOrmRepository: Repository<User>,
+  ) {}
+  async getByIdOrNotFoundFail(id: number): Promise<UserViewDto> {
+    const userResult = await this.usersOrmRepository.findOne({
+      where: { id: id, deletedAt: IsNull() },
+    });
 
-    if (!userResult.length) {
+    if (!userResult) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         extensions: [
@@ -30,7 +32,7 @@ export class UsersQueryRepository {
       });
     }
 
-    return UserViewDto.mapToViewDto(userResult[0]);
+    return UserViewDto.mapToViewDto(userResult);
   }
 
   async getAllUsers(
@@ -38,50 +40,34 @@ export class UsersQueryRepository {
   ): Promise<PaginatedViewDto<UserViewDto[]>> {
     const sortDirection =
       query.sortDirection?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-    const sortBy = query.sortBy;
     const skip = query.calculateSkip();
     const limit = query.pageSize;
 
-    const values: any[] = [];
-    let whereClause = `"deletedAt" IS NULL`;
+    let whereConditions: FindOptionsWhere<User>[] = [];
 
-    if (query.searchLoginTerm || query.searchEmailTerm) {
-      const searchConditions: string[] = [];
-
-      if (query.searchLoginTerm) {
-        values.push(`%${query.searchLoginTerm}%`);
-        searchConditions.push(`"login" ILIKE $${values.length}`);
-      }
-
-      if (query.searchEmailTerm) {
-        values.push(`%${query.searchEmailTerm}%`);
-        searchConditions.push(`"email" ILIKE $${values.length}`);
-      }
-
-      whereClause += ` AND (${searchConditions.join(' OR ')})`;
+    if (query.searchLoginTerm && query.searchEmailTerm) {
+      whereConditions = [
+        { deletedAt: IsNull(), login: ILike(`%${query.searchLoginTerm}%`) },
+        { deletedAt: IsNull(), email: ILike(`%${query.searchEmailTerm}%`) },
+      ];
+    } else if (query.searchLoginTerm) {
+      whereConditions = [
+        { deletedAt: IsNull(), login: ILike(`%${query.searchLoginTerm}%`) },
+      ];
+    } else if (query.searchEmailTerm) {
+      whereConditions = [
+        { deletedAt: IsNull(), email: ILike(`%${query.searchEmailTerm}%`) },
+      ];
+    } else {
+      whereConditions = [{ deletedAt: IsNull() }];
     }
 
-    // Count query for pagination
-    const countQuery = `
-    SELECT COUNT(*) AS total
-    FROM "Users"
-    WHERE ${whereClause};
-  `;
-    const countResult = await this.dataSource.query(countQuery, values);
-    const totalCount = parseInt(countResult[0].total, 10);
-
-    values.push(limit);
-    values.push(skip);
-    const getUsersQuery = `
-    SELECT *
-    FROM "Users"
-    WHERE ${whereClause}
-    ORDER BY "${sortBy}" ${sortDirection}
-    LIMIT $${values.length - 1}
-    OFFSET $${values.length};
-  `;
-
-    const users = await this.dataSource.query<User[]>(getUsersQuery, values);
+    const [users, totalCount] = await this.usersOrmRepository.findAndCount({
+      where: whereConditions,
+      order: { [query.sortBy]: sortDirection },
+      skip,
+      take: limit,
+    });
 
     const items = users.map(UserViewDto.mapToViewDto);
 

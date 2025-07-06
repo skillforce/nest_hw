@@ -1,24 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { EmailConfirmation } from '../domain/schemas/email-confirmation.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { EmailConfirmation } from '../domain/entities/email-confirmation.entity';
 
 @Injectable()
 export class EmailConfirmationRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(EmailConfirmation)
+    private readonly emailConfirmationRepository: Repository<EmailConfirmation>,
+  ) {}
   async findByConfirmationCodeOrNotFoundFail(
     confirmationCode: string,
   ): Promise<EmailConfirmation> {
-    const getEmailConfirmationCodeQuery =
-      'SELECT * FROM "EmailConfirmations" WHERE "confirmationCode" = $1';
-    const result = await this.dataSource.query<EmailConfirmation[]>(
-      getEmailConfirmationCodeQuery,
-      [confirmationCode],
-    );
+    const result = await this.emailConfirmationRepository.findOneBy({
+      confirmationCode,
+    });
 
-    if (!result[0]) {
+    if (!result) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -31,15 +31,14 @@ export class EmailConfirmationRepository {
       });
     }
 
-    return result[0];
+    return result;
   }
 
-  async findByUserIdOrNotFoundFail(userId: string): Promise<EmailConfirmation> {
-    const query = 'SELECT * FROM "EmailConfirmations" WHERE "userId" = $1';
-    const result = await this.dataSource.query<EmailConfirmation[]>(query, [
+  async findByUserIdOrNotFoundFail(userId: number): Promise<EmailConfirmation> {
+    const result = await this.emailConfirmationRepository.findOneBy({
       userId,
-    ]);
-    if (!result[0]) {
+    });
+    if (!result) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -52,29 +51,15 @@ export class EmailConfirmationRepository {
       });
     }
 
-    return result[0];
+    return result;
   }
 
-  async save(emailConfirmation: EmailConfirmation): Promise<string> {
-    const query = `
-      INSERT INTO "EmailConfirmations" ( "confirmationCode", "confirmationExpiresAt", "isConfirmed", "userId")
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT ("userId") DO UPDATE SET
-        "confirmationCode" = EXCLUDED."confirmationCode",
-        "confirmationExpiresAt" = EXCLUDED."confirmationExpiresAt",
-        "isConfirmed" = EXCLUDED."isConfirmed"
-        RETURNING "id";
-    `;
+  async save(
+    emailConfirmation: Omit<EmailConfirmation, 'id'> & { id?: number },
+  ): Promise<number> {
+    const result =
+      await this.emailConfirmationRepository.save(emailConfirmation);
 
-    const values = [
-      emailConfirmation.confirmationCode,
-      emailConfirmation.confirmationExpiresAt,
-      emailConfirmation.isConfirmed,
-      emailConfirmation.userId,
-    ];
-
-    const result = await this.dataSource.query(query, values);
-
-    return result[0].id;
+    return result.id;
   }
 }

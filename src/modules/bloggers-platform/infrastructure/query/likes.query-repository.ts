@@ -75,7 +75,7 @@ export class LikesQueryRepository {
 
   async getEntityLikesInfo(
     parentId: number,
-    userId?: string,
+    userId?: number,
   ): Promise<LikesInfoViewDto> {
     const query = `SELECT 
       COUNT(*) FILTER (WHERE "likeStatus" = $1) AS "likesCount",
@@ -104,7 +104,7 @@ export class LikesQueryRepository {
     userId,
   }: {
     parentIds: number[];
-    userId?: string;
+    userId?: number;
   }): Promise<Record<string, LikesInfoViewDto>> {
     const likesQuery = `SELECT 
        l."likeStatus", l."userId", l."parentId"
@@ -113,7 +113,7 @@ export class LikesQueryRepository {
        WHERE l."parentId" = ANY($1::int[]) AND l."deletedAt" IS NULL`;
 
     const likesUsersResult = await this.dataSource.query<
-      { likeStatus: LikeStatusEnum; userId: string; parentId: number }[]
+      { likeStatus: LikeStatusEnum; userId: number; parentId: number }[]
     >(likesQuery, [parentIds]);
 
     const result: Record<string, LikesInfoViewDto> = {};

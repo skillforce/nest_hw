@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
 
 export class DeleteUserByIdCommand {
-  constructor(public id: string) {}
+  constructor(public id: number) {}
 }
 
 @CommandHandler(DeleteUserByIdCommand)

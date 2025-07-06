@@ -3,7 +3,7 @@ import { AuthMetaRepository } from '../../infrastructure/auth-meta.repository';
 
 export class DeleteAllUserDevicesExceptCurrentOneCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public deviceId: string,
   ) {}
 }

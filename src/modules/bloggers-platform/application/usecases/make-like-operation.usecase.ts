@@ -16,7 +16,7 @@ export enum LikeParentInstanceEnum {
 export class MakeLikeOperationCommand {
   constructor(
     public likeDto: MakeLikeDto,
-    public userId: string,
+    public userId: number,
     public parentId: number,
     public parentInstance: LikeParentInstanceEnum,
   ) {}
@@ -70,7 +70,7 @@ export class MakeLikeOperationUseCase
   }
   private async createLike(
     likeDto: MakeLikeDto,
-    userId: string,
+    userId: number,
     parentId: string,
   ) {
     const newLike = this.createInstance({

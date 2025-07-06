@@ -2,18 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { AuthMeta } from '../domain/auth-meta.entity';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 
 @Injectable()
 export class AuthMetaRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(AuthMeta)
+    private readonly authMetaOrmRepository: Repository<AuthMeta>,
+  ) {}
   async findManyByDeviceIdOrNotFoundFail(device_id: string) {
-    const query = `SELECT * FROM "UserSessions" WHERE "deviceId" = $1 AND "deletedAt" IS NULL`;
-
-    const sessions = await this.dataSource.query<AuthMeta[]>(query, [
-      device_id,
-    ]);
+    const sessions = await this.authMetaOrmRepository.find({
+      where: { deviceId: device_id },
+    });
 
     if (!sessions.length) {
       throw new DomainException({
@@ -31,41 +32,24 @@ export class AuthMetaRepository {
     return sessions;
   }
   async markAllSessionsAsDeletedExceptWithDeviceId(
-    user_id: string,
+    user_id: number,
     device_id: string,
   ): Promise<void> {
-    const deletedAt = new Date().toISOString();
-
-    const query = `UPDATE "UserSessions" SET "deletedAt" = $1 WHERE "userId" = $2 AND "deviceId" != $3 AND "deletedAt" IS NULL`;
-
-    return this.dataSource.query(query, [deletedAt, user_id, device_id]);
+    await this.authMetaOrmRepository.update(
+      {
+        userId: user_id,
+        deviceId: Not(device_id),
+        deletedAt: IsNull(),
+      },
+      {
+        deletedAt: new Date().toISOString(),
+      },
+    );
   }
 
   async save(session: Omit<AuthMeta, 'id'> & { id?: string }): Promise<string> {
-    const query = `
-      INSERT INTO "UserSessions"
-      ("iat", "userId", "deviceId", "exp", "deviceName", "ipAddress", "deletedAt", "createdAt")
-      VALUES
-        ($1, $2, $3, $4, $5, $6, $7, $8)
-      ON CONFLICT ("deviceId") DO UPDATE SET
-        "iat" = EXCLUDED."iat",
-        "exp" = EXCLUDED."exp",
-        "deletedAt" = EXCLUDED."deletedAt"
-      RETURNING "id";
-    `;
-    const values = [
-      session.iat,
-      session.userId,
-      session.deviceId,
-      session.exp,
-      session.deviceName,
-      session.ipAddress,
-      session.deletedAt ?? null,
-      session.createdAt ?? new Date(),
-    ];
+    const result = await this.authMetaOrmRepository.save(session);
 
-    const result = await this.dataSource.query<{ id: string }[]>(query, values);
-
-    return result[0].id;
+    return result.id;
   }
 }

@@ -21,7 +21,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteUserByIdCommand } from '../application/usecases/delete-user-by-id.usecase';
 import { CreateUserCommand } from '../application/usecases/create-user.usecase';
-import { IdStringParamDto } from '../../../core/decorators/validation/objectIdDto';
+import { IdNumberParamDto } from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('sa/users')
@@ -44,7 +44,7 @@ export class UsersController {
   async createUser(@Body() dto: CreateUserInputDto) {
     const createdUserId = await this.commandBus.execute<
       CreateUserCommand,
-      string
+      number
     >(new CreateUserCommand(dto, true));
 
     return this.userQueryRepository.getByIdOrNotFoundFail(createdUserId);
@@ -53,7 +53,8 @@ export class UsersController {
   @ApiParam({ name: 'id' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUserById(@Param() { id }: IdStringParamDto) {
+  async deleteUserById(@Param() { id }: IdNumberParamDto) {
+    console.log(id);
     return this.commandBus.execute<DeleteUserByIdCommand, void>(
       new DeleteUserByIdCommand(id),
     );

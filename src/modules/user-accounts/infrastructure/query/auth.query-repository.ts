@@ -1,21 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { MeViewDto } from '../../api/view-dto/users-view-dto/users.view-dto';
-import { User } from '../../domain/user.entity';
+import { User } from '../../domain/entities/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class AuthQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly usersOrmRepository: Repository<User>,
+  ) {}
 
-  async getMe(userId: string): Promise<MeViewDto> {
-    const userResult = await this.dataSource.query<User[]>(
-      'SELECT * FROM "Users" WHERE "id" = $1 AND "deletedAt" IS NULL',
-      [userId],
-    );
-    if (!userResult.length) {
+  async getMe(userId: number): Promise<MeViewDto> {
+    const userResult = await this.usersOrmRepository.findOne({
+      where: { id: userId, deletedAt: IsNull() },
+    });
+    if (!userResult) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -28,6 +30,6 @@ export class AuthQueryRepository {
       });
     }
 
-    return MeViewDto.mapToViewDto(userResult[0]);
+    return MeViewDto.mapToViewDto(userResult);
   }
 }

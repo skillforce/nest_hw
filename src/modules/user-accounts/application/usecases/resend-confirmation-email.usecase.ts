@@ -28,7 +28,7 @@ export class ResendConfirmationEmailUseCase
       new InitializeConfirmRegistrationCommand(user.id),
     );
   }
-  private async checkIsConfirmed(userId: string): Promise<void> {
+  private async checkIsConfirmed(userId: number): Promise<void> {
     const confirmationEntity =
       await this.emailConfirmationRepository.findByUserIdOrNotFoundFail(userId);
 

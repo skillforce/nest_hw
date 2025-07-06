@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
-import { User } from '../../../user-accounts/domain/user.entity';
+import { User } from '../../../user-accounts/domain/entities/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { Comment } from '../../domain/comment.entity';
@@ -9,7 +9,7 @@ import { Comment } from '../../domain/comment.entity';
 export class DeleteCommentCommand {
   constructor(
     public commentId: number,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 

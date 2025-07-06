@@ -11,11 +11,12 @@ import { join } from 'path';
 import { APP_FILTER } from '@nestjs/core';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
-import { CoreConfig } from './core/core.config';
+import { CoreConfig } from './core/configs/core.config';
 import { CoreModule } from './core/core.module';
 import { SWAGGER_PREFIX } from './setup/swagger.setup';
 import { SecurityDevicesModule } from './modules/security-devices/security-devices.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DBConfig } from './core/configs/db.config';
 
 @Module({
   imports: [
@@ -24,40 +25,27 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       rootPath: join(__dirname, '..', 'swagger-static'),
       serveRoot: SWAGGER_PREFIX,
     }),
-    // MongooseModule.forRootAsync({
-    //   useFactory: (coreConfig: CoreConfig) => {
-    //     const uri = coreConfig.mongoURI;
-    //     console.log('DB_URI', uri);
-    //
-    //     return {
-    //       uri: uri,
-    //     };
-    //   },
-    //   inject: [CoreConfig],
-    // }),
     TypeOrmModule.forRootAsync({
-      useFactory: (coreConfig: CoreConfig) => {
-        console.log('PG_DB_URI', coreConfig.postgresHost);
-        console.log('PG_DB_PORT', coreConfig.postgresPort);
-        console.log('PG_DB_USER', coreConfig.postgresUser);
-        console.log('PG_DB_PASSWORD', coreConfig.postgresPassword);
-        console.log('PG_DB_NAME', coreConfig.postgresDatabase);
+      useFactory: (DBConfig: DBConfig) => {
+        console.log('PG_DB_URI', DBConfig.postgresHost);
+        console.log('PG_DB_PORT', DBConfig.postgresPort);
+        console.log('PG_DB_USER', DBConfig.postgresUser);
+        console.log('PG_DB_PASSWORD', DBConfig.postgresPassword);
+        console.log('PG_DB_NAME', DBConfig.postgresDatabase);
 
         return {
           type: 'postgres',
-          host: coreConfig.postgresHost,
-          port: coreConfig.postgresPort,
-          username: coreConfig.postgresUser,
-          password: coreConfig.postgresPassword,
-          database: coreConfig.postgresDatabase,
-          ssl: {
-            rejectUnauthorized: false,
-          },
-          autoLoadEntities: false,
-          synchronize: false,
+          host: DBConfig.postgresHost,
+          port: DBConfig.postgresPort,
+          username: DBConfig.postgresUser,
+          password: DBConfig.postgresPassword,
+          database: DBConfig.postgresDatabase,
+          ssl: false,
+          autoLoadEntities: true,
+          synchronize: true,
         };
       },
-      inject: [CoreConfig],
+      inject: [DBConfig],
     }),
     UserAccountsModule,
     SecurityDevicesModule,

@@ -1,11 +1,11 @@
 //what will be in user in request
 
 export class UserContextDto {
-  id: string;
+  id: number;
 }
 
 export class UserRefreshContextDto {
-  id: string;
+  id: number;
   deviceId: string;
   iat: number;
   exp: number;

@@ -2,25 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { AuthMeta } from '../../domain/auth-meta.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ExternalAuthMetaRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(AuthMeta)
+    private readonly authMetaOrmRepository: Repository<AuthMeta>,
+  ) {}
   async findByDeviceIdAndUserIdAndIatOrNotFoundFail(
     device_id: string,
-    user_id: string,
+    user_id: number,
     iat: string,
   ) {
-    const query =
-      'SELECT * FROM "UserSessions" WHERE "userId"= $1 AND "deviceId" =$2 AND iat=$3 AND "deletedAt" IS NULL';
-    const session = await this.dataSource.query<AuthMeta[]>(query, [
-      user_id,
-      device_id,
-      iat,
-    ]);
-    if (!session.length) {
+    const session = await this.authMetaOrmRepository.findOne({
+      where: {
+        userId: user_id,
+        deviceId: device_id,
+        iat,
+      },
+    });
+    if (!session) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
         extensions: [
@@ -33,34 +36,11 @@ export class ExternalAuthMetaRepository {
       });
     }
 
-    return session[0];
+    return session;
   }
 
   async save(session: Omit<AuthMeta, 'id'> & { id?: string }): Promise<string> {
-    const query = `
-      INSERT INTO "UserSessions"
-      ("iat", "userId", "deviceId", "exp", "deviceName", "ipAddress", "deletedAt", "createdAt")
-      VALUES
-        ($1, $2, $3, $4, $5, $6, $7, $8)
-      ON CONFLICT ("deviceId") DO UPDATE SET
-        "iat" = EXCLUDED."iat",
-        "exp" = EXCLUDED."exp",
-        "deletedAt" = EXCLUDED."deletedAt"
-      RETURNING "id";
-    `;
-    const values = [
-      session.iat,
-      session.userId,
-      session.deviceId,
-      session.exp,
-      session.deviceName,
-      session.ipAddress,
-      session.deletedAt ?? null,
-      session.createdAt ?? new Date(),
-    ];
-
-    const result = await this.dataSource.query<{ id: string }[]>(query, values);
-
-    return result[0].id;
+    const result = await this.authMetaOrmRepository.save(session);
+    return result.id;
   }
 }

@@ -3,7 +3,6 @@ import { BlogsController } from './api/blogs/blogs-controller';
 import { PostsController } from './api/posts-controller';
 import { CommentsController } from './api/comments-controller';
 import { CommentsService } from './application/comments-service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsRepository } from './infrastructure/blogs.repository';
 import { BlogsQueryRepository } from './infrastructure/query/blogs.query-repository';
 import { PostsRepository } from './infrastructure/posts.repository';
@@ -25,9 +24,11 @@ import { LikesRepository } from './infrastructure/like.repository';
 import { LikesQueryRepository } from './infrastructure/query/likes.query-repository';
 import { BlogsPublicController } from './api/blogs/blogs-controller.public';
 import { DeletePostByBlogIdUseCase } from './application/usecases/delete-post-by-blog-id.usecase';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../user-accounts/domain/entities/user.entity';
 
 @Module({
-  imports: [MongooseModule.forFeature([])],
+  imports: [TypeOrmModule.forFeature([User])],
   controllers: [
     BlogsController,
     BlogsPublicController,

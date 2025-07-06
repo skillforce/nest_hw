@@ -5,9 +5,11 @@ import { AuthMetaQueryRepository } from './infrastructure/query/auth-meta.query-
 import { SecurityController } from './api/security-controller';
 import { DeleteSessionByDeviceIdUseCase } from './application/usecases/delete-session-by-device-id.usecase';
 import { DeleteAllUserDevicesExceptCurrentOneUseCase } from './application/usecases/delete-all-devices-except-current-one.usecase';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthMeta } from './domain/auth-meta.entity';
 
 @Module({
-  imports: [],
+  imports: [TypeOrmModule.forFeature([AuthMeta])],
   controllers: [SecurityController],
   providers: [
     AuthMetaRepository,

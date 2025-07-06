@@ -3,7 +3,7 @@ import { UpdateCommentDto } from '../../domain/dto/comment-domain.dto';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { UsersRepository } from '../../../user-accounts/infrastructure/users.repository';
 import { Comment } from '../../domain/comment.entity';
-import { User } from '../../../user-accounts/domain/user.entity';
+import { User } from '../../../user-accounts/domain/entities/user.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
@@ -11,7 +11,7 @@ export class UpdateCommentCommand {
   constructor(
     public updateCommentDto: UpdateCommentDto,
     public commentId: number,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 

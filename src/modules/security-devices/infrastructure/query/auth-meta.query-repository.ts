@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { DevicesViewDto } from '../../api/view-dto/devices.view-dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { AuthMeta } from '../../domain/auth-meta.entity';
 
 @Injectable()
 export class AuthMetaQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(AuthMeta)
+    private readonly authMetaOrmRepository: Repository<AuthMeta>,
+  ) {}
 
-  async getDevicesForUser(user_id: string): Promise<DevicesViewDto[]> {
-    const query = `SELECT * FROM "UserSessions" WHERE "userId" = $1 AND "deletedAt" IS NULL`;
-    const sessions = await this.dataSource.query<AuthMeta[]>(query, [user_id]);
+  async getDevicesForUser(user_id: number): Promise<DevicesViewDto[]> {
+    const sessions = await this.authMetaOrmRepository.find({
+      where: { userId: user_id, deletedAt: IsNull() },
+    });
 
     return sessions.map(DevicesViewDto.mapToViewDto);
   }

@@ -14,7 +14,7 @@ import { CreateAuthMetaDomainDto } from '../../../security-devices/domain/dto/cr
 
 export class GenerateNewTokensCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public userAgent: string,
     public ipAddress: string,
   ) {}
@@ -53,7 +53,7 @@ export class GenerateNewTokensUsecase
     return { accessToken, refreshToken };
   }
 
-  generateTokensPair(userId: string): {
+  generateTokensPair(userId: number): {
     accessToken: string;
     refreshToken: string;
   } {
@@ -78,7 +78,7 @@ export class GenerateNewTokensUsecase
     const decodedRefreshToken: {
       iat: number;
       exp: number;
-      id: string;
+      id: number;
       deviceId: string;
     } = await this.refreshTokenContext.decode(refreshToken);
     const iatIso = this.transformTimestampsToIsoString(decodedRefreshToken.iat);
@@ -93,6 +93,7 @@ export class GenerateNewTokensUsecase
     };
 
     const newSession = this.createInstance(authMetaSession);
+    console.log(newSession);
     await this.authMetaRepository.save(newSession);
   }
   transformTimestampsToIsoString(timestamp: number) {

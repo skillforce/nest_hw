@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GLOBAL_PREFIX } from './global-prefix.setup';
 import { get } from 'http';
 import { createWriteStream } from 'fs';
-import { CoreConfig } from '../core/core.config';
+import { CoreConfig } from '../core/configs/core.config';
 
 export const SWAGGER_PREFIX = 'swagger';
 export function swaggerSetup(app: INestApplication, coreConfig: CoreConfig) {

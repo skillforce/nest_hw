@@ -2,7 +2,7 @@ import { IsEmail, IsUUID, Length } from 'class-validator';
 import {
   loginConstraints,
   passwordConstraints,
-} from '../../../domain/user.entity';
+} from '../../../domain/entities/user.entity';
 import { IsFieldExistAndStringWithTrim } from '../../../../../core/decorators/validation/is-field-exist-and-string-with-trim';
 
 export class LoginInputDto {

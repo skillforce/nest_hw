@@ -1,6 +1,6 @@
 export class AuthMetaDto {
   iat: string;
-  userId: string;
+  userId: number;
   deviceId: string;
   exp: string;
   deviceName: string;

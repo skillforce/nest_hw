@@ -67,7 +67,7 @@ export class UpdateRefreshTokenUsecase
   }
 
   generateNewTokensPair(
-    userId: string,
+    userId: number,
     deviceId: string,
   ): {
     accessToken: string;

@@ -84,7 +84,7 @@ export class AuthController {
   async register(@Body() dto: RegistrationInputDto) {
     const createdUserId = await this.commandBus.execute<
       CreateUserCommand,
-      string
+      number
     >(new CreateUserCommand(dto));
 
     return await this.usersQueryRepository.getByIdOrNotFoundFail(createdUserId);
@@ -149,6 +149,7 @@ export class AuthController {
 
   @Post('password-recovery')
   async recoverPassword(@Body() { email }: PasswordRecoveryInputDto) {
+    console.log(email);
     return this.commandBus.execute<InitializePasswordRecoveryCommand, void>(
       new InitializePasswordRecoveryCommand(email),
     );

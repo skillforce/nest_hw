@@ -6,7 +6,7 @@ import { DataSource } from 'typeorm';
 @Injectable()
 export class LikesRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
-  async findByUserIdAndParentId(userId: string, parentId: string) {
+  async findByUserIdAndParentId(userId: number, parentId: string) {
     const query =
       'SELECT * FROM "Likes" WHERE "userId" = $1 AND "parentId" = $2 AND "deletedAt" IS NULL';
     const result = await this.dataSource.query<Like[]>(query, [

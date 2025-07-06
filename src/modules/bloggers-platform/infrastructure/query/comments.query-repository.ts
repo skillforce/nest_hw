@@ -8,7 +8,7 @@ import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { User } from '../../../user-accounts/domain/user.entity';
+import { User } from '../../../user-accounts/domain/entities/user.entity';
 
 @Injectable()
 export class CommentsQueryRepository {

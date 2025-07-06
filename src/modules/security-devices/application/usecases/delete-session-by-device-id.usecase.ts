@@ -6,7 +6,7 @@ import { AuthMeta } from '../../domain/auth-meta.entity';
 
 export class DeleteSessionByDeviceIdCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public deviceId: string,
   ) {}
 }

@@ -16,7 +16,7 @@ export class UsersTestManager {
     statusCode: number = HttpStatus.CREATED,
   ): Promise<UserViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/users`)
+      .post(`/${GLOBAL_PREFIX}/sa/users`)
       .send(createModel)
       .auth('admin', 'qwerty')
       .expect(statusCode);
@@ -26,7 +26,7 @@ export class UsersTestManager {
 
   async getUsers(statusCode: number = HttpStatus.OK): Promise<UserViewDto[]> {
     const response = await request(this.app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/users`)
+      .get(`/${GLOBAL_PREFIX}/sa/users`)
       .auth('admin', 'qwerty')
       .expect(statusCode);
 
@@ -91,11 +91,11 @@ export class UsersTestManager {
     return await Promise.all(loginPromises);
   }
   async deleteUser(
-    userId: string,
+    userId: any,
     statusCode: number = HttpStatus.NO_CONTENT,
   ): Promise<Request> {
     return await request(this.app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/users/${userId}`)
+      .delete(`/${GLOBAL_PREFIX}/sa/users/${userId}`)
       .auth('admin', 'qwerty')
       .expect(statusCode);
   }

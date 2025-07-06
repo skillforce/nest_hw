@@ -1,6 +1,6 @@
 export class CommentDomainDto {
   content: string;
-  creatorId: string;
+  creatorId: number;
   createdAt?: string;
   postId: number;
 }

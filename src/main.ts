@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { appSetup } from './setup/app.setup';
 import { initAppModule } from './init-app-module';
-import { CoreConfig } from './core/core.config';
+import { CoreConfig } from './core/configs/core.config';
 
 async function bootstrap() {
   //with dynamic app module which can be created on the fly with additional modules

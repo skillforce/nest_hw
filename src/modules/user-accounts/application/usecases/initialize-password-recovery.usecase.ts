@@ -2,7 +2,7 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { randomUUID } from 'node:crypto';
 import { PasswordRecoveryInitializedEvent } from '../../domain/events/password-recovery-initialized.event';
-import { PasswordRecoveryConfirmation } from '../../domain/schemas/password-recovery-confirmation.schema';
+import { PasswordRecoveryConfirmation } from '../../domain/entities/password-recovery-confirmation.entity';
 import { PasswordRecoveryConfirmationRepository } from '../../infrastructure/password-recovery-confirmation.repository';
 
 export class InitializePasswordRecoveryCommand {
@@ -25,6 +25,7 @@ export class InitializePasswordRecoveryUseCase
 
     const passwordRecoveryConfirmation =
       this.createPasswordRecoveryConfirmationCode(confirmationCode, user.id);
+    console.log(passwordRecoveryConfirmation);
 
     await this.passwordRecoveryConfirmationRepository.save(
       passwordRecoveryConfirmation,
@@ -36,9 +37,9 @@ export class InitializePasswordRecoveryUseCase
   }
   private createPasswordRecoveryConfirmationCode(
     code: string,
-    userId: string,
+    userId: number,
     expiresInMinutes = 30,
-  ): PasswordRecoveryConfirmation {
+  ): Omit<PasswordRecoveryConfirmation, 'id'> {
     return {
       confirmationCode: code,
       confirmationExpiresAt: new Date(

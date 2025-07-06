@@ -4,10 +4,10 @@ import { UserRegisteredEvent } from '../../domain/events/user-registered.event';
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { EmailConfirmationRepository } from '../../infrastructure/email-confirmation.repository';
-import { EmailConfirmation } from '../../domain/schemas/email-confirmation.schema';
+import { EmailConfirmation } from '../../domain/entities/email-confirmation.entity';
 
 export class InitializeConfirmRegistrationCommand {
-  constructor(public userId: string) {}
+  constructor(public userId: number) {}
 }
 
 @Injectable()
@@ -37,9 +37,9 @@ export class InitializeConfirmRegistrationUseCase
   }
   private createEmailConfirmationEntity(
     confirmationCode: string,
-    userId: string,
+    userId: number,
     expiresInMinutes = 30,
-  ): EmailConfirmation {
+  ): Omit<EmailConfirmation, 'id'> {
     return {
       confirmationCode,
       confirmationExpiresAt: new Date(

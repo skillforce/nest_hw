@@ -27,7 +27,7 @@ import { ConfirmRegistrationByCodeUseCase } from './application/usecases/confirm
 import { InitializePasswordRecoveryUseCase } from './application/usecases/initialize-password-recovery.usecase';
 import { ChangePasswordByRecoveryCodeUseCase } from './application/usecases/change-password-by-recovery-code.usecase';
 import { DeleteUserByIdUseCase } from './application/usecases/delete-user-by-id.usecase';
-import { CoreConfig, Environments } from '../../core/core.config';
+import { CoreConfig, Environments } from '../../core/configs/core.config';
 import { UpdateRefreshTokenUsecase } from './application/usecases/update-refresh-token.usecase';
 import { GenerateNewTokensUsecase } from './application/usecases/generate-new-tokens.usecase';
 import { LogoutUserUsecase } from './application/usecases/logout-user.usecase';
@@ -35,9 +35,18 @@ import { JwtRefreshStrategy } from '../security-devices/guards/refreshToken/refr
 import { SecurityDevicesModule } from '../security-devices/security-devices.module';
 import { EmailConfirmationRepository } from './infrastructure/email-confirmation.repository';
 import { PasswordRecoveryConfirmationRepository } from './infrastructure/password-recovery-confirmation.repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './domain/entities/user.entity';
+import { PasswordRecoveryConfirmation } from './domain/entities/password-recovery-confirmation.entity';
+import { EmailConfirmation } from './domain/entities/email-confirmation.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([
+      User,
+      PasswordRecoveryConfirmation,
+      EmailConfirmation,
+    ]),
     JwtModule,
     SecurityDevicesModule,
     NotificationsModule,

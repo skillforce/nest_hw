@@ -43,7 +43,7 @@ describe('Users Controller (e2e)', () => {
 
   it('should return paginated response with empty items array', async () => {
     const response = await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/users`)
+      .get(`/${GLOBAL_PREFIX}/sa/users`)
       .auth('admin', 'qwerty')
       .expect(HttpStatus.OK);
 
@@ -58,7 +58,7 @@ describe('Users Controller (e2e)', () => {
 
   it('should return 401 error when authorization header is missing', async () => {
     await request(app.getHttpServer())
-      .get(`/${GLOBAL_PREFIX}/users`)
+      .get(`/${GLOBAL_PREFIX}/sa/users`)
       .expect(HttpStatus.UNAUTHORIZED);
   });
 
@@ -72,7 +72,7 @@ describe('Users Controller (e2e)', () => {
     const response = await userTestManager.createUser(body);
 
     expect(response).toEqual({
-      id: expect.any(String),
+      id: expect.any(Number),
       login: body.login,
       email: body.email,
       createdAt: expect.any(String),
@@ -87,12 +87,12 @@ describe('Users Controller (e2e)', () => {
     };
 
     await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/users`)
+      .post(`/${GLOBAL_PREFIX}/sa/users`)
       .send(wrongBody)
       .expect(HttpStatus.UNAUTHORIZED);
 
     const response = await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/users`)
+      .post(`/${GLOBAL_PREFIX}/sa/users`)
       .send(wrongBody)
       .auth('admin', 'qwerty')
       .expect(HttpStatus.BAD_REQUEST);
@@ -142,7 +142,7 @@ describe('Users Controller (e2e)', () => {
 
     const userListAfterCreation = await userTestManager.getUsers();
 
-    await userTestManager.deleteUser('wrong-user-id', HttpStatus.BAD_REQUEST);
+    await userTestManager.deleteUser('dscsad', HttpStatus.BAD_REQUEST);
     await userTestManager.deleteUser(userListAfterCreation[0].id);
     await userTestManager.deleteUser(
       userListAfterCreation[0].id,

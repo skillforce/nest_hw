@@ -3,7 +3,7 @@ import { GenerateNewTokensCommand } from './generate-new-tokens.usecase';
 
 export class LoginUserCommand {
   constructor(
-    public userId: string,
+    public userId: number,
     public userAgent: string,
     public ipAddress: string,
   ) {}

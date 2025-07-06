@@ -1,13 +1,12 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserDto } from '../../dto/user.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from '../../domain/user.entity';
+import { User } from '../../domain/entities/user.entity';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { BcryptService } from '../bcrypt-service';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { InitializeConfirmRegistrationCommand } from './initialize-confirm-registration.usecase';
-import { EmailConfirmation } from '../../domain/schemas/email-confirmation.schema';
+import { EmailConfirmation } from '../../domain/entities/email-confirmation.entity';
 import { EmailConfirmationRepository } from '../../infrastructure/email-confirmation.repository';
 import { CreateUserDomainDto } from '../../domain/dto/create-user.domain.dto';
 
@@ -20,7 +19,7 @@ export class CreateUserCommand {
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserUseCase
-  implements ICommandHandler<CreateUserCommand, string>
+  implements ICommandHandler<CreateUserCommand, number>
 {
   constructor(
     private usersRepository: UsersRepository,
@@ -29,7 +28,7 @@ export class CreateUserUseCase
     private commandBus: CommandBus,
   ) {}
 
-  async execute({ dto, isConfirmed }: CreateUserCommand): Promise<string> {
+  async execute({ dto, isConfirmed }: CreateUserCommand): Promise<number> {
     await this.checkUserDtoForUniqueFields(dto);
     const passwordHash = await this.bcryptService.hashPassword(dto.password);
     const newUser = this.createUser({
@@ -57,8 +56,10 @@ export class CreateUserUseCase
   }
 
   private async checkUserDtoForUniqueFields(dto: UserDto) {
-    const userWithSameLogin = await this.usersRepository.findByLogin(dto.login);
-    if (userWithSameLogin && userWithSameLogin.deletedAt === null) {
+    const usersWithSameLogin = await this.usersRepository.findUsersByLogin(
+      dto.login,
+    );
+    if (usersWithSameLogin?.some((user) => user.deletedAt === null)) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -71,8 +72,10 @@ export class CreateUserUseCase
       });
     }
 
-    const userWithSameEmail = await this.usersRepository.findByEmail(dto.email);
-    if (userWithSameEmail && userWithSameEmail.deletedAt === null) {
+    const usersWithSameEmail = await this.usersRepository.findUsersByEmail(
+      dto.email,
+    );
+    if (usersWithSameEmail?.some((user) => user.deletedAt === null)) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         extensions: [
@@ -85,7 +88,7 @@ export class CreateUserUseCase
       });
     }
   }
-  private createConfirmedUser(userId: string): EmailConfirmation {
+  private createConfirmedUser(userId: number): Omit<EmailConfirmation, 'id'> {
     return {
       confirmationCode: null,
       confirmationExpiresAt: null,

@@ -3,7 +3,7 @@ import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { BcryptService } from '../bcrypt-service';
-import { PasswordRecoveryConfirmation } from '../../domain/schemas/password-recovery-confirmation.schema';
+import { PasswordRecoveryConfirmation } from '../../domain/entities/password-recovery-confirmation.entity';
 import { PasswordRecoveryConfirmationRepository } from '../../infrastructure/password-recovery-confirmation.repository';
 
 export class ChangePasswordByRecoveryCodeCommand {
@@ -56,6 +56,7 @@ export class ChangePasswordByRecoveryCodeUseCase
     const newPasswordHash = await this.bcryptService.hashPassword(newPassword);
     const confirmedPasswordRecovery = this.createConfirmedPasswordRecovery(
       passwordRecoveryConfirmation.userId,
+      passwordRecoveryConfirmation.id,
     );
 
     await this.passwordRecoveryConfirmationRepository.save(
@@ -74,9 +75,11 @@ export class ChangePasswordByRecoveryCodeUseCase
     return passwordRecoveryConfirmation.confirmationExpiresAt > new Date();
   }
   private createConfirmedPasswordRecovery(
-    userId: string,
-  ): PasswordRecoveryConfirmation {
+    userId: number,
+    confirmationId: number,
+  ): Omit<PasswordRecoveryConfirmation, 'id'> & { id?: number } {
     return {
+      id: confirmationId,
       confirmationCode: null,
       confirmationExpiresAt: null,
       userId,

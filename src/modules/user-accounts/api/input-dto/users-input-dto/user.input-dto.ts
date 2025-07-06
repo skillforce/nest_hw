@@ -2,7 +2,7 @@ import { IsFieldExistAndStringWithTrim } from '../../../../../core/decorators/va
 import {
   loginConstraints,
   passwordConstraints,
-} from '../../../domain/user.entity';
+} from '../../../domain/entities/user.entity';
 import { IsEmail } from 'class-validator';
 
 export class CreateUserInputDto {

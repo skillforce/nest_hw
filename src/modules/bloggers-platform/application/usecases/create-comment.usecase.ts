@@ -11,7 +11,7 @@ export class CreateCommentCommand {
   constructor(
     public createCommentDto: CreateCommentDto,
     public postId: number,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 
