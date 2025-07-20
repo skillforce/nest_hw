@@ -35,8 +35,8 @@ export class EmailConfirmationRepository {
   }
 
   async findByUserIdOrNotFoundFail(userId: number): Promise<EmailConfirmation> {
-    const result = await this.emailConfirmationRepository.findOneBy({
-      userId,
+    const result = await this.emailConfirmationRepository.findOne({
+      where: { userId },
     });
     if (!result) {
       throw new DomainException({
@@ -57,6 +57,7 @@ export class EmailConfirmationRepository {
   async save(
     emailConfirmation: Omit<EmailConfirmation, 'id'> & { id?: number },
   ): Promise<number> {
+    console.log(emailConfirmation);
     const result =
       await this.emailConfirmationRepository.save(emailConfirmation);
 

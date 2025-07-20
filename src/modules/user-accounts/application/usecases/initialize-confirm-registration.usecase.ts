@@ -7,7 +7,10 @@ import { EmailConfirmationRepository } from '../../infrastructure/email-confirma
 import { EmailConfirmation } from '../../domain/entities/email-confirmation.entity';
 
 export class InitializeConfirmRegistrationCommand {
-  constructor(public userId: number) {}
+  constructor(
+    public userId: number,
+    public previousConfirmationEntityId?: number,
+  ) {}
 }
 
 @Injectable()
@@ -23,12 +26,14 @@ export class InitializeConfirmRegistrationUseCase
 
   async execute({
     userId,
+    previousConfirmationEntityId,
   }: InitializeConfirmRegistrationCommand): Promise<void> {
     const user = await this.usersRepository.findByIdOrNotFoundFail(userId);
     const confirmationCode = randomUUID();
     const newEmailConfirmation = this.createEmailConfirmationEntity(
       confirmationCode,
       user.id,
+      previousConfirmationEntityId,
     );
     await this.emailConfirmationRepository.save(newEmailConfirmation);
     this.eventBus.publish(
@@ -38,14 +43,16 @@ export class InitializeConfirmRegistrationUseCase
   private createEmailConfirmationEntity(
     confirmationCode: string,
     userId: number,
+    previousConfirmationEntityId: number | undefined,
     expiresInMinutes = 30,
-  ): Omit<EmailConfirmation, 'id'> {
+  ): Omit<EmailConfirmation, 'id'> & { id?: number } {
     return {
       confirmationCode,
       confirmationExpiresAt: new Date(
         Date.now() + expiresInMinutes * 60 * 1000,
       ),
       userId,
+      ...(previousConfirmationEntityId && { id: previousConfirmationEntityId }),
       isConfirmed: false,
     };
   }

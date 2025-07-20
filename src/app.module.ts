@@ -3,7 +3,6 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
-import { MongooseModule } from '@nestjs/mongoose';
 import { TestingModule } from './modules/testing/testing.module';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -40,7 +39,8 @@ import { DBConfig } from './core/configs/db.config';
           username: DBConfig.postgresUser,
           password: DBConfig.postgresPassword,
           database: DBConfig.postgresDatabase,
-          ssl: false,
+          // ssl: true,
+          ssl: false, // Set to true in case of using local db
           autoLoadEntities: true,
           synchronize: true,
         };

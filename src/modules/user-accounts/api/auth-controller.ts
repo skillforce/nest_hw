@@ -54,7 +54,6 @@ export class AuthController {
     private readonly commandBus: CommandBus,
   ) {}
 
-  @SkipThrottle()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)

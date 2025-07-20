@@ -23,12 +23,19 @@ export class ResendConfirmationEmailUseCase
 
   async execute({ email }: ResendConfirmationEmailCommand): Promise<void> {
     const user = await this.usersRepository.findByEmailOrNotFoundFail(email);
-    await this.checkIsConfirmed(user.id);
+    const prevConfirmationEntityId = await this.getConfirmationEntityId(
+      user.id,
+    );
     await this.commandBus.execute(
-      new InitializeConfirmRegistrationCommand(user.id),
+      new InitializeConfirmRegistrationCommand(
+        user.id,
+        prevConfirmationEntityId!,
+      ),
     );
   }
-  private async checkIsConfirmed(userId: number): Promise<void> {
+  private async getConfirmationEntityId(
+    userId: number,
+  ): Promise<number | void> {
     const confirmationEntity =
       await this.emailConfirmationRepository.findByUserIdOrNotFoundFail(userId);
 
@@ -44,5 +51,6 @@ export class ResendConfirmationEmailUseCase
         ],
       });
     }
+    return confirmationEntity.id;
   }
 }
