@@ -6,12 +6,15 @@ import { GetPostsQueryParams } from '../../api/input-dto/post-input-dto/get-post
 import { PostsViewDto } from '../../api/view-dto/posts.view-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class PostsQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Post)
+    private readonly postsOrmRepository: Repository<Post>,
+  ) {}
 
   async getByIdOrNotFoundFail(
     id: number,
@@ -28,14 +31,42 @@ export class PostsQueryRepository {
         message: 'post not found',
       });
     }
-    const query =
-      'SELECT p."id", p."title",  p."shortDescription", p."content", p."blogId",  b."name" as "blogName", p."createdAt" FROM "Posts" p LEFT JOIN "Blogs" b ON p."blogId"=b."id" WHERE p."id"= $1 AND p."deletedAt" IS NULL';
 
-    const [post] = await this.dataSource.query<
-      Array<Post & { blogName: string }>
-    >(query, [id]);
+    const sql = this.postsOrmRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.blog', 'blog')
+      .where('post.id = :id', { id })
+      .andWhere('post.deletedAt IS NULL')
+      .select([
+        'post.id',
+        'post.title',
+        'post.shortDescription',
+        'post.content',
+        'post.blogId',
+        'post.createdAt',
+        'blog.name',
+      ])
+      .getSql();
 
-    if (!post) {
+    console.log(sql);
+
+    const result = await this.postsOrmRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.blog', 'blog')
+      .where('post.id = :id', { id })
+      .andWhere('post.deletedAt IS NULL')
+      .select([
+        'post.id',
+        'post.title',
+        'post.shortDescription',
+        'post.content',
+        'post.blogId',
+        'post.createdAt',
+        'blog.name',
+      ])
+      .getOne();
+
+    if (!result) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         extensions: [
@@ -48,7 +79,7 @@ export class PostsQueryRepository {
       });
     }
 
-    return PostsViewDto.mapToViewDto(post);
+    return PostsViewDto.mapToViewDto(result as Post & { blogName: string });
   }
 
   async getAll(
@@ -57,51 +88,25 @@ export class PostsQueryRepository {
   ): Promise<PaginatedViewDto<Omit<PostsViewDto, 'extendedLikesInfo'>[]>> {
     const sortDirection =
       query.sortDirection?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-    const sortBy = query.sortBy;
     const skip = query.calculateSkip();
     const limit = query.pageSize;
 
-    const values: any[] = [];
-    let whereClause = `p."deletedAt" IS NULL`;
+    let whereConditions: FindOptionsWhere<Post>[] = [];
 
     if (additionalFilters.blogId) {
-      values.push(additionalFilters.blogId);
-      whereClause += ` AND "blogId" = $${values.length}`;
+      whereConditions = [
+        { deletedAt: IsNull(), blogId: additionalFilters.blogId },
+      ];
+    } else {
+      whereConditions = [{ deletedAt: IsNull() }];
     }
 
-    const countQuery = `
-            SELECT COUNT(*) AS total
-            FROM "Posts" p
-            WHERE ${whereClause};
-        `;
-    const countResult = await this.dataSource.query<{ total: string }[]>(
-      countQuery,
-      values,
-    );
-    const totalCount = parseInt(countResult[0].total, 10);
-
-    values.push(limit);
-    values.push(skip);
-
-    const postsQuery = `
-            SELECT p."id",
-                   p."title",
-                   p."shortDescription",
-                   p."content",
-                   p."blogId",
-                   b."name" as "blogName",
-                   p."createdAt"
-            FROM "Posts" p
-                     LEFT JOIN "Blogs" b
-                               ON p."blogId" = b."id"
-            WHERE ${whereClause}
-            ORDER BY "${sortBy}" ${sortDirection}
-            LIMIT $${values.length - 1}
-    OFFSET $${values.length}`;
-
-    const posts = await this.dataSource.query<
-      Array<Post & { blogName: string }>
-    >(postsQuery, values);
+    const [posts, totalCount] = await this.postsOrmRepository.findAndCount({
+      where: whereConditions,
+      order: { [query.sortBy]: sortDirection },
+      skip,
+      take: limit,
+    });
 
     const items = posts.map(PostsViewDto.mapToViewDto);
 

@@ -26,9 +26,11 @@ import { BlogsPublicController } from './api/blogs/blogs-controller.public';
 import { DeletePostByBlogIdUseCase } from './application/usecases/delete-post-by-blog-id.usecase';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user-accounts/domain/entities/user.entity';
+import { Blog } from './domain/blog.entity';
+import { Post } from './domain/post.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User, Blog, Post])],
   controllers: [
     BlogsController,
     BlogsPublicController,

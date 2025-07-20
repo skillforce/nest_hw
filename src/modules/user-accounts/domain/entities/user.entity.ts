@@ -3,6 +3,7 @@ import { NumericIdEntity } from '../../../common/domain/base.entity';
 import { PasswordRecoveryConfirmation } from './password-recovery-confirmation.entity';
 import { EmailConfirmation } from './email-confirmation.entity';
 import { AuthMeta } from '../../../security-devices/domain/auth-meta.entity';
+import { Length } from 'class-validator';
 
 export const loginConstraints = {
   minLength: 3,
@@ -17,12 +18,14 @@ export const passwordConstraints = {
 @Entity('Users')
 export class User extends NumericIdEntity {
   @Column({ nullable: false })
+  @Length(loginConstraints.minLength, loginConstraints.maxLength)
   login: string;
 
   @Column({ nullable: false })
   email: string;
 
   @Column({ nullable: false })
+  @Length(passwordConstraints.minLength, passwordConstraints.maxLength)
   passwordHash: string;
 
   @OneToOne(

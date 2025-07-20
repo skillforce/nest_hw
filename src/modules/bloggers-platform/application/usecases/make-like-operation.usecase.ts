@@ -89,7 +89,6 @@ export class MakeLikeOperationUseCase
         ...likeToUpdate,
         likeStatus: likeDto.likeStatus,
       };
-      console.log(updatedLike, 'ddd');
       await this.likesRepository.save(updatedLike);
     }
   }

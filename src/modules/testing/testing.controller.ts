@@ -12,7 +12,7 @@ export class TestingController {
   @SkipThrottle()
   async deleteAllData() {
     await this.dataSource.query('TRUNCATE TABLE "Users" CASCADE');
-    // await this.dataSource.query('TRUNCATE TABLE "Blogs" CASCADE');
+    await this.dataSource.query('TRUNCATE TABLE "Blogs" CASCADE');
     return {
       status: 'succeeded',
     };

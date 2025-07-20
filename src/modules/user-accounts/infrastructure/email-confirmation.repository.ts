@@ -57,7 +57,6 @@ export class EmailConfirmationRepository {
   async save(
     emailConfirmation: Omit<EmailConfirmation, 'id'> & { id?: number },
   ): Promise<number> {
-    console.log(emailConfirmation);
     const result =
       await this.emailConfirmationRepository.save(emailConfirmation);
 
