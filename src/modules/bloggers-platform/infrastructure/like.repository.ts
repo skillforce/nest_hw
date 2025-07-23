@@ -39,7 +39,6 @@ export class LikesRepository {
         like.deletedAt ?? null,
       ];
     } else {
-      console.log(like);
       query = `
         INSERT INTO "Likes" ("likeStatus", "userId", "parentId", "deletedAt")
       VALUES ( $1, $2, $3, $4)

@@ -41,10 +41,12 @@ export class BlogsPublicController {
     const paginatedPosts = await this.postQueryRepository.getAll(query, {
       blogId,
     });
+
     const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
       parentIds: paginatedPosts.items.map((post) => Number(post.id)),
-      userId: user?.id,
+      userId: +user?.id,
     });
+
     const postsNewestLikes =
       await this.likesQueryRepository.getBulkNewestLikesInfo(
         paginatedPosts.items.map((post) => Number(post.id)),

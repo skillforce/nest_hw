@@ -17,13 +17,12 @@ export class PostsViewDto {
     post: Post & { blogName: string },
   ): Omit<PostsViewDto, 'extendedLikesInfo'> {
     const dto = new PostsViewDto();
-
     dto.id = post.id.toString();
     dto.title = post.title;
     dto.shortDescription = post.shortDescription;
     dto.content = post.content;
     dto.blogId = post.blogId.toString();
-    dto.blogName = post.blogName;
+    dto.blogName = post.blog?.name || '';
     dto.createdAt = post.createdAt ?? new Date();
 
     return dto;

@@ -110,7 +110,7 @@ export class LikesQueryRepository {
        l."likeStatus", l."userId", l."parentId"
        FROM "Likes" l
        LEFT JOIN "Users" u ON l."userId" = u."id"
-       WHERE l."parentId" = ANY($1::int[]) AND l."deletedAt" IS NULL`;
+       WHERE l."parentId" = ANY($1::varchar[]) AND l."deletedAt" IS NULL`;
 
     const likesUsersResult = await this.dataSource.query<
       { likeStatus: LikeStatusEnum; userId: number; parentId: number }[]
@@ -149,7 +149,7 @@ export class LikesQueryRepository {
       ( SELECT * ,
        ROW_NUMBER() OVER (PARTITION BY l."parentId" ORDER BY l."createdAt" DESC) as rl
        FROM "Likes" l
-       WHERE "parentId" = ANY(ARRAY [$1::int[]]) AND "likeStatus" = $2 )
+       WHERE "parentId" = ANY(ARRAY [$1::varchar[]]) AND "likeStatus" = $2 )
        SELECT rl."parentId", u."id" as "userId", u."login", rl."createdAt" AS "addedAt"
        FROM ranked_likes rl LEFT JOIN  "Users" u ON rl."userId" = u."id"
        WHERE rl <= 3;`;
@@ -157,7 +157,6 @@ export class LikesQueryRepository {
     const likesUsersResult = await this.dataSource.query<
       { parentId: number; userId: string; login: string; addedAt: Date }[]
     >(likesUsersQuery, [parentIds, LikeStatusEnum.LIKE]);
-
     return parentIds.reduce(
       (acc, parentId) => ({
         ...acc,

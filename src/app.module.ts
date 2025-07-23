@@ -39,8 +39,8 @@ import { DBConfig } from './core/configs/db.config';
           username: DBConfig.postgresUser,
           password: DBConfig.postgresPassword,
           database: DBConfig.postgresDatabase,
-          // ssl: true,
-          ssl: false, // Set to true in case of using local db
+          ssl: true,
+          // ssl: false, // Set to true in case of using local db
           autoLoadEntities: true,
           synchronize: true,
         };

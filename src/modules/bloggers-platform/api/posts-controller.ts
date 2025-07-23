@@ -88,22 +88,34 @@ export class PostsController {
     @Query() query: GetPostsQueryParams,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    const paginatedPosts = await this.postQueryRepository.getAll(query);
-    const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
-      parentIds: paginatedPosts.items.map((post) => Number(post.id)),
-      userId: user?.id,
-    });
-    const newestLikes = await this.likesQueryRepository.getBulkNewestLikesInfo(
-      paginatedPosts.items.map((post) => Number(post.id)),
-    );
-    return {
-      ...paginatedPosts,
-      items: PostsViewDto.mapPostsToViewWithLikesInfo(
-        paginatedPosts.items,
-        postsLikesInfo,
-        newestLikes,
-      ),
-    };
+    try {
+      const paginatedPosts = await this.postQueryRepository.getAll(query);
+      const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
+        parentIds: paginatedPosts.items.map((post) => Number(post.id)),
+        userId: user?.id,
+      });
+      const newestLikes =
+        await this.likesQueryRepository.getBulkNewestLikesInfo(
+          paginatedPosts.items.map((post) => Number(post.id)),
+        );
+
+      return {
+        ...paginatedPosts,
+        items: PostsViewDto.mapPostsToViewWithLikesInfo(
+          paginatedPosts.items,
+          postsLikesInfo,
+          newestLikes,
+        ),
+      };
+    } catch (error) {
+      console.log('-------------------');
+      console.log(user);
+      console.log(query);
+      console.error('❌ 500 Internal Server Error in getAllPosts:', error);
+      console.log('-------------------');
+
+      throw error; // re-throw to let NestJS handle it or return a proper error
+    }
   }
 
   @UseGuards(BasicAuthGuard)
@@ -142,7 +154,6 @@ export class PostsController {
       await this.commentsQueryRepository.getByIdOrNotFoundFail(
         createdCommentId,
       );
-    console.log(createdComment);
 
     const likeInfo = await this.likesQueryRepository.getEntityLikesInfo(
       createdCommentId,

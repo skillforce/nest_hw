@@ -54,7 +54,6 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUserById(@Param() { id }: IdNumberParamDto) {
-    console.log(id);
     return this.commandBus.execute<DeleteUserByIdCommand, void>(
       new DeleteUserByIdCommand(id),
     );

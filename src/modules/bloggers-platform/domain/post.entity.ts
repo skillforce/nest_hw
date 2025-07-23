@@ -33,11 +33,9 @@ export class Post extends NumericIdEntity {
   @Length(contentConstraints.minLength, contentConstraints.maxLength)
   content: string;
 
-  // ✅ Explicitly declared blogId column
   @Column()
   blogId: number;
 
-  // ✅ Relation still works and maps to blogId
   @ManyToOne(() => Blog, (blog) => blog.posts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'blogId' }) // maps to the column above
   blog?: Blog;

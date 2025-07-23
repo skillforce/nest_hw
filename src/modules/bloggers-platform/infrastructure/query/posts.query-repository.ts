@@ -7,7 +7,8 @@ import { PostsViewDto } from '../../api/view-dto/posts.view-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { PostsSortBy } from '../../api/input-dto/post-input-dto/posts-sort-by';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -31,24 +32,6 @@ export class PostsQueryRepository {
         message: 'post not found',
       });
     }
-
-    const sql = this.postsOrmRepository
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.blog', 'blog')
-      .where('post.id = :id', { id })
-      .andWhere('post.deletedAt IS NULL')
-      .select([
-        'post.id',
-        'post.title',
-        'post.shortDescription',
-        'post.content',
-        'post.blogId',
-        'post.createdAt',
-        'blog.name',
-      ])
-      .getSql();
-
-    console.log(sql);
 
     const result = await this.postsOrmRepository
       .createQueryBuilder('post')
@@ -91,23 +74,28 @@ export class PostsQueryRepository {
     const skip = query.calculateSkip();
     const limit = query.pageSize;
 
-    let whereConditions: FindOptionsWhere<Post>[] = [];
+    const qb = this.postsOrmRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.blog', 'blog')
+      .where('post.deletedAt IS NULL');
 
     if (additionalFilters.blogId) {
-      whereConditions = [
-        { deletedAt: IsNull(), blogId: additionalFilters.blogId },
-      ];
-    } else {
-      whereConditions = [{ deletedAt: IsNull() }];
+      qb.andWhere('post.blogId = :blogId', {
+        blogId: +additionalFilters.blogId,
+      });
     }
 
-    const [posts, totalCount] = await this.postsOrmRepository.findAndCount({
-      where: whereConditions,
-      order: { [query.sortBy]: sortDirection },
-      skip,
-      take: limit,
-    });
+    const sortBy = query.sortBy;
 
+    if (sortBy === PostsSortBy.blogName) {
+      qb.orderBy('blog.name', sortDirection);
+    } else {
+      qb.orderBy(`post.${sortBy}`, sortDirection);
+    }
+
+    qb.skip(skip).take(limit);
+
+    const [posts, totalCount] = await qb.getManyAndCount();
     const items = posts.map(PostsViewDto.mapToViewDto);
 
     return PaginatedViewDto.mapToView({
