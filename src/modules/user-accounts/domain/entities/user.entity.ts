@@ -4,6 +4,8 @@ import { PasswordRecoveryConfirmation } from './password-recovery-confirmation.e
 import { EmailConfirmation } from './email-confirmation.entity';
 import { AuthMeta } from '../../../security-devices/domain/auth-meta.entity';
 import { Length } from 'class-validator';
+import { Comment } from '../../../bloggers-platform/domain/comment.entity';
+import { Like } from '../../../bloggers-platform/domain/like.entity';
 
 export const loginConstraints = {
   minLength: 3,
@@ -48,4 +50,10 @@ export class User extends NumericIdEntity {
 
   @OneToMany(() => AuthMeta, (authMeta) => authMeta.user)
   public authMeta?: AuthMeta[];
+
+  @OneToMany(() => Comment, (comment) => comment.creator)
+  comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes?: Like[];
 }

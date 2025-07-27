@@ -1,7 +1,9 @@
 import { NumericIdEntity } from '../../common/domain/base.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Length } from 'class-validator';
 import { Blog } from './blog.entity';
+import { Comment } from './comment.entity';
+import { Like } from './like.entity';
 
 export const titleConstraints = {
   minLength: 1,
@@ -37,6 +39,9 @@ export class Post extends NumericIdEntity {
   blogId: number;
 
   @ManyToOne(() => Blog, (blog) => blog.posts, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'blogId' }) // maps to the column above
+  @JoinColumn({ name: 'blogId' })
   blog?: Blog;
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
 }

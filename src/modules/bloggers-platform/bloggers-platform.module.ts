@@ -29,9 +29,10 @@ import { User } from '../user-accounts/domain/entities/user.entity';
 import { Blog } from './domain/blog.entity';
 import { Post } from './domain/post.entity';
 import { Like } from './domain/like.entity';
+import { Comment } from './domain/comment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Blog, Post, Like])],
+  imports: [TypeOrmModule.forFeature([User, Blog, Post, Like, Comment])],
   controllers: [
     BlogsController,
     BlogsPublicController,

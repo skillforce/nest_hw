@@ -17,7 +17,10 @@
     "test:watch": "cross-env NODE_ENV=testing jest --watch",
     "test:cov": "cross-env NODE_ENV=testing jest --coverage",
     "test:debug": "cross-env NODE_ENV=testing node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json -i"
+    "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json -i",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d ./src/core/configs/typeorm.config.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d ./src/core/configs/typeorm.config.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./src/core/configs/typeorm.config.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
@@ -39,6 +42,7 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
     "cross-env": "^7.0.3",
+    "dotenv": "^17.2.1",
     "mongoose": "^8.12.1",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",

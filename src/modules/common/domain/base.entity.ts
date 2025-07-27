@@ -1,7 +1,6 @@
 import {
   CreateDateColumn,
   DeleteDateColumn,
-  Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -17,14 +16,12 @@ export abstract class BaseEntity {
   deletedAt?: Date | null;
 }
 
-@Entity()
-export class NumericIdEntity extends BaseEntity {
+export abstract class NumericIdEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 }
 
-@Entity()
-export class UuidEntity extends BaseEntity {
+export abstract class UuidEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 }
