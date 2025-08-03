@@ -8,7 +8,7 @@ export class Like extends NumericIdEntity {
   @Column({
     nullable: false,
   })
-  parentId: string;
+  parentId: number;
 
   @Column()
   userId: number;

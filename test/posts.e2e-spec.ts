@@ -69,7 +69,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogResponseBody.id,
+      blogId: +createdBlogResponseBody.id,
     };
     const createdPostResponseBody = await postsTestManager.createPost(postBody);
 
@@ -116,7 +116,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogResponseBody.id,
+      blogId: +createdBlogResponseBody.id,
     };
     const createdPostResponseBody = await postsTestManager.createPost(postBody);
 
@@ -124,7 +124,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogSecondResponseBody.id,
+      blogId: +createdBlogSecondResponseBody.id,
     };
     await postsTestManager.updatePost(
       createdPostResponseBody.id,
@@ -163,7 +163,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogResponseBody.id,
+      blogId: +createdBlogResponseBody.id,
     };
     const createdPostResponseBody = await postsTestManager.createPost(postBody);
 
@@ -198,7 +198,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogResponseBody.id,
+      blogId: +createdBlogResponseBody.id,
     };
     const createdPostResponseBody = await postsTestManager.createPost(postBody);
 
@@ -261,7 +261,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogResponseBody.id,
+      blogId: +createdBlogResponseBody.id,
     };
     const createdPostResponseBody = await postsTestManager.createPost(postBody);
 
@@ -343,7 +343,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogResponseBody.id,
+      blogId: +createdBlogResponseBody.id,
     };
     const createdPostResponseBody = await postsTestManager.createPost(postBody);
 
@@ -427,7 +427,7 @@ describe('Posts Controller (e2e)', () => {
       title: 'string',
       shortDescription: 'string',
       content: 'string',
-      blogId: createdBlogResponseBody.id,
+      blogId: +createdBlogResponseBody.id,
     };
     const createdPostResponseBody = await postsTestManager.createPost(postBody);
 

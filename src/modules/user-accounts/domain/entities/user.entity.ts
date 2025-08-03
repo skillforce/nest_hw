@@ -52,8 +52,8 @@ export class User extends NumericIdEntity {
   public authMeta?: AuthMeta[];
 
   @OneToMany(() => Comment, (comment) => comment.creator)
-  comments: Comment[];
+  public comments?: Comment[];
 
   @OneToMany(() => Like, (like) => like.user)
-  likes?: Like[];
+  public likes?: Like[];
 }

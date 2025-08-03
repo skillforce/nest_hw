@@ -10,7 +10,7 @@ export class CommentViewDto {
   likesInfo: LikesInfoViewDto;
 
   static mapToViewDto(
-    commentWithCreatorInfo: Comment & { login: string },
+    commentWithCreatorInfo: Comment,
   ): Omit<CommentViewDto, 'likesInfo'> {
     const dto = new CommentViewDto();
 
@@ -18,7 +18,7 @@ export class CommentViewDto {
     dto.content = commentWithCreatorInfo.content;
     dto.commentatorInfo = {
       userId: commentWithCreatorInfo.creatorId.toString(),
-      userLogin: commentWithCreatorInfo.login,
+      userLogin: commentWithCreatorInfo.creator.login,
     };
     dto.createdAt = commentWithCreatorInfo.createdAt ?? new Date();
 

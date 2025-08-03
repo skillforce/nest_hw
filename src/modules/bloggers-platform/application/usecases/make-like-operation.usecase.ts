@@ -59,11 +59,11 @@ export class MakeLikeOperationUseCase
 
     const like = await this.likesRepository.findByUserIdAndParentId(
       userId,
-      parentId.toString(),
+      parentId,
     );
 
     if (!like) {
-      await this.createLike(likeDto, userId, parentId.toString());
+      await this.createLike(likeDto, userId, parentId);
     } else {
       await this.updateLike(likeDto, like);
     }
@@ -71,7 +71,7 @@ export class MakeLikeOperationUseCase
   private async createLike(
     likeDto: MakeLikeDto,
     userId: number,
-    parentId: string,
+    parentId: number,
   ) {
     const newLike = this.createInstance({
       ...likeDto,
@@ -79,7 +79,6 @@ export class MakeLikeOperationUseCase
       parentId,
     });
 
-    console.log(newLike);
     await this.likesRepository.save(newLike);
   }
 

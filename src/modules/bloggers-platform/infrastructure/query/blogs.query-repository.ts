@@ -14,8 +14,8 @@ export class BlogsQueryRepository {
     @InjectRepository(Blog)
     private readonly blogsOrmRepository: Repository<Blog>,
   ) {}
-  async getByIdOrNotFoundFail(id: string): Promise<BlogsViewDto> {
-    if (isNaN(+id)) {
+  async getByIdOrNotFoundFail(id: number): Promise<BlogsViewDto> {
+    if (isNaN(id)) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         extensions: [
@@ -30,7 +30,7 @@ export class BlogsQueryRepository {
 
     const result = await this.blogsOrmRepository.findOne({
       where: {
-        id: +id,
+        id,
         deletedAt: IsNull(),
       },
     });

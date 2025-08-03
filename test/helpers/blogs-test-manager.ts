@@ -17,7 +17,7 @@ export class BlogsTestManager {
     statusCode: number = HttpStatus.CREATED,
   ): Promise<BlogsViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/blogs`)
+      .post(`/${GLOBAL_PREFIX}/sa/blogs`)
       .auth('admin', 'qwerty')
       .send(createModel)
       .expect(statusCode);

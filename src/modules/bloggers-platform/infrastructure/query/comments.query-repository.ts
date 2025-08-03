@@ -6,24 +6,27 @@ import { CommentViewDto } from '../../api/view-dto/comments.view-dto';
 import { GetCommentsQueryParams } from '../../api/input-dto/comment-input-dto/get-comments-query-params.input-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { User } from '../../../user-accounts/domain/entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class CommentsQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Comment)
+    private commentOrmRepository: Repository<Comment>,
+  ) {}
   async getByIdOrNotFoundFail(
     id: number,
   ): Promise<Omit<CommentViewDto, 'likesInfo'>> {
-    const query =
-      'SELECT *,c."createdAt",u."createdAt" as "userCreatedAt",c."id",u."id" as "userId" FROM "Comments" c INNER JOIN "Users" u ON c."creatorId" = u."id" WHERE c."id" = $1 AND c."deletedAt" IS NULL';
+    const result = await this.commentOrmRepository
+      .createQueryBuilder('c')
+      .innerJoin('c.creator', 'u', 'u.deletedAt IS NULL')
+      .addSelect(['u.login'])
+      .where('c.id = :id', { id })
+      .andWhere('c.deletedAt IS NULL')
+      .getOne();
 
-    const result = await this.dataSource.query<Array<Comment & User>>(query, [
-      id,
-    ]);
-
-    if (!result.length) {
+    if (!result) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         extensions: [
@@ -36,7 +39,7 @@ export class CommentsQueryRepository {
       });
     }
 
-    return CommentViewDto.mapToViewDto(result[0]);
+    return CommentViewDto.mapToViewDto(result as Comment & { login: string });
   }
 
   async getAll(
@@ -49,45 +52,25 @@ export class CommentsQueryRepository {
     const skip = query.calculateSkip();
     const limit = query.pageSize;
 
-    const values: any[] = [];
-    let whereClause = `c."deletedAt" IS NULL`;
+    let whereConditions: FindOptionsWhere<Comment>[] = [];
 
     if (additionalFilter.postId) {
-      values.push(additionalFilter.postId);
-      whereClause += ` AND "postId" = $${values.length}`;
+      whereConditions = [
+        { deletedAt: IsNull(), postId: additionalFilter.postId },
+      ];
+    } else {
+      whereConditions = [{ deletedAt: IsNull() }];
     }
 
-    const countQuery = `
-      SELECT COUNT(*) AS total
-      FROM "Comments" c
-      WHERE ${whereClause};
-    `;
-    const countResult = await this.dataSource.query<{ total: string }[]>(
-      countQuery,
-      values,
+    const [comments, totalCount] = await this.commentOrmRepository.findAndCount(
+      {
+        where: whereConditions,
+        order: { [sortBy]: sortDirection },
+        skip,
+        take: limit,
+        relations: ['creator'],
+      },
     );
-    const totalCount = parseInt(countResult[0].total, 10);
-
-    values.push(limit);
-    values.push(skip);
-
-    const commentsQuery = `
-            SELECT c."id",
-                   c."content",
-                   c."createdAt",
-                   c."creatorId",
-                   u."login"
-            FROM "Comments" c
-                     LEFT JOIN "Users" u
-                               ON c."creatorId" = u."id"
-            WHERE ${whereClause}
-            ORDER BY "${sortBy}" ${sortDirection}
-            LIMIT $${values.length - 1}
-    OFFSET $${values.length}`;
-
-    const comments = await this.dataSource.query<
-      Array<Comment & { login: string }>
-    >(commentsQuery, values);
 
     const items = comments.map(CommentViewDto.mapToViewDto);
 

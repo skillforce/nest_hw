@@ -26,10 +26,6 @@ import {
 import { LikesQueryRepository } from '../infrastructure/query/likes.query-repository';
 import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-optional-auth.guard';
 import { SkipThrottle } from '@nestjs/throttler';
-import {
-  IdMongoParamDto,
-  IdNumberParamDto,
-} from '../../../core/decorators/validation/objectIdDto';
 
 @SkipThrottle()
 @Controller('comments')

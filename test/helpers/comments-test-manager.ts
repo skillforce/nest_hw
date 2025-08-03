@@ -11,7 +11,7 @@ import { CommentViewDto } from '../../src/modules/bloggers-platform/api/view-dto
 export class CommentsTestManager {
   constructor(private app: INestApplication) {}
   async createComment(
-    postId: string,
+    postId: number,
     body: CreateCommentInputDto,
     accessToken: string,
     statusCode: number = HttpStatus.CREATED,
@@ -43,7 +43,7 @@ export class CommentsTestManager {
   }
 
   async getCommentsByPostId(
-    postId: string,
+    postId: number,
     accessToken?: string,
     statusCode: number = HttpStatus.OK,
   ): Promise<CommentViewDto> {

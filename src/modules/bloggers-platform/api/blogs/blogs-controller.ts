@@ -66,7 +66,7 @@ export class BlogsController {
   @Post()
   @UseGuards(BasicAuthGuard)
   async createBlog(@Body() body: CreateBlogInputDto): Promise<BlogsViewDto> {
-    const blogId = await this.commandBus.execute<CreateBlogCommand, string>(
+    const blogId = await this.commandBus.execute<CreateBlogCommand, number>(
       new CreateBlogCommand(body),
     );
 
@@ -130,7 +130,7 @@ export class BlogsController {
   @UseGuards(JwtOptionalAuthGuard)
   @UseGuards(BasicAuthGuard)
   async getPostsByBlogId(
-    @Param('blogId') blogId: string,
+    @Param('blogId') blogId: number,
     @Query() query: GetPostsQueryParams,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
@@ -139,9 +139,10 @@ export class BlogsController {
     const paginatedPosts = await this.postQueryRepository.getAll(query, {
       blogId,
     });
+
     const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
       parentIds: paginatedPosts.items.map((post) => Number(post.id)),
-      userId: user?.id,
+      ...(user && { userId: user?.id }),
     });
     const postsNewestLikes =
       await this.likesQueryRepository.getBulkNewestLikesInfo(

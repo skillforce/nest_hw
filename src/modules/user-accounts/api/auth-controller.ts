@@ -148,7 +148,6 @@ export class AuthController {
 
   @Post('password-recovery')
   async recoverPassword(@Body() { email }: PasswordRecoveryInputDto) {
-    console.log(email);
     return this.commandBus.execute<InitializePasswordRecoveryCommand, void>(
       new InitializePasswordRecoveryCommand(email),
     );

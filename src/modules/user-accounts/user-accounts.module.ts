@@ -52,18 +52,20 @@ import { EmailConfirmation } from './domain/entities/email-confirmation.entity';
     NotificationsModule,
     ThrottlerModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {
-        const isTesting = coreConfig.env === Environments.TESTING;
+        // const isTesting = coreConfig.env === Environments.TESTING;
 
-        return isTesting
-          ? []
-          : {
-              throttlers: [
-                {
-                  ttl: 10000,
-                  limit: 5,
-                },
-              ],
-            };
+        return [];
+
+        // return isTesting
+        //   ? []
+        //   : {
+        //       throttlers: [
+        //         {
+        //           ttl: 10000,
+        //           limit: 500,
+        //         },
+        //       ],
+        //     };
       },
       inject: [CoreConfig],
     }),

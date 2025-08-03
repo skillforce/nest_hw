@@ -1,59 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { Like } from '../domain/like.entity';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class LikesRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
-  async findByUserIdAndParentId(userId: number, parentId: string) {
-    const query =
-      'SELECT * FROM "Likes" WHERE "userId" = $1 AND "parentId" = $2 AND "deletedAt" IS NULL';
-    const result = await this.dataSource.query<Like[]>(query, [
-      userId,
-      parentId,
-    ]);
-    return result[0];
+  constructor(
+    @InjectRepository(Like) private likeOrmRepository: Repository<Like>,
+  ) {}
+  async findByUserIdAndParentId(userId: number, parentId: number) {
+    return await this.likeOrmRepository.findOne({
+      where: {
+        userId,
+        parentId,
+        deletedAt: IsNull(),
+      },
+    });
   }
   async save(like: Omit<Like, 'id'> & { id?: number }) {
-    let query: string;
-    let values: any[];
+    const result = await this.likeOrmRepository.save(like);
 
-    const hasId = !!like.id;
-    if (hasId) {
-      query = `
-      INSERT INTO "Likes" ("id", "likeStatus", "userId", "parentId", "deletedAt")
-      VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT ("id") DO UPDATE SET
-        "likeStatus" = EXCLUDED."likeStatus",
-        "userId" = EXCLUDED."userId",
-        "parentId" = EXCLUDED."parentId",
-        "deletedAt" = EXCLUDED."deletedAt"
-        RETURNING "id";
-    `;
-      values = [
-        like.id,
-        like.likeStatus,
-        like.userId,
-        like.parentId,
-        like.deletedAt ?? null,
-      ];
-    } else {
-      query = `
-        INSERT INTO "Likes" ("likeStatus", "userId", "parentId", "deletedAt")
-      VALUES ( $1, $2, $3, $4)
-      RETURNING "id";
-    `;
-      values = [
-        like.likeStatus,
-        like.userId,
-        like.parentId,
-        like.deletedAt ?? null,
-      ];
-    }
-
-    const result = await this.dataSource.query<Like[]>(query, values);
-
-    return +result[0].id;
+    return result.id;
   }
 }

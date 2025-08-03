@@ -93,7 +93,6 @@ export class GenerateNewTokensUsecase
     };
 
     const newSession = this.createInstance(authMetaSession);
-    console.log(newSession);
     await this.authMetaRepository.save(newSession);
   }
   transformTimestampsToIsoString(timestamp: number) {

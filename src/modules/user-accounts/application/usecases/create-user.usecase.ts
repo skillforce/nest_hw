@@ -59,6 +59,7 @@ export class CreateUserUseCase
     const usersWithSameLogin = await this.usersRepository.findUsersByLogin(
       dto.login,
     );
+
     if (usersWithSameLogin?.some((user) => user.deletedAt === null)) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,

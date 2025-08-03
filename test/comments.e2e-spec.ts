@@ -53,7 +53,7 @@ describe('Comments Controller (e2e)', () => {
       await userTestManager.createAndLoginSeveralUsers(1);
 
     await commentsTestManager.getCommentsByPostId(
-      '63189b06003380064c4193be',
+      123456,
       accessToken,
       HttpStatus.NOT_FOUND,
     );
@@ -67,7 +67,7 @@ describe('Comments Controller (e2e)', () => {
       content: 'Nice post content lalalalalalaldddddddd!',
     };
     await commentsTestManager.createComment(
-      '63189b06003380064c4193be',
+      123456,
       createCommentBody,
       accessToken,
       HttpStatus.NOT_FOUND,
@@ -85,7 +85,7 @@ describe('Comments Controller (e2e)', () => {
       title: 'Post',
       shortDescription: 'Short desc',
       content: 'Content',
-      blogId,
+      blogId: +blogId,
     });
 
     const [{ accessToken }] =
@@ -95,7 +95,7 @@ describe('Comments Controller (e2e)', () => {
       content: 'Nice post content lalalalalalaldddddddd!',
     };
     const createdComment = await commentsTestManager.createComment(
-      postId,
+      +postId,
       createCommentBody,
       accessToken,
     );
@@ -129,11 +129,11 @@ describe('Comments Controller (e2e)', () => {
       title: 'Post',
       shortDescription: 'Short desc',
       content: 'Content',
-      blogId,
+      blogId: +blogId,
     });
 
     const { id: commentId } = await commentsTestManager.createComment(
-      postId,
+      +postId,
       { content: 'Some comment content lalalalalalaldddddddd!sss' },
       user.accessToken,
     );
@@ -163,11 +163,11 @@ describe('Comments Controller (e2e)', () => {
       title: 'Post',
       shortDescription: 'Short desc',
       content: 'Content',
-      blogId,
+      blogId: +blogId,
     });
 
     const { id: commentId } = await commentsTestManager.createComment(
-      postId,
+      +postId,
       { content: 'Some commentcontent lalalalalalaldddddddd!ssss' },
       user1.accessToken,
     );
@@ -193,11 +193,11 @@ describe('Comments Controller (e2e)', () => {
       title: 'Post',
       shortDescription: 'Short desc',
       content: 'Content',
-      blogId,
+      blogId: +blogId,
     });
 
     const { id: commentId } = await commentsTestManager.createComment(
-      postId,
+      +postId,
       { content: 'Some comment content lalalalalalaldddddddd!ssssssw' },
       user.accessToken,
     );
@@ -223,11 +223,11 @@ describe('Comments Controller (e2e)', () => {
       title: 'Post',
       shortDescription: 'Short desc',
       content: 'Content',
-      blogId,
+      blogId: +blogId,
     });
 
     const { id: commentId } = await commentsTestManager.createComment(
-      postId,
+      +postId,
       { content: 'Interesting scontent lalalalalalaldddddddd!sssssss' },
       user.accessToken,
     );

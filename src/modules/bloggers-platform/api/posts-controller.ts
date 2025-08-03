@@ -67,12 +67,17 @@ export class PostsController {
         postId,
       },
     );
-    const commentsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
-      parentIds: commentsPaginatedData.items.map((comment) =>
-        Number(comment.id),
-      ),
-      userId: user?.id,
-    });
+
+    const isCommentsPaginatedDataEmpty =
+      commentsPaginatedData.items.length === 0;
+    const commentsLikesInfo = !isCommentsPaginatedDataEmpty
+      ? await this.likesQueryRepository.getBulkLikesInfo({
+          parentIds: commentsPaginatedData.items.map((comment) =>
+            Number(comment.id),
+          ),
+          ...(user && { userId: user?.id }),
+        })
+      : {};
     return {
       ...commentsPaginatedData,
       items: CommentViewDto.mapCommentsToViewWithLikesInfo(
@@ -88,34 +93,29 @@ export class PostsController {
     @Query() query: GetPostsQueryParams,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    try {
-      const paginatedPosts = await this.postQueryRepository.getAll(query);
-      const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
-        parentIds: paginatedPosts.items.map((post) => Number(post.id)),
-        userId: user?.id,
-      });
-      const newestLikes =
-        await this.likesQueryRepository.getBulkNewestLikesInfo(
+    const paginatedPosts = await this.postQueryRepository.getAll(query);
+
+    const postsLikesInfo = paginatedPosts.items.length
+      ? await this.likesQueryRepository.getBulkLikesInfo({
+          parentIds: paginatedPosts.items.map((post) => Number(post.id)),
+          ...(user && { userId: user?.id }),
+        })
+      : {};
+
+    const newestLikes = paginatedPosts.items.length
+      ? await this.likesQueryRepository.getBulkNewestLikesInfo(
           paginatedPosts.items.map((post) => Number(post.id)),
-        );
+        )
+      : {};
 
-      return {
-        ...paginatedPosts,
-        items: PostsViewDto.mapPostsToViewWithLikesInfo(
-          paginatedPosts.items,
-          postsLikesInfo,
-          newestLikes,
-        ),
-      };
-    } catch (error) {
-      console.log('-------------------');
-      console.log(user);
-      console.log(query);
-      console.error('❌ 500 Internal Server Error in getAllPosts:', error);
-      console.log('-------------------');
-
-      throw error; // re-throw to let NestJS handle it or return a proper error
-    }
+    return {
+      ...paginatedPosts,
+      items: PostsViewDto.mapPostsToViewWithLikesInfo(
+        paginatedPosts.items,
+        postsLikesInfo,
+        newestLikes,
+      ),
+    };
   }
 
   @UseGuards(BasicAuthGuard)
@@ -146,6 +146,7 @@ export class PostsController {
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
     await this.postQueryRepository.getByIdOrNotFoundFail(id);
+
     const createdCommentId = await this.commandBus.execute<
       CreateCommentCommand,
       number
@@ -159,9 +160,6 @@ export class PostsController {
       createdCommentId,
       user.id,
     );
-
-    console.log(createdComment);
-    console.log(likeInfo);
 
     return CommentViewDto.mapToViewWithLikesInfo(createdComment, likeInfo);
   }

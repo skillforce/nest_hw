@@ -7,7 +7,7 @@ export enum LikeStatusEnum {
 export class LikeDomainDto {
   likeStatus: LikeStatusEnum;
   userId: number;
-  parentId: string;
+  parentId: number;
 }
 export class UpdateLikeDomainDto {
   likeStatus: LikeStatusEnum;

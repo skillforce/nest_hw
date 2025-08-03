@@ -18,8 +18,10 @@ export class Comment extends NumericIdEntity {
   )
   content: string;
 
+  @Column({ nullable: false })
   postId: number;
 
+  @Column({ nullable: false })
   creatorId: number;
 
   @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })

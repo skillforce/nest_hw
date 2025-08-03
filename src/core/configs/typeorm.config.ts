@@ -2,7 +2,6 @@ import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 
 config();
-console.log(process.env);
 
 export default new DataSource({
   url: process.env.DATABASE_URL,

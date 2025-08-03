@@ -25,7 +25,6 @@ export class InitializePasswordRecoveryUseCase
 
     const passwordRecoveryConfirmation =
       this.createPasswordRecoveryConfirmationCode(confirmationCode, user.id);
-    console.log(passwordRecoveryConfirmation);
 
     await this.passwordRecoveryConfirmationRepository.save(
       passwordRecoveryConfirmation,

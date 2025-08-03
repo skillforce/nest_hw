@@ -41,7 +41,7 @@ import { DBConfig } from './core/configs/db.config';
           database: DBConfig.postgresDatabase,
           // ssl: true,
           ssl: false, // Set to true in case of using local db
-          autoLoadEntities: false,
+          autoLoadEntities: true,
           synchronize: false,
         };
       },

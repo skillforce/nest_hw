@@ -32,7 +32,7 @@ export class BlogsPublicController {
   @Get(':blogId/posts')
   @UseGuards(JwtOptionalAuthGuard)
   async getPostsByBlogId(
-    @Param('blogId') blogId: string,
+    @Param('blogId') blogId: number,
     @Query() query: GetPostsQueryParams,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
@@ -44,7 +44,7 @@ export class BlogsPublicController {
 
     const postsLikesInfo = await this.likesQueryRepository.getBulkLikesInfo({
       parentIds: paginatedPosts.items.map((post) => Number(post.id)),
-      userId: +user?.id,
+      ...(user && { userId: user?.id }),
     });
 
     const postsNewestLikes =
@@ -63,7 +63,7 @@ export class BlogsPublicController {
 
   @ApiParam({ name: 'id' })
   @Get(':blogId')
-  async getBlogById(@Param('blogId') blogId: string): Promise<BlogsViewDto> {
+  async getBlogById(@Param('blogId') blogId: number): Promise<BlogsViewDto> {
     return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
   }
 }
