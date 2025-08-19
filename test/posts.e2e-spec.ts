@@ -237,7 +237,7 @@ describe('Posts Controller (e2e)', () => {
     const userAccessToken = usersAccessTokenBody[0].accessToken;
 
     await postsTestManager.makeLike(
-      '63189b06003380064c4193be',
+      '631880064',
       LikeStatusEnum.LIKE,
       userAccessToken,
       HttpStatus.NOT_FOUND,

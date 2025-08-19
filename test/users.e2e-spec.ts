@@ -72,7 +72,7 @@ describe('Users Controller (e2e)', () => {
     const response = await userTestManager.createUser(body);
 
     expect(response).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       login: body.login,
       email: body.email,
       createdAt: expect.any(String),

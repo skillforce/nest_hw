@@ -52,7 +52,7 @@ export class BlogsTestManager {
     statusCode: number = HttpStatus.NO_CONTENT,
   ): Promise<any> {
     const response = await request(this.app.getHttpServer())
-      .put(`/${GLOBAL_PREFIX}/blogs/${blogId}`)
+      .put(`/${GLOBAL_PREFIX}/sa/blogs/${blogId}`)
       .auth('admin', 'qwerty')
       .send(body)
       .expect(statusCode);
@@ -64,7 +64,7 @@ export class BlogsTestManager {
     statusCode: number = HttpStatus.NO_CONTENT,
   ): Promise<void> {
     await request(this.app.getHttpServer())
-      .delete(`/${GLOBAL_PREFIX}/blogs/${blogId}`)
+      .delete(`/${GLOBAL_PREFIX}/sa/blogs/${blogId}`)
       .auth('admin', 'qwerty')
       .expect(statusCode);
   }

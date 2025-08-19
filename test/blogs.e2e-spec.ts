@@ -102,7 +102,7 @@ describe('Blogs Controller (e2e)', () => {
 
     await request(app.getHttpServer())
       .put(
-        `/${GLOBAL_PREFIX}/blogs/${blogsResponseAfterCreationBody.items[0].id}`,
+        `/${GLOBAL_PREFIX}/sa/blogs/${blogsResponseAfterCreationBody.items[0].id}`,
       )
       .auth('wrong', 'wrong')
       .send(updatedPostBody)
@@ -151,7 +151,7 @@ describe('Blogs Controller (e2e)', () => {
 
     await blogsTestManager.createBlog(blogBody);
     await blogsTestManager.deleteBlog(
-      '63189b06003380064c4193be',
+      '23456789',
       HttpStatus.NOT_FOUND,
     );
   });

@@ -80,6 +80,7 @@ export class BlogsController {
     @Param('blogId') blogId: number,
     @Body() body: UpdateBlogInputDto,
   ) {
+    console.log('alalalalallalala');
     await this.commandBus.execute<UpdateBlogCommand, string>(
       new UpdateBlogCommand(blogId, body),
     );
