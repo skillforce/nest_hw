@@ -11,6 +11,7 @@ import { BlogsTestManager } from './blogs-test-manager';
 import { PostsTestManager } from './posts-test-manager';
 import { CommentsTestManager } from './comments-test-manager';
 import { getConnectionToken } from '@nestjs/typeorm';
+import { QuestionsTestManager } from './questions-test-manager';
 
 export const initSettings = async (
   //передаем callback, который получает ModuleBuilder, если хотим изменить настройку тестового модуля
@@ -42,6 +43,7 @@ export const initSettings = async (
   const blogsTestManager = new BlogsTestManager(app);
   const postsTestManager = new PostsTestManager(app);
   const commentsTestManager = new CommentsTestManager(app);
+  const questionsTestManager = new QuestionsTestManager(app);
 
   await deleteAllData(app);
 
@@ -53,5 +55,6 @@ export const initSettings = async (
     blogsTestManager,
     postsTestManager,
     commentsTestManager,
+    questionsTestManager,
   };
 };
