@@ -111,7 +111,7 @@ describe('Questions Controller (e2e)', () => {
 
   it('should delete question when user try to delete existing question', async () => {
     const created = await questionsTestManager.createQuestion({
-      body: 'Delete me',
+      body: 'Delete me1234',
       correctAnswers: ['Answer'],
     });
 

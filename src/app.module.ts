@@ -16,6 +16,7 @@ import { SWAGGER_PREFIX } from './setup/swagger.setup';
 import { SecurityDevicesModule } from './modules/security-devices/security-devices.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DBConfig } from './core/configs/db.config';
+import { QuizGameModule } from './modules/quiz-game/quiz-game.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { DBConfig } from './core/configs/db.config';
     UserAccountsModule,
     SecurityDevicesModule,
     BloggersPlatformModule,
+    QuizGameModule,
     CoreModule,
   ],
   controllers: [AppController],

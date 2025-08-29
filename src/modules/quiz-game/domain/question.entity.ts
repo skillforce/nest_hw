@@ -9,7 +9,7 @@ export class Question extends NumericIdEntity {
   @Column({ nullable: false })
   @Length(questionBodyConstraint.minLength, questionBodyConstraint.maxLength)
   questionBody: string;
-  @Column('json', { nullable: false, array: true })
+  @Column('text', { array: true, nullable: false })
   answers: string[];
   @Column({ default: false })
   isPublished: boolean;

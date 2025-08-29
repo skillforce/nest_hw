@@ -5,8 +5,8 @@ import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
 import {
   CreateQuestionInputDto,
   UpdateQuestionByIdInputDto,
-} from '../../src/modules/questions/api/dto/question-input-dto';
-import { QuestionViewDto } from '../../src/modules/questions/api/dto/question-view-dto';
+} from '../../src/modules/quiz-game/api/dto/question-input-dto';
+import { QuestionViewDto } from '../../src/modules/quiz-game/api/dto/question-view-dto';
 
 const questionControllerPrefix = `/${GLOBAL_PREFIX}/sa/quiz/questions`;
 
@@ -31,6 +31,7 @@ export class QuestionsTestManager {
   ): Promise<PaginatedViewDto<QuestionViewDto[]>> {
     const response = await request(this.app.getHttpServer())
       .get(`${questionControllerPrefix}`)
+      .auth('admin', 'qwerty')
       .expect(statusCode);
 
     return response.body;
