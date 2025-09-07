@@ -8,9 +8,21 @@ import { DeleteQuestionUsecase } from './application/usecases/delete-question.us
 import { UpdateQuestionPublishStatusUsecase } from './application/usecases/update-question-publish-status.usecase';
 import { QuestionsController } from './api/questions_controller';
 import { Question } from './domain/question.entity';
+import { GameSession } from './domain/game-session.entity';
+import { GameSessionParticipants } from './domain/game-session-participants.entity';
+import { GameSessionQuestionAnswer } from './domain/game-session-question-answers.entity';
+import { GameSessionQuestion } from './domain/game-session-questions.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Question])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Question,
+      GameSession,
+      GameSessionParticipants,
+      GameSessionQuestionAnswer,
+      GameSessionQuestion,
+    ]),
+  ],
   controllers: [QuestionsController],
   providers: [
     QuestionsRepository,

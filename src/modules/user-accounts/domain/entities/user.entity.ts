@@ -6,6 +6,9 @@ import { AuthMeta } from '../../../security-devices/domain/auth-meta.entity';
 import { Length } from 'class-validator';
 import { Comment } from '../../../bloggers-platform/domain/comment.entity';
 import { Like } from '../../../bloggers-platform/domain/like.entity';
+import { GameSession } from '../../../quiz-game/domain/game-session.entity';
+import { GameSessionParticipants } from '../../../quiz-game/domain/game-session-participants.entity';
+import { GameSessionQuestion } from '../../../quiz-game/domain/game-session-questions.entity';
 
 export const loginConstraints = {
   minLength: 3,
@@ -30,6 +33,9 @@ export class User extends NumericIdEntity {
   @Length(passwordConstraints.minLength, passwordConstraints.maxLength)
   passwordHash: string;
 
+  @OneToMany(() => GameSession, (session) => session.winner)
+  wonSessions?: GameSession[];
+
   @OneToOne(
     () => PasswordRecoveryConfirmation,
     (PasswordRecoveryConfirmation) => PasswordRecoveryConfirmation.user,
@@ -38,6 +44,12 @@ export class User extends NumericIdEntity {
     },
   )
   public passwordRecoveryConfirmation?: PasswordRecoveryConfirmation;
+
+  @OneToMany(
+    () => GameSessionParticipants,
+    (GameSessionParticipants) => GameSessionParticipants.user,
+  )
+  public gameSessionParticipants?: GameSessionParticipants[];
 
   @OneToOne(
     () => EmailConfirmation,
