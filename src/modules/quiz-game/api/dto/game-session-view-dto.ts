@@ -1,8 +1,12 @@
-import { AnswerStatus } from '../../domain/game-session-question-answers.entity';
+import {
+  AnswerStatus,
+  GameSessionQuestionAnswer,
+} from '../../domain/game-session-question-answers.entity';
 import { GameSession } from '../../domain/game-session.entity';
+import { GameSessionQuestion } from '../../domain/game-session-questions.entity';
 
 export class AnswerDto {
-  questionId: string;
+  questionId: number;
   answerStatus: AnswerStatus;
   addedAt: string;
 }
@@ -15,15 +19,40 @@ export class PlayerDto {
 export class PlayerProgressDto {
   answers: AnswerDto[];
   player: PlayerDto;
-  score: number;
+  score: string;
+
+  static mapToViewDto(
+    answers: GameSessionQuestionAnswer[],
+    playerDto: PlayerDto,
+    score: number,
+  ): PlayerProgressDto {
+    const dto = new PlayerProgressDto();
+    dto.answers = answers.map((answer) => {
+      return {
+        addedAt: answer.createdAt?.toString() || new Date().toISOString(),
+        answerStatus: answer.answer_status,
+        questionId: answer.gameSessionQuestion.question_id,
+      };
+    });
+    dto.player = playerDto;
+    dto.score = score.toString();
+    return dto;
+  }
 }
 
 export class QuestionDto {
   id: string;
   body: string;
+
+  static mapToViewDto(gameSessionQuestion: GameSessionQuestion): QuestionDto {
+    const dto = new QuestionDto();
+    dto.id = gameSessionQuestion.id.toString();
+    dto.body = gameSessionQuestion.question.questionBody;
+    return dto;
+  }
 }
 
-export type GameStatus = 'Pending' | 'Active' | 'Finished';
+export type GameStatus = 'PendingSecondPlayer' | 'Active' | 'Finished';
 
 export class GameSessionViewDto {
   id: string;
@@ -32,20 +61,28 @@ export class GameSessionViewDto {
   questions: QuestionDto[];
   status: GameStatus;
   pairCreatedDate: string;
-  startGameDate: string;
-  finishGameDate: string;
+  startGameDate: string | null;
+  finishGameDate: string | null;
 
-  static mapToViewDto(gameSession: GameSession): GameSessionViewDto {
+  static mapToViewDto(
+    gameSession: GameSession,
+    firstPlayerProgress: PlayerProgressDto,
+    secondPlayerProgress: PlayerProgressDto,
+    questions: QuestionDto[],
+    status: GameStatus,
+    finishGameDate: string | null,
+  ): GameSessionViewDto {
     const dto = new GameSessionViewDto();
 
     dto.id = gameSession.id.toString();
-    // dto.firstPlayerProgress = gameSession.firstPlayerProgress;
-    // dto.secondPlayerProgress = gameSession.secondPlayerProgress;
-    // dto.questions = gameSession.questions;
-    // dto.status = gameSession.status;
-    // dto.pairCreatedDate = gameSession.;
-    // dto.startGameDate = gameSession.startGameDate;
-    // dto.finishGameDate = gameSession.finishGameDate;
+    dto.firstPlayerProgress = firstPlayerProgress;
+    dto.secondPlayerProgress = secondPlayerProgress;
+    dto.questions = questions;
+    dto.status = status;
+    dto.pairCreatedDate =
+      gameSession.createdAt?.toString() || new Date().toISOString();
+    dto.startGameDate = gameSession.session_started_at?.toString();
+    dto.finishGameDate = finishGameDate;
 
     return dto;
   }

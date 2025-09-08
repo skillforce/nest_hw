@@ -20,6 +20,7 @@ import {
 import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
 import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
 import { AnswerQuestionInputDto } from './dto/game-session-input-dto';
+import { GetMyCurrentPairCommand } from '../application/usecases/get-my-current-pair.usecase';
 
 @SkipThrottle()
 @Controller('/pair-game-quiz/pairs')
@@ -33,8 +34,11 @@ export class QuizGameController {
   @UseGuards(JwtAuthGuard)
   async getMyCurrentGameSession(
     @ExtractUserFromRequest() user: UserContextDto,
-  ): Promise<PaginatedViewDto<GameSessionViewDto[]>> {
-    console.log(user.id);
+  ): Promise<GameSessionViewDto> {
+    return await this.commandBus.execute<
+      GetMyCurrentPairCommand,
+      GameSessionViewDto
+    >(new GetMyCurrentPairCommand(user.id));
   }
 
   @Get(':id')

@@ -12,6 +12,10 @@ import { GameSession } from './domain/game-session.entity';
 import { GameSessionParticipants } from './domain/game-session-participants.entity';
 import { GameSessionQuestionAnswer } from './domain/game-session-question-answers.entity';
 import { GameSessionQuestion } from './domain/game-session-questions.entity';
+import { GameSessionParticipantsRepository } from './infrastructure/game-session-participants.repository';
+import { GameSessionQuestionAnswerRepository } from './infrastructure/game-session-question-answer.repository';
+import { GameSessionQuestionsRepository } from './infrastructure/game-session-questions.repository';
+import { GameSessionsRepository } from './infrastructure/game_session.repository';
 
 @Module({
   imports: [
@@ -31,6 +35,10 @@ import { GameSessionQuestion } from './domain/game-session-questions.entity';
     UpdateQuestionUsecase,
     DeleteQuestionUsecase,
     UpdateQuestionPublishStatusUsecase,
+    GameSessionParticipantsRepository,
+    GameSessionQuestionAnswerRepository,
+    GameSessionQuestionsRepository,
+    GameSessionsRepository,
   ],
   exports: [],
 })

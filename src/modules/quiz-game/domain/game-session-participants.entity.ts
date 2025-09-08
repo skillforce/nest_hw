@@ -11,6 +11,9 @@ export class GameSessionParticipants extends NumericIdEntity {
   @Column({ nullable: true })
   score: number;
 
+  user_id: number;
+  game_session_id: number;
+
   @ManyToOne(() => GameSession, (session) => session.participants, {
     nullable: false,
     onDelete: 'CASCADE',
