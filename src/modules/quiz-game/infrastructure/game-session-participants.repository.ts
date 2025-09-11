@@ -67,26 +67,23 @@ export class GameSessionParticipantsRepository {
   async findSecondParticipantByGameSessionIdOrNotFoundFail(
     gameSessionId: number,
     firstParticipantId: number,
-  ): Promise<GameSessionParticipants> {
+  ): Promise<GameSessionParticipants | null> {
     const secondParticipant = await this.findSecondParticipantByGameSessionId(
       gameSessionId,
       firstParticipantId,
     );
 
-    if (!secondParticipant) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        extensions: [
-          {
-            field: 'game session participant',
-            message: 'game session participant not found',
-          },
-        ],
-        message: 'game session participant not found',
-      });
-    }
-
-    return secondParticipant;
+    secondParticipant;
+  }
+  findByGameSessionId(
+    gameSessionId: number,
+  ): Promise<GameSessionParticipants[]> {
+    return this.gameSessionParticipantsOrmRepository.find({
+      where: {
+        game_session_id: gameSessionId,
+        deletedAt: IsNull(),
+      },
+    });
   }
 
   async save(

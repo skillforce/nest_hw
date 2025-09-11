@@ -7,20 +7,21 @@ import {
 import { GameSessionParticipantsRepository } from '../../infrastructure/game-session-participants.repository';
 import { GameSessionQuestionsRepository } from '../../infrastructure/game-session-questions.repository';
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
-import { GameSession } from '../../domain/game-session.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { GameSessionQuestion } from '../../domain/game-session-questions.entity';
 import { GameSessionQuestionAnswerRepository } from '../../infrastructure/game-session-question-answer.repository';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
 
-export class GetMyCurrentPairCommand {
-  constructor(public userId: number) {}
+export class GetGameSessionByIdCommand {
+  constructor(
+    public gameSessionId: number,
+    public userId: number,
+  ) {}
 }
 
-@CommandHandler(GetMyCurrentPairCommand)
-export class GetMyCurrentPairUsecase
-  implements ICommandHandler<GetMyCurrentPairCommand, GameSessionViewDto>
+@CommandHandler(GetGameSessionByIdCommand)
+export class GetGameSessionByIdUsecase
+  implements ICommandHandler<GetGameSessionByIdCommand, GameSessionViewDto>
 {
   constructor(
     private gameSessionParticipantsRepository: GameSessionParticipantsRepository,
@@ -30,14 +31,26 @@ export class GetMyCurrentPairUsecase
   ) {}
 
   async execute({
+    gameSessionId,
     userId,
-  }: GetMyCurrentPairCommand): Promise<GameSessionViewDto> {
-    const activeParticipant =
-      await this.gameSessionParticipantsRepository.findActiveByUserIdOrNotFoundFail(
-        userId,
+  }: GetGameSessionByIdCommand): Promise<GameSessionViewDto> {
+    const gameSession =
+      await this.gameSessionsRepository.findOrNotFoundFail(gameSessionId);
+    const participants =
+      await this.gameSessionParticipantsRepository.findByGameSessionId(
+        gameSessionId,
       );
 
-    if (!activeParticipant) {
+    this.checkIfUserIsParticipant(participants, userId);
+
+    const firstParticipant = participants.find(
+      (participant) => participant.user.id === userId,
+    );
+    const secondParticipant = participants.find(
+      (participant) => participant.user.id !== userId,
+    );
+
+    if (!firstParticipant || !secondParticipant) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         extensions: [
@@ -49,26 +62,16 @@ export class GetMyCurrentPairUsecase
         message: 'no active game session found',
       });
     }
-    const gameSession = await this.gameSessionsRepository.findOrNotFoundFail(
-      activeParticipant.game_session_id,
-    );
 
-    const secondParticipant =
-      await this.gameSessionParticipantsRepository.findSecondParticipantByGameSessionId(
-        activeParticipant.game_session_id,
-        userId,
+    if (participants.length === 1) {
+      const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
+        [],
+        {
+          id: userId.toString(),
+          login: firstParticipant.user.login,
+        },
+        0,
       );
-
-    const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
-      [],
-      {
-        id: activeParticipant.id.toString(),
-        login: activeParticipant.user.login,
-      },
-      0,
-    );
-
-    if (!secondParticipant) {
       return GameSessionViewDto.mapToViewDto(
         gameSession,
         emptyFirstParticipantProgress,
@@ -89,21 +92,21 @@ export class GetMyCurrentPairUsecase
     const firstParticipantAnswers =
       await this.gameSessionsQuestionsAnswersRepository.findAnswersByQuestionsIdsAndParticipantId(
         sessionQuestionsIds,
-        activeParticipant.id,
+        userId,
       );
     const secondParticipantAnswers =
       await this.gameSessionsQuestionsAnswersRepository.findAnswersByQuestionsIdsAndParticipantId(
         sessionQuestionsIds,
-        secondParticipant.id,
+        participants.find((participant) => participant.user.id !== userId)!.id,
       );
 
     const firstParticipantProgress = PlayerProgressDto.mapToViewDto(
       firstParticipantAnswers,
       {
-        id: activeParticipant.id.toString(),
-        login: activeParticipant.user.login,
+        id: firstParticipant.id.toString(),
+        login: firstParticipant.user.login,
       },
-      activeParticipant.score,
+      firstParticipant.score,
     );
     const secondParticipantProgress = PlayerProgressDto.mapToViewDto(
       secondParticipantAnswers,
@@ -115,7 +118,7 @@ export class GetMyCurrentPairUsecase
     );
 
     const finishGameDate = this.getFinishGameDate(
-      activeParticipant,
+      firstParticipant,
       secondParticipant,
       gameSession.winner_id,
     );
@@ -143,5 +146,25 @@ export class GetMyCurrentPairUsecase
       return firstParticipant.finished_at.toString();
     }
     return secondParticipant.finished_at.toString();
+  }
+  private checkIfUserIsParticipant(
+    participants: GameSessionParticipants[],
+    userId: number,
+  ) {
+    const participant = participants.find(
+      (participant) => participant.user.id === userId,
+    );
+    if (!participant) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        extensions: [
+          {
+            field: 'user is not participant',
+            message: 'user is not participant',
+          },
+        ],
+        message: 'user is not participant',
+      });
+    }
   }
 }

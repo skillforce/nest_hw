@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Query,
   UseGuards,
@@ -21,6 +22,9 @@ import { ExtractUserFromRequest } from '../../user-accounts/guards/decorators/pa
 import { UserContextDto } from '../../user-accounts/guards/dto/user-context.dto';
 import { AnswerQuestionInputDto } from './dto/game-session-input-dto';
 import { GetMyCurrentPairCommand } from '../application/usecases/get-my-current-pair.usecase';
+import { IdNumberParamDto } from '../../../core/decorators/validation/objectIdDto';
+import { GetGameSessionByIdCommand } from '../application/usecases/get-game-session-by-id.usecase';
+import { ConnectUserToTheQuizGameCommand } from '../application/usecases/connect-user-to-the-quiz-game.usecase';
 
 @SkipThrottle()
 @Controller('/pair-game-quiz/pairs')
@@ -44,8 +48,14 @@ export class QuizGameController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async getGameSessionById(
-    @Query() query: GetQuestionsQueryParams,
-  ): Promise<PaginatedViewDto<GameSessionViewDto[]>> {}
+    @Param() { id }: IdNumberParamDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GameSessionViewDto> {
+    return await this.commandBus.execute<
+      GetGameSessionByIdCommand,
+      GameSessionViewDto
+    >(new GetGameSessionByIdCommand(id, user.id));
+  }
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -53,8 +63,10 @@ export class QuizGameController {
   async connectToGameSession(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<GameSessionViewDto> {
-    console.log(user);
-    return {};
+    return await this.commandBus.execute<
+      ConnectUserToTheQuizGameCommand,
+      GameSessionViewDto
+    >(new ConnectUserToTheQuizGameCommand(user.id));
   }
 
   @UseGuards(JwtAuthGuard)

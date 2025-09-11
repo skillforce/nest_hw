@@ -57,8 +57,8 @@ export type GameStatus = 'PendingSecondPlayer' | 'Active' | 'Finished';
 export class GameSessionViewDto {
   id: string;
   firstPlayerProgress: PlayerProgressDto;
-  secondPlayerProgress: PlayerProgressDto;
-  questions: QuestionDto[];
+  secondPlayerProgress: PlayerProgressDto | null;
+  questions: QuestionDto[] | null;
   status: GameStatus;
   pairCreatedDate: string;
   startGameDate: string | null;
@@ -67,8 +67,8 @@ export class GameSessionViewDto {
   static mapToViewDto(
     gameSession: GameSession,
     firstPlayerProgress: PlayerProgressDto,
-    secondPlayerProgress: PlayerProgressDto,
-    questions: QuestionDto[],
+    secondPlayerProgress: PlayerProgressDto | null,
+    questions: QuestionDto[] | null,
     status: GameStatus,
     finishGameDate: string | null,
   ): GameSessionViewDto {

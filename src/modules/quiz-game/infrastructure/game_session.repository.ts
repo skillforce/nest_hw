@@ -42,6 +42,23 @@ export class GameSessionsRepository {
     return gameSession;
   }
 
+  async findActiveGameSessionByUserId(
+    ///?????
+    userId: number,
+  ): Promise<GameSession | null> {
+    return await this.gameSessionsOrmRepository.findOne({
+      where: {
+        deletedAt: IsNull(),
+        winner_id: IsNull(),
+        participants: {
+          user: {
+            id: userId,
+          },
+        },
+      },
+    });
+  }
+
   async save(
     gameSession: Omit<GameSession, 'id'> & { id?: number },
   ): Promise<number> {
