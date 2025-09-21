@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, ObjectLiteral, Repository } from 'typeorm';
 import { GameSessionQuestion } from '../domain/game-session-questions.entity';
+import { Question } from '../domain/question.entity';
 
 @Injectable()
 export class GameSessionQuestionsRepository {
@@ -50,6 +51,28 @@ export class GameSessionQuestionsRepository {
       },
       relations: ['question'],
     });
+  }
+
+  async attachQuestionsToSession(
+    gameSessionId: number,
+    questions: Question[],
+  ): Promise<ObjectLiteral[]> {
+    const values = questions.map((q, idx) => {
+      const gameSessionQuestion = new GameSessionQuestion();
+      gameSessionQuestion.question_id = q.id;
+      gameSessionQuestion.game_session_id = gameSessionId;
+      gameSessionQuestion.order_index = idx + 1;
+
+      return gameSessionQuestion;
+    });
+
+    const insertResult = await this.gameSessionQuestionOrmRepository
+      .createQueryBuilder()
+      .insert()
+      .values(values)
+      .execute();
+
+    return insertResult.identifiers;
   }
 
   async save(

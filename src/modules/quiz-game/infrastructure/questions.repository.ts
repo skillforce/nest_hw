@@ -42,6 +42,15 @@ export class QuestionsRepository {
     return question;
   }
 
+  async getFiveRandomQuestions(): Promise<Question[]> {
+    return await this.questionsOrmRepository
+      .createQueryBuilder('q')
+      .where('q.isPublished = true AND q.deletedAt IS NULL')
+      .orderBy('RANDOM()')
+      .limit(5)
+      .getMany();
+  }
+
   async save(
     question: Omit<Question, 'id'> & { id?: number },
   ): Promise<number> {

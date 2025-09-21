@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { GameSession } from '../domain/game-session.entity';
 
 @Injectable()
@@ -43,18 +43,32 @@ export class GameSessionsRepository {
   }
 
   async findActiveGameSessionByUserId(
-    ///?????
     userId: number,
   ): Promise<GameSession | null> {
     return await this.gameSessionsOrmRepository.findOne({
       where: {
         deletedAt: IsNull(),
         winner_id: IsNull(),
+        session_started_at: Not(IsNull()),
         participants: {
           user: {
             id: userId,
           },
         },
+      },
+      relations: {
+        participants: {
+          user: true,
+        },
+      },
+    });
+  }
+  async findPendingSecondUserGameSession() {
+    return await this.gameSessionsOrmRepository.findOne({
+      where: {
+        deletedAt: IsNull(),
+        session_started_at: IsNull(),
+        winner_id: IsNull(),
       },
     });
   }
