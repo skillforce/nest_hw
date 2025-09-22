@@ -51,8 +51,10 @@ export class ConnectUserToTheQuizGameUsecase
         secondUserPendingGameSession,
         userId,
       );
+      return this.getGameSessionViewDto(secondUserPendingGameSession.id, false);
     }
-    await this.createGameSession(userId);
+    const newGameSessionId = await this.createGameSession(userId);
+    return this.getGameSessionViewDto(newGameSessionId, true);
   }
   private async createGameSession(userId: number) {
     const gameSession = new GameSession();
@@ -72,6 +74,7 @@ export class ConnectUserToTheQuizGameUsecase
       newGameSessionId,
       questionsArrayForNewGameSession,
     );
+    return newGameSessionId;
   }
   private async connectUserToExistingGameSession(
     gameSession: GameSession,
@@ -92,6 +95,13 @@ export class ConnectUserToTheQuizGameUsecase
     gameSessionParticipant.game_session_id = sessionId;
     gameSessionParticipant.user_id = userId;
     await this.gameSessionParticipantsRepository.save(gameSessionParticipant);
+  }
+  private async getGameSessionViewDto(
+    gameSessionId: number,
+    isPendingSecondUser: boolean,
+  ): Promise<GameSessionViewDto> {
+    // const gameSessionViewDto = GameSessionViewDto.mapToViewDto(gameSession);
+    return;
   }
 }
 
