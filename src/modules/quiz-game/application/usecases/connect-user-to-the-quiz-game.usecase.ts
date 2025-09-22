@@ -1,5 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { GameSessionViewDto } from '../../api/dto/game-session-view-dto';
+import {
+  GameSessionViewDto,
+  PlayerProgressDto,
+} from '../../api/dto/game-session-view-dto';
 import { GameSessionParticipantsRepository } from '../../infrastructure/game-session-participants.repository';
 import { GameSessionQuestionsRepository } from '../../infrastructure/game-session-questions.repository';
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
@@ -51,10 +54,10 @@ export class ConnectUserToTheQuizGameUsecase
         secondUserPendingGameSession,
         userId,
       );
-      return this.getGameSessionViewDto(secondUserPendingGameSession.id, false);
+      // return this.getGameSessionViewDto(secondUserPendingGameSession, false);
     }
-    const newGameSessionId = await this.createGameSession(userId);
-    return this.getGameSessionViewDto(newGameSessionId, true);
+    const newGameSessionId = await this.createGameSession(userId); //should return game session????
+    // return this.getGameSessionPendingSecondUserViewDto(newGameSessionId, true);
   }
   private async createGameSession(userId: number) {
     const gameSession = new GameSession();
@@ -96,13 +99,6 @@ export class ConnectUserToTheQuizGameUsecase
     gameSessionParticipant.user_id = userId;
     await this.gameSessionParticipantsRepository.save(gameSessionParticipant);
   }
-  private async getGameSessionViewDto(
-    gameSessionId: number,
-    isPendingSecondUser: boolean,
-  ): Promise<GameSessionViewDto> {
-    // const gameSessionViewDto = GameSessionViewDto.mapToViewDto(gameSession);
-    return;
-  }
 }
 
-// TODO: should return GameSessionViewDto
+// TODO: should use!!!!! ~~~~~~~~~~~~GetGameSessionByIdCommand~~~~~~~~~~~

@@ -45,25 +45,12 @@ export class GetGameSessionByIdUsecase
 
     const firstParticipant = participants.find(
       (participant) => participant.user.id === userId,
-    );
+    )!;
     const secondParticipant = participants.find(
       (participant) => participant.user.id !== userId,
-    );
+    )!;
 
-    if (!firstParticipant || !secondParticipant) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        extensions: [
-          {
-            field: 'no active game session',
-            message: 'no active game session found',
-          },
-        ],
-        message: 'no active game session found',
-      });
-    }
-
-    if (participants.length === 1) {
+    if (participants.length === 1 && firstParticipant) {
       const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
         [],
         {
