@@ -1,14 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import {
-  GameSessionViewDto,
-  PlayerProgressDto,
-} from '../../api/dto/game-session-view-dto';
 import { GameSessionParticipantsRepository } from '../../infrastructure/game-session-participants.repository';
 import { GameSessionQuestionsRepository } from '../../infrastructure/game-session-questions.repository';
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { GameSessionQuestionAnswerRepository } from '../../infrastructure/game-session-question-answer.repository';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
 import { GameSession } from '../../domain/game-session.entity';
 import { QuestionsRepository } from '../../infrastructure/questions.repository';
@@ -19,20 +14,16 @@ export class ConnectUserToTheQuizGameCommand {
 
 @CommandHandler(ConnectUserToTheQuizGameCommand)
 export class ConnectUserToTheQuizGameUsecase
-  implements
-    ICommandHandler<ConnectUserToTheQuizGameCommand, GameSessionViewDto>
+  implements ICommandHandler<ConnectUserToTheQuizGameCommand, number>
 {
   constructor(
     private gameSessionParticipantsRepository: GameSessionParticipantsRepository,
     private gameSessionsRepository: GameSessionsRepository,
     private gameSessionsQuestionsRepository: GameSessionQuestionsRepository,
-    private gameSessionsQuestionsAnswersRepository: GameSessionQuestionAnswerRepository,
     private questionsRepository: QuestionsRepository,
   ) {}
 
-  async execute({
-    userId,
-  }: ConnectUserToTheQuizGameCommand): Promise<GameSessionViewDto> {
+  async execute({ userId }: ConnectUserToTheQuizGameCommand): Promise<number> {
     const activeGameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
     if (activeGameSession) {
@@ -54,10 +45,9 @@ export class ConnectUserToTheQuizGameUsecase
         secondUserPendingGameSession,
         userId,
       );
-      // return this.getGameSessionViewDto(secondUserPendingGameSession, false);
+      return secondUserPendingGameSession.id;
     }
-    const newGameSessionId = await this.createGameSession(userId); //should return game session????
-    // return this.getGameSessionPendingSecondUserViewDto(newGameSessionId, true);
+    return await this.createGameSession(userId);
   }
   private async createGameSession(userId: number) {
     const gameSession = new GameSession();
@@ -65,6 +55,13 @@ export class ConnectUserToTheQuizGameUsecase
       await this.gameSessionsRepository.save(gameSession);
     await this.createGameSessionParticipant(newGameSessionId, userId);
 
+    return newGameSessionId;
+  }
+  private async connectUserToExistingGameSession(
+    gameSession: GameSession,
+    userId: number,
+  ) {
+    await this.createGameSessionParticipant(gameSession.id, userId);
     const questionsArrayForNewGameSession =
       await this.questionsRepository.getFiveRandomQuestions();
     if (questionsArrayForNewGameSession.length !== 5) {
@@ -74,16 +71,9 @@ export class ConnectUserToTheQuizGameUsecase
       });
     }
     await this.gameSessionsQuestionsRepository.attachQuestionsToSession(
-      newGameSessionId,
+      gameSession.id,
       questionsArrayForNewGameSession,
     );
-    return newGameSessionId;
-  }
-  private async connectUserToExistingGameSession(
-    gameSession: GameSession,
-    userId: number,
-  ) {
-    await this.createGameSessionParticipant(gameSession.id, userId);
     const startedGameSession = {
       ...gameSession,
       session_started_at: new Date(),
@@ -100,5 +90,3 @@ export class ConnectUserToTheQuizGameUsecase
     await this.gameSessionParticipantsRepository.save(gameSessionParticipant);
   }
 }
-
-// TODO: should use!!!!! ~~~~~~~~~~~~GetGameSessionByIdCommand~~~~~~~~~~~

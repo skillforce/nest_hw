@@ -63,10 +63,14 @@ export class QuizGameController {
   async connectToGameSession(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<GameSessionViewDto> {
-    return await this.commandBus.execute<
+    const gameSessionId = await this.commandBus.execute<
       ConnectUserToTheQuizGameCommand,
-      GameSessionViewDto
+      number
     >(new ConnectUserToTheQuizGameCommand(user.id));
+    return await this.commandBus.execute<
+      GetGameSessionByIdCommand,
+      GameSessionViewDto
+    >(new GetGameSessionByIdCommand(gameSessionId, user.id));
   }
 
   @UseGuards(JwtAuthGuard)
