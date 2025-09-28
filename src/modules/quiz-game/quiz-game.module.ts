@@ -16,6 +16,10 @@ import { GameSessionParticipantsRepository } from './infrastructure/game-session
 import { GameSessionQuestionAnswerRepository } from './infrastructure/game-session-question-answer.repository';
 import { GameSessionQuestionsRepository } from './infrastructure/game-session-questions.repository';
 import { GameSessionsRepository } from './infrastructure/game_session.repository';
+import { AnswerQuestionUsecase } from './application/usecases/answer-quiz-game-question.usecase';
+import { ConnectUserToTheQuizGameUsecase } from './application/usecases/connect-user-to-the-quiz-game.usecase';
+import { GetGameSessionByIdUsecase } from './application/usecases/get-game-session-by-id.usecase';
+import { GetMyCurrentPairUsecase } from './application/usecases/get-my-current-pair.usecase';
 
 @Module({
   imports: [
@@ -34,6 +38,10 @@ import { GameSessionsRepository } from './infrastructure/game_session.repository
     CreateQuestionUsecase,
     UpdateQuestionUsecase,
     DeleteQuestionUsecase,
+    AnswerQuestionUsecase,
+    ConnectUserToTheQuizGameUsecase,
+    GetGameSessionByIdUsecase,
+    GetMyCurrentPairUsecase,
     UpdateQuestionPublishStatusUsecase,
     GameSessionParticipantsRepository,
     GameSessionQuestionAnswerRepository,

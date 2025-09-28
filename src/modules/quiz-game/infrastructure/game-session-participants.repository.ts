@@ -64,17 +64,6 @@ export class GameSessionParticipantsRepository {
 
     return gameSessionParticipant;
   }
-  async findSecondParticipantByGameSessionIdOrNotFoundFail(
-    gameSessionId: number,
-    firstParticipantId: number,
-  ): Promise<GameSessionParticipants | null> {
-    const secondParticipant = await this.findSecondParticipantByGameSessionId(
-      gameSessionId,
-      firstParticipantId,
-    );
-
-    secondParticipant;
-  }
   findByGameSessionId(
     gameSessionId: number,
   ): Promise<GameSessionParticipants[]> {

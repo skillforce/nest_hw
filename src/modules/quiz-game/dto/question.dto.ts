@@ -10,3 +10,7 @@ export class UpdateQuestionDto {
 export class UpdateQuestionPublishDto {
   published: boolean;
 }
+
+export class AnswerQuestionDto {
+  answer: string;
+}

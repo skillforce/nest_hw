@@ -25,6 +25,7 @@ import { GetMyCurrentPairCommand } from '../application/usecases/get-my-current-
 import { IdNumberParamDto } from '../../../core/decorators/validation/objectIdDto';
 import { GetGameSessionByIdCommand } from '../application/usecases/get-game-session-by-id.usecase';
 import { ConnectUserToTheQuizGameCommand } from '../application/usecases/connect-user-to-the-quiz-game.usecase';
+import { AnswerQuestionCommand } from '../application/usecases/answer-quiz-game-question.usecase';
 
 @SkipThrottle()
 @Controller('/pair-game-quiz/pairs')
@@ -78,8 +79,12 @@ export class QuizGameController {
   @Post('/my-current/answers')
   async answerGameSessionQuestion(
     @Body() body: AnswerQuestionInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<AnswerQuestionViewDto> {
     console.log(body.answer);
-    return {};
+    return await this.commandBus.execute<
+      AnswerQuestionCommand,
+      AnswerQuestionViewDto
+    >(new AnswerQuestionCommand(body, user.id));
   }
 }
