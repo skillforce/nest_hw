@@ -67,5 +67,7 @@ export class AnswerQuestionUsecase
         gameSessionQuestionIds,
         gameSessionParticipant.id,
       );
+
+    //TODO find first uncommited
   }
 }
