@@ -6,12 +6,9 @@ import {
   HttpStatus,
   Param,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
-import { GetQuestionsQueryParams } from './dto/question-input-dto';
-import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from '../../user-accounts/guards/bearer/jwt-auth.guard';
 import {
@@ -30,10 +27,7 @@ import { AnswerQuestionCommand } from '../application/usecases/answer-quiz-game-
 @SkipThrottle()
 @Controller('/pair-game-quiz/pairs')
 export class QuizGameController {
-  constructor(
-    // private readonly questionsQueryRepository: QuestionsQueryRepository,
-    private readonly commandBus: CommandBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @Get('/my-current')
   @UseGuards(JwtAuthGuard)
@@ -81,7 +75,6 @@ export class QuizGameController {
     @Body() body: AnswerQuestionInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<AnswerQuestionViewDto> {
-    console.log(body.answer);
     return await this.commandBus.execute<
       AnswerQuestionCommand,
       AnswerQuestionViewDto

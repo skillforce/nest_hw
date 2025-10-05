@@ -1,8 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionsRepository } from '../../infrastructure/questions.repository';
-import { AnswerQuestionDto, CreateQuestionDto } from '../../dto/question.dto';
-import { CreateQuestionDomainDto } from '../../domain/dto/question-domain.dto';
-import { Question } from '../../domain/question.entity';
+import { AnswerQuestionDto } from '../../dto/question.dto';
 import { AnswerQuestionViewDto } from '../../api/dto/game-session-view-dto';
 import { GameSessionParticipantsRepository } from '../../infrastructure/game-session-participants.repository';
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
@@ -10,6 +8,11 @@ import { GameSessionQuestionsRepository } from '../../infrastructure/game-sessio
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { GameSessionQuestionAnswerRepository } from '../../infrastructure/game-session-question-answer.repository';
+import {
+  AnswerStatus,
+  GameSessionQuestionAnswer,
+} from '../../domain/game-session-question-answers.entity';
+import { GameSessionQuestion } from '../../domain/game-session-questions.entity';
 
 export class AnswerQuestionCommand {
   constructor(
@@ -62,12 +65,55 @@ export class AnswerQuestionUsecase
     const gameSessionQuestionIds = gameSessionQuestions.map(
       (question) => question.id,
     );
-    const getAllGameSessionQuestionAnswers =
+    const allGameSessionQuestionAnswersForCurrentParticipant =
       await this.gameSessionQuestionAnswerRepository.findAnswersByQuestionsIdsAndParticipantId(
         gameSessionQuestionIds,
         gameSessionParticipant.id,
       );
 
-    //TODO find first uncommited
+    const firstUnansweredQuestion =
+      [...gameSessionQuestions]
+        .sort((a, b) => a.order_index - b.order_index)
+        .find((q) => {
+          const answer =
+            allGameSessionQuestionAnswersForCurrentParticipant.find(
+              (ans) => ans.game_session_question_id === q.id,
+            );
+          return !answer || answer.answer_status === AnswerStatus.PENDING;
+        }) ?? null;
+
+    if (!firstUnansweredQuestion) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: 'No not answered questions found',
+      });
+    }
+
+    return await this.answerQuestion(
+      firstUnansweredQuestion,
+      gameSessionParticipant.id,
+      answerQuestionDto.answer,
+    );
+  }
+
+  private async answerQuestion(
+    gameSessionQuestion: GameSessionQuestion,
+    participantId: number,
+    answer: string,
+  ): Promise<AnswerQuestionViewDto> {
+    const question = await this.questionsRepository.findOrNotFoundFail(
+      gameSessionQuestion.question_id,
+    );
+    const newAnswer = new GameSessionQuestionAnswer();
+    newAnswer.game_session_question_id = gameSessionQuestion.id;
+    newAnswer.participant_id = participantId;
+    newAnswer.answer = answer;
+    newAnswer.answer_status = question?.answers.includes(answer)
+      ? AnswerStatus.CORRECT
+      : AnswerStatus.INCORRECT;
+
+    await this.gameSessionQuestionAnswerRepository.save(newAnswer);
+
+    return AnswerQuestionViewDto.mapToViewDto(newAnswer, question.id);
   }
 }

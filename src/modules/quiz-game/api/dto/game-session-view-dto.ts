@@ -92,4 +92,15 @@ export class AnswerQuestionViewDto {
   questionId: string;
   answerStatus: AnswerStatus;
   addedAt: string;
+
+  static mapToViewDto(
+    answer: GameSessionQuestionAnswer,
+    questionId: number,
+  ): AnswerQuestionViewDto {
+    return {
+      questionId: questionId.toString(),
+      answerStatus: answer.answer_status,
+      addedAt: answer.createdAt?.toString() || new Date().toISOString(),
+    };
+  }
 }
