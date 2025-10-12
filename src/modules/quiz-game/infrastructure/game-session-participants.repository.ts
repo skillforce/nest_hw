@@ -10,7 +10,6 @@ export class GameSessionParticipantsRepository {
   constructor(
     @InjectRepository(GameSessionParticipants)
     private readonly gameSessionParticipantsOrmRepository: Repository<GameSessionParticipants>,
-    private readonly minMaxAmountOfParticipants = 2,
   ) {}
 
   async findActiveByUserId(
