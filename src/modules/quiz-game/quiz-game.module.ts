@@ -20,6 +20,7 @@ import { AnswerQuestionUsecase } from './application/usecases/answer-quiz-game-q
 import { ConnectUserToTheQuizGameUsecase } from './application/usecases/connect-user-to-the-quiz-game.usecase';
 import { GetGameSessionByIdUsecase } from './application/usecases/get-game-session-by-id.usecase';
 import { GetMyCurrentPairUsecase } from './application/usecases/get-my-current-pair.usecase';
+import { QuizGameController } from './api/quiz-game_controller';
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { GetMyCurrentPairUsecase } from './application/usecases/get-my-current-p
       GameSessionQuestion,
     ]),
   ],
-  controllers: [QuestionsController],
+  controllers: [QuestionsController, QuizGameController],
   providers: [
     QuestionsRepository,
     QuestionsQueryRepository,
