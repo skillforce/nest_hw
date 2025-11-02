@@ -43,6 +43,7 @@ export class QuestionsRepository {
   }
 
   async getFiveRandomQuestions(): Promise<Question[]> {
+    console.log('33333');
     return await this.questionsOrmRepository
       .createQueryBuilder('q')
       .where('q.isPublished = true AND q.deletedAt IS NULL')

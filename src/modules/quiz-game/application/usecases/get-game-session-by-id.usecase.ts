@@ -44,13 +44,15 @@ export class GetGameSessionByIdUsecase
     this.checkIfUserIsParticipant(participants, userId);
 
     const firstParticipant = participants.find(
-      (participant) => participant.user.id === userId,
+      (participant) => participant.user_id === userId,
     )!;
     const secondParticipant = participants.find(
-      (participant) => participant.user.id !== userId,
+      (participant) => participant.user_id !== userId,
     )!;
-
+    console.log(firstParticipant);
+    console.log(secondParticipant);
     if (participants.length === 1 && firstParticipant) {
+      //TODO here is error!!!
       const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
         [],
         {
@@ -59,6 +61,7 @@ export class GetGameSessionByIdUsecase
         },
         0,
       );
+      console.log(emptyFirstParticipantProgress);
       return GameSessionViewDto.mapToViewDto(
         gameSession,
         emptyFirstParticipantProgress,
@@ -139,7 +142,7 @@ export class GetGameSessionByIdUsecase
     userId: number,
   ) {
     const participant = participants.find(
-      (participant) => participant.user.id === userId,
+      (participant) => participant.user_id === userId,
     );
     if (!participant) {
       throw new DomainException({

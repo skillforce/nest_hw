@@ -15,4 +15,5 @@ export default new DataSource({
   ssl: false,
   migrations: ['src/migrations/*.ts'],
   entities: ['src/**/*.entity.ts'],
+  logging: ['query'],
 });

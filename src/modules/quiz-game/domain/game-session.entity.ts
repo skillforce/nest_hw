@@ -9,6 +9,7 @@ export class GameSession extends NumericIdEntity {
   @Column({ nullable: true })
   session_started_at: Date;
 
+  @Column({ nullable: true })
   winner_id: string;
 
   @ManyToOne(() => User, (user) => user.wonSessions, { nullable: true })

@@ -78,7 +78,7 @@ export class GameSessionParticipantsRepository {
     gameSessionParticipant: Omit<GameSessionParticipants, 'id'> & {
       id?: number;
     },
-  ): Promise<number> {
+  ): Promise<any> {
     const result = await this.gameSessionParticipantsOrmRepository.save(
       gameSessionParticipant,
     );

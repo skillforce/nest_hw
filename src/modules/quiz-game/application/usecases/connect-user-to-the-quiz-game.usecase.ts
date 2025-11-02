@@ -54,7 +54,6 @@ export class ConnectUserToTheQuizGameUsecase
     const newGameSessionId =
       await this.gameSessionsRepository.save(gameSession);
     await this.createGameSessionParticipant(newGameSessionId, userId);
-
     return newGameSessionId;
   }
   private async connectUserToExistingGameSession(
@@ -64,6 +63,7 @@ export class ConnectUserToTheQuizGameUsecase
     await this.createGameSessionParticipant(gameSession.id, userId);
     const questionsArrayForNewGameSession =
       await this.questionsRepository.getFiveRandomQuestions();
+    console.log(questionsArrayForNewGameSession);
     if (questionsArrayForNewGameSession.length !== 5) {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
