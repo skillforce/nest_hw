@@ -27,13 +27,16 @@ export class PlayerProgressDto {
     score: number,
   ): PlayerProgressDto {
     const dto = new PlayerProgressDto();
-    dto.answers = answers.map((answer) => {
-      return {
-        addedAt: answer.createdAt?.toString() || new Date().toISOString(),
-        answerStatus: answer.answer_status,
-        questionId: answer.gameSessionQuestion.question_id,
-      };
-    });
+
+    dto.answers = answers.length
+      ? answers.map((answer) => {
+          return {
+            addedAt: answer.createdAt?.toString() || new Date().toISOString(),
+            answerStatus: answer.answer_status,
+            questionId: answer.gameSessionQuestion.question_id,
+          };
+        })
+      : [];
     dto.player = playerDto;
     dto.score = score.toString();
     return dto;

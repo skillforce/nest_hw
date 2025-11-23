@@ -11,10 +11,13 @@ export enum AnswerStatus {
 
 @Entity('GameSessionQuestionAnswers')
 export class GameSessionQuestionAnswer extends NumericIdEntity {
+  @Column({ nullable: false })
   game_session_question_id: number;
+
   @Column({ nullable: true })
   answer: string;
 
+  @Column({ nullable: false })
   participant_id: number;
 
   @Column({

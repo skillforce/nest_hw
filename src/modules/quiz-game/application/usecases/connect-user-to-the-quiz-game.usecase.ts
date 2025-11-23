@@ -60,33 +60,42 @@ export class ConnectUserToTheQuizGameUsecase
     gameSession: GameSession,
     userId: number,
   ) {
-    await this.createGameSessionParticipant(gameSession.id, userId);
-    const questionsArrayForNewGameSession =
-      await this.questionsRepository.getFiveRandomQuestions();
-    console.log(questionsArrayForNewGameSession);
-    if (questionsArrayForNewGameSession.length !== 5) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'Some issues occurred while generate questions',
-      });
+    try {
+      await this.createGameSessionParticipant(gameSession.id, userId);
+
+      const questionsArrayForNewGameSession =
+        await this.questionsRepository.getFiveRandomQuestions();
+      if (questionsArrayForNewGameSession.length !== 5) {
+        throw new DomainException({
+          code: DomainExceptionCode.BadRequest,
+          message: 'Some issues occurred while generate questions',
+        });
+      }
+      await this.gameSessionsQuestionsRepository.attachQuestionsToSession(
+        gameSession.id,
+        questionsArrayForNewGameSession,
+      );
+      const startedGameSession = {
+        ...gameSession,
+        session_started_at: new Date(),
+      };
+
+      await this.gameSessionsRepository.save(startedGameSession);
+    } catch (e) {
+      console.log(e);
     }
-    await this.gameSessionsQuestionsRepository.attachQuestionsToSession(
-      gameSession.id,
-      questionsArrayForNewGameSession,
-    );
-    const startedGameSession = {
-      ...gameSession,
-      session_started_at: new Date(),
-    };
-    await this.gameSessionsRepository.save(startedGameSession);
   }
   private async createGameSessionParticipant(
     sessionId: number,
     userId: number,
   ) {
-    const gameSessionParticipant = new GameSessionParticipants();
-    gameSessionParticipant.game_session_id = sessionId;
-    gameSessionParticipant.user_id = userId;
-    await this.gameSessionParticipantsRepository.save(gameSessionParticipant);
+    try {
+      const gameSessionParticipant = new GameSessionParticipants();
+      gameSessionParticipant.game_session_id = sessionId;
+      gameSessionParticipant.user_id = userId;
+      await this.gameSessionParticipantsRepository.save(gameSessionParticipant);
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

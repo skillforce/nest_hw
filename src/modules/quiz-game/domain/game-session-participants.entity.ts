@@ -8,7 +8,7 @@ import { GameSessionQuestionAnswer } from './game-session-question-answers.entit
 export class GameSessionParticipants extends NumericIdEntity {
   @Column({ nullable: true })
   finished_at: Date;
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: false, default: 0 })
   score: number;
   @Column()
   user_id: number;

@@ -39,51 +39,51 @@ export class GetGameSessionByIdUsecase
     const participants =
       await this.gameSessionParticipantsRepository.findByGameSessionId(
         gameSessionId,
+        true,
       );
 
     this.checkIfUserIsParticipant(participants, userId);
-
+    //TODO remove ! to handle nulls properly
     const firstParticipant = participants.find(
       (participant) => participant.user_id === userId,
     )!;
     const secondParticipant = participants.find(
       (participant) => participant.user_id !== userId,
     )!;
-    console.log(firstParticipant);
-    console.log(secondParticipant);
     if (participants.length === 1 && firstParticipant) {
-      //TODO here is error!!!
-      const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
-        [],
-        {
-          id: userId.toString(),
-          login: firstParticipant.user.login,
-        },
-        0,
-      );
-      console.log(emptyFirstParticipantProgress);
-      return GameSessionViewDto.mapToViewDto(
-        gameSession,
-        emptyFirstParticipantProgress,
-        null,
-        null,
-        'PendingSecondPlayer',
-        null,
-      );
+      try {
+        const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
+          [],
+          {
+            id: userId.toString(),
+            login: firstParticipant.user.login,
+          },
+          0,
+        );
+        return GameSessionViewDto.mapToViewDto(
+          gameSession,
+          emptyFirstParticipantProgress,
+          null,
+          null,
+          'PendingSecondPlayer',
+          null,
+        );
+      } catch (e) {
+        console.log(e);
+      }
     }
-
     const sessionQuestions =
       await this.gameSessionsQuestionsRepository.findByGameSessionId(
         gameSession.id,
       );
 
     const sessionQuestionsIds = sessionQuestions.map((question) => question.id);
-
     const firstParticipantAnswers =
       await this.gameSessionsQuestionsAnswersRepository.findAnswersByQuestionsIdsAndParticipantId(
         sessionQuestionsIds,
         userId,
       );
+
     const secondParticipantAnswers =
       await this.gameSessionsQuestionsAnswersRepository.findAnswersByQuestionsIdsAndParticipantId(
         sessionQuestionsIds,
@@ -93,26 +93,38 @@ export class GetGameSessionByIdUsecase
     const firstParticipantProgress = PlayerProgressDto.mapToViewDto(
       firstParticipantAnswers,
       {
-        id: firstParticipant.id.toString(),
+        id: firstParticipant.user_id.toString(),
         login: firstParticipant.user.login,
       },
-      firstParticipant.score,
+      firstParticipant.score ?? 0,
     );
+
     const secondParticipantProgress = PlayerProgressDto.mapToViewDto(
       secondParticipantAnswers,
       {
-        id: secondParticipant.id.toString(),
+        id: secondParticipant.user_id.toString(),
         login: secondParticipant.user.login,
       },
-      secondParticipant.score,
+      secondParticipant.score ?? 0,
     );
-
     const finishGameDate = this.getFinishGameDate(
       firstParticipant,
       secondParticipant,
       gameSession.winner_id,
     );
     const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
+
+    console.log(
+      'alalala',
+      GameSessionViewDto.mapToViewDto(
+        gameSession,
+        firstParticipantProgress,
+        secondParticipantProgress,
+        sessionQuestions.map(QuestionDto.mapToViewDto),
+        gameSessionStatus,
+        finishGameDate,
+      ),
+    );
 
     return GameSessionViewDto.mapToViewDto(
       gameSession,

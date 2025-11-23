@@ -9,7 +9,9 @@ export class GameSessionQuestion extends NumericIdEntity {
   @Column({ nullable: false })
   order_index: number;
 
+  @Column({ nullable: false })
   game_session_id: number;
+  @Column({ nullable: false })
   question_id: number;
 
   @ManyToOne(() => Question, { nullable: false, onDelete: 'CASCADE' })

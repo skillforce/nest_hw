@@ -65,15 +65,16 @@ export class GameSessionParticipantsRepository {
   }
   findByGameSessionId(
     gameSessionId: number,
+    isUserEntityAttached = false,
   ): Promise<GameSessionParticipants[]> {
     return this.gameSessionParticipantsOrmRepository.find({
       where: {
         game_session_id: gameSessionId,
         deletedAt: IsNull(),
       },
+      relations: isUserEntityAttached ? ['user'] : [],
     });
   }
-
   async save(
     gameSessionParticipant: Omit<GameSessionParticipants, 'id'> & {
       id?: number;
