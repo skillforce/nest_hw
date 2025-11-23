@@ -52,6 +52,7 @@ export class GameSessionQuestionAnswerRepository {
         participant_id: participantId,
         deletedAt: IsNull(),
       },
+      relations: ['gameSessionQuestion'],
     });
   }
 

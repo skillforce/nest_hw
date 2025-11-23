@@ -7,10 +7,8 @@ import {
 import { GameSessionParticipantsRepository } from '../../infrastructure/game-session-participants.repository';
 import { GameSessionQuestionsRepository } from '../../infrastructure/game-session-questions.repository';
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
-import { GameSession } from '../../domain/game-session.entity';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { GameSessionQuestion } from '../../domain/game-session-questions.entity';
 import { GameSessionQuestionAnswerRepository } from '../../infrastructure/game-session-question-answer.repository';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
 
@@ -62,7 +60,7 @@ export class GetMyCurrentPairUsecase
     const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
       [],
       {
-        id: activeParticipant.id.toString(),
+        id: activeParticipant.user_id.toString(),
         login: activeParticipant.user.login,
       },
       0,
@@ -85,7 +83,6 @@ export class GetMyCurrentPairUsecase
       );
 
     const sessionQuestionsIds = sessionQuestions.map((question) => question.id);
-
     const firstParticipantAnswers =
       await this.gameSessionsQuestionsAnswersRepository.findAnswersByQuestionsIdsAndParticipantId(
         sessionQuestionsIds,
@@ -100,18 +97,19 @@ export class GetMyCurrentPairUsecase
     const firstParticipantProgress = PlayerProgressDto.mapToViewDto(
       firstParticipantAnswers,
       {
-        id: activeParticipant.id.toString(),
+        id: activeParticipant.user_id.toString(),
         login: activeParticipant.user.login,
       },
-      activeParticipant.score,
+      activeParticipant.score ?? 0,
     );
+
     const secondParticipantProgress = PlayerProgressDto.mapToViewDto(
       secondParticipantAnswers,
       {
-        id: secondParticipant.id.toString(),
+        id: secondParticipant.user_id.toString(),
         login: secondParticipant.user.login,
       },
-      secondParticipant.score,
+      secondParticipant.score ?? 0,
     );
 
     const finishGameDate = this.getFinishGameDate(

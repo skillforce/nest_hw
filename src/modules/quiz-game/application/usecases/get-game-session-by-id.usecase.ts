@@ -114,18 +114,6 @@ export class GetGameSessionByIdUsecase
     );
     const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
 
-    console.log(
-      'alalala',
-      GameSessionViewDto.mapToViewDto(
-        gameSession,
-        firstParticipantProgress,
-        secondParticipantProgress,
-        sessionQuestions.map(QuestionDto.mapToViewDto),
-        gameSessionStatus,
-        finishGameDate,
-      ),
-    );
-
     return GameSessionViewDto.mapToViewDto(
       gameSession,
       firstParticipantProgress,
