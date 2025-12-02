@@ -35,6 +35,8 @@ export class GetMyCurrentPairUsecase
         userId,
       );
 
+    console.log(activeParticipant);
+
     if (!activeParticipant) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
@@ -56,6 +58,8 @@ export class GetMyCurrentPairUsecase
         activeParticipant.game_session_id,
         userId,
       );
+
+    console.log('SECOND PARTICIPANT', secondParticipant);
 
     const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
       [],
@@ -93,7 +97,7 @@ export class GetMyCurrentPairUsecase
         sessionQuestionsIds,
         secondParticipant.id,
       );
-
+    console.log('1111111');
     const firstParticipantProgress = PlayerProgressDto.mapToViewDto(
       firstParticipantAnswers,
       {
@@ -102,6 +106,8 @@ export class GetMyCurrentPairUsecase
       },
       activeParticipant.score ?? 0,
     );
+
+    console.log(firstParticipantProgress);
 
     const secondParticipantProgress = PlayerProgressDto.mapToViewDto(
       secondParticipantAnswers,
@@ -112,12 +118,16 @@ export class GetMyCurrentPairUsecase
       secondParticipant.score ?? 0,
     );
 
+    console.log(secondParticipantProgress);
+
     const finishGameDate = this.getFinishGameDate(
       activeParticipant,
       secondParticipant,
       gameSession.winner_id,
     );
     const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
+
+    console.log('gameSessionStatus', gameSessionStatus);
 
     return GameSessionViewDto.mapToViewDto(
       gameSession,
@@ -132,11 +142,13 @@ export class GetMyCurrentPairUsecase
   private getFinishGameDate(
     firstParticipant: GameSessionParticipants,
     secondParticipant: GameSessionParticipants,
-    winnerId: string,
+    winnerId: number,
   ) {
     if (!winnerId) {
       return null;
     }
+
+    //TODO need to set finished_at when participant finishes all questions and FINISH DATE FOR GAME SESSION
     if (firstParticipant.user.id === +winnerId) {
       return firstParticipant.finished_at.toString();
     }

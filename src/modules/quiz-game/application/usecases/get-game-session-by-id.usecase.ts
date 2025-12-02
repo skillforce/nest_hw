@@ -43,7 +43,6 @@ export class GetGameSessionByIdUsecase
       );
 
     this.checkIfUserIsParticipant(participants, userId);
-    //TODO remove ! to handle nulls properly
     const firstParticipant = participants.find(
       (participant) => participant.user_id === userId,
     )!;
@@ -81,7 +80,7 @@ export class GetGameSessionByIdUsecase
     const firstParticipantAnswers =
       await this.gameSessionsQuestionsAnswersRepository.findAnswersByQuestionsIdsAndParticipantId(
         sessionQuestionsIds,
-        userId,
+        firstParticipant.id,
       );
 
     const secondParticipantAnswers =
@@ -89,7 +88,6 @@ export class GetGameSessionByIdUsecase
         sessionQuestionsIds,
         participants.find((participant) => participant.user.id !== userId)!.id,
       );
-
     const firstParticipantProgress = PlayerProgressDto.mapToViewDto(
       firstParticipantAnswers,
       {
@@ -112,6 +110,8 @@ export class GetGameSessionByIdUsecase
       secondParticipant,
       gameSession.winner_id,
     );
+
+    console.log('SESSION', gameSession);
     const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
 
     return GameSessionViewDto.mapToViewDto(
@@ -127,7 +127,7 @@ export class GetGameSessionByIdUsecase
   private getFinishGameDate(
     firstParticipant: GameSessionParticipants,
     secondParticipant: GameSessionParticipants,
-    winnerId: string,
+    winnerId: number,
   ) {
     if (!winnerId) {
       return null;

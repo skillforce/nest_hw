@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,9 +23,21 @@ export class GameSessionsRepository {
       },
     });
   }
+
+  async updateWinner(sessionId: number, winnerId: number): Promise<void> {
+    try {
+      await this.gameSessionsOrmRepository.update(sessionId, {
+        winner_id: winnerId,
+      });
+
+      console.log('Winner updated successfully', winnerId);
+    } catch (err) {
+      console.error('Update error:', err);
+    }
+  }
   async findOrNotFoundFail(id: number): Promise<GameSession> {
     const gameSession = await this.findById(id);
-
+    console.log('gameSession found:', gameSession);
     if (!gameSession) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
@@ -50,7 +62,6 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('gameSession.participants', 'participants')
       .leftJoinAndSelect('participants.user', 'user')
       .where('gameSession.deletedAt IS NULL')
-      .andWhere('gameSession.winner_id IS NULL')
       .andWhere('gameSession.session_started_at IS NOT NULL')
       .andWhere('user.id = :userId', { userId });
 

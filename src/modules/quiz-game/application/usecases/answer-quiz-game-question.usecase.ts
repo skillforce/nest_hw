@@ -13,6 +13,8 @@ import {
   GameSessionQuestionAnswer,
 } from '../../domain/game-session-question-answers.entity';
 import { GameSessionQuestion } from '../../domain/game-session-questions.entity';
+import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
+import { GameSession } from '../../domain/game-session.entity';
 
 export class AnswerQuestionCommand {
   constructor(
@@ -26,7 +28,6 @@ export class AnswerQuestionUsecase
   implements ICommandHandler<AnswerQuestionCommand, AnswerQuestionViewDto>
 {
   constructor(
-    private questionRepository: QuestionsRepository,
     private gameSessionParticipantsRepository: GameSessionParticipantsRepository,
     private gameSessionsRepository: GameSessionsRepository,
     private gameSessionsQuestionsRepository: GameSessionQuestionsRepository,
@@ -49,6 +50,9 @@ export class AnswerQuestionUsecase
 
     const gameSessionParticipant =
       await this.gameSessionParticipantsRepository.findActiveByUserId(userId);
+
+    console.log(gameSession);
+    console.log(gameSessionParticipant);
 
     if (!gameSessionParticipant) {
       throw new DomainException({
@@ -89,10 +93,15 @@ export class AnswerQuestionUsecase
       });
     }
 
+    if (!gameSession.winner_id && firstUnansweredQuestion?.order_index === 5) {
+      await this.checkAndSetWinner(gameSession.id, userId);
+      await this.increasePlayerScore(gameSessionParticipant);
+    }
     return await this.answerQuestion(
       firstUnansweredQuestion,
       gameSessionParticipant.id,
       answerQuestionDto.answer,
+      gameSessionParticipant,
     );
   }
 
@@ -100,20 +109,44 @@ export class AnswerQuestionUsecase
     gameSessionQuestion: GameSessionQuestion,
     participantId: number,
     answer: string,
+    gameSessionParticipant: GameSessionParticipants,
   ): Promise<AnswerQuestionViewDto> {
     const question = await this.questionsRepository.findOrNotFoundFail(
       gameSessionQuestion.question_id,
     );
     const newAnswer = new GameSessionQuestionAnswer();
+
+    const isAnswerCorrect = question?.answers.includes(answer);
     newAnswer.game_session_question_id = gameSessionQuestion.id;
     newAnswer.participant_id = participantId;
     newAnswer.answer = answer;
-    newAnswer.answer_status = question?.answers.includes(answer)
+    newAnswer.answer_status = isAnswerCorrect
       ? AnswerStatus.CORRECT
       : AnswerStatus.INCORRECT;
+    if (isAnswerCorrect) {
+      await this.increasePlayerScore(gameSessionParticipant);
+    }
 
     await this.gameSessionQuestionAnswerRepository.save(newAnswer);
 
     return AnswerQuestionViewDto.mapToViewDto(newAnswer, question.id);
+  }
+
+  private async checkAndSetWinner(sessionId: number, userId: number) {
+    try {
+      await this.gameSessionsRepository.updateWinner(sessionId, userId);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  private async increasePlayerScore(
+    gameSessionParticipant: GameSessionParticipants,
+  ) {
+    const updatedParticipant = {
+      ...gameSessionParticipant,
+      score: gameSessionParticipant.score + 1,
+    };
+    await this.gameSessionParticipantsRepository.save(updatedParticipant);
   }
 }

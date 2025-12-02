@@ -46,7 +46,7 @@ describe('Game Process (e2e)', () => {
       },
       {
         body: 'At what temperature in Celsius does water start to freeze?',
-        correctAnswers: ['0', 'zero'],
+        correctAnswers: ['0', 'four'],
       },
       {
         body: 'If you multiply five by five, what number will you get as a result?',
@@ -77,14 +77,15 @@ describe('Game Process (e2e)', () => {
     // --- Step 5: User1 and User2 answer alternately
     for (let i = 0; i < 5; i++) {
       await gameTestManager.sendAnswer(user1.accessToken, {
-        answer: questions[i].correctAnswers[0],
+        answer: '25',
       });
-      await delay(50);
+      await delay(200);
       await gameTestManager.sendAnswer(user2.accessToken, {
-        answer: questions[i].correctAnswers[0],
+        answer: 'four',
       });
     }
 
+    console.log('Both users have answered all questions.');
     // --- Step 6: Verify both users’ current game status
     const game1 = await gameTestManager.getMyCurrentGame(user1.accessToken);
     const game2 = await gameTestManager.getMyCurrentGame(user2.accessToken);
