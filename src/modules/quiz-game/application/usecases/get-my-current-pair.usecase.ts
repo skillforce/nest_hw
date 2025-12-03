@@ -7,8 +7,6 @@ import {
 import { GameSessionParticipantsRepository } from '../../infrastructure/game-session-participants.repository';
 import { GameSessionQuestionsRepository } from '../../infrastructure/game-session-questions.repository';
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
-import { DomainException } from '../../../../core/exceptions/domain-exceptions';
-import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { GameSessionQuestionAnswerRepository } from '../../infrastructure/game-session-question-answer.repository';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
 
@@ -36,19 +34,6 @@ export class GetMyCurrentPairUsecase
       );
 
     console.log(activeParticipant);
-
-    if (!activeParticipant) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        extensions: [
-          {
-            field: 'no active game session',
-            message: 'no active game session found',
-          },
-        ],
-        message: 'no active game session found',
-      });
-    }
     const gameSession = await this.gameSessionsRepository.findOrNotFoundFail(
       activeParticipant.game_session_id,
     );
@@ -97,7 +82,6 @@ export class GetMyCurrentPairUsecase
         sessionQuestionsIds,
         secondParticipant.id,
       );
-    console.log('1111111');
     const firstParticipantProgress = PlayerProgressDto.mapToViewDto(
       firstParticipantAnswers,
       {
@@ -106,8 +90,6 @@ export class GetMyCurrentPairUsecase
       },
       activeParticipant.score ?? 0,
     );
-
-    console.log(firstParticipantProgress);
 
     const secondParticipantProgress = PlayerProgressDto.mapToViewDto(
       secondParticipantAnswers,
@@ -118,16 +100,16 @@ export class GetMyCurrentPairUsecase
       secondParticipant.score ?? 0,
     );
 
-    console.log(secondParticipantProgress);
+    console.log('ACTIVE PARTICIPANT', activeParticipant);
+    console.log('SECOND PARTICIPANT', secondParticipant);
 
     const finishGameDate = this.getFinishGameDate(
       activeParticipant,
       secondParticipant,
       gameSession.winner_id,
     );
-    const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
 
-    console.log('gameSessionStatus', gameSessionStatus);
+    const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
 
     return GameSessionViewDto.mapToViewDto(
       gameSession,

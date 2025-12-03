@@ -49,17 +49,9 @@ export class AnswerQuestionUsecase
     }
 
     const gameSessionParticipant =
-      await this.gameSessionParticipantsRepository.findActiveByUserId(userId);
-
-    console.log(gameSession);
-    console.log(gameSessionParticipant);
-
-    if (!gameSessionParticipant) {
-      throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
-        message: 'Game session not found',
-      });
-    }
+      await this.gameSessionParticipantsRepository.findActiveByUserIdOrNotFoundFail(
+        userId,
+      );
 
     const gameSessionQuestions =
       await this.gameSessionsQuestionsRepository.findByGameSessionId(
@@ -93,15 +85,13 @@ export class AnswerQuestionUsecase
       });
     }
 
-    if (!gameSession.winner_id && firstUnansweredQuestion?.order_index === 5) {
-      await this.checkAndSetWinner(gameSession.id, userId);
-      await this.increasePlayerScore(gameSessionParticipant);
-    }
     return await this.answerQuestion(
       firstUnansweredQuestion,
       gameSessionParticipant.id,
       answerQuestionDto.answer,
       gameSessionParticipant,
+      gameSession,
+      firstUnansweredQuestion?.order_index === 5,
     );
   }
 
@@ -110,6 +100,8 @@ export class AnswerQuestionUsecase
     participantId: number,
     answer: string,
     gameSessionParticipant: GameSessionParticipants,
+    gameSession: GameSession,
+    isLastQuestion: boolean = false,
   ): Promise<AnswerQuestionViewDto> {
     const question = await this.questionsRepository.findOrNotFoundFail(
       gameSessionQuestion.question_id,
@@ -128,16 +120,85 @@ export class AnswerQuestionUsecase
     }
 
     await this.gameSessionQuestionAnswerRepository.save(newAnswer);
+    if (isLastQuestion) {
+      await this.handleLastQuestionCase(gameSessionParticipant, gameSession);
+    }
 
     return AnswerQuestionViewDto.mapToViewDto(newAnswer, question.id);
   }
 
-  private async checkAndSetWinner(sessionId: number, userId: number) {
-    try {
-      await this.gameSessionsRepository.updateWinner(sessionId, userId);
-    } catch (e) {
-      console.log(e);
+  private async calculateWinnerIdAndSave(
+    firstParticipant: GameSessionParticipants,
+    secondParticipant: GameSessionParticipants,
+    game_session_id: number,
+  ): Promise<number | null> {
+    const firstTime = new Date(firstParticipant.finished_at).getTime();
+    const secondTime = new Date(secondParticipant.finished_at).getTime();
+    let firstParticipantScore = firstParticipant.score ?? 0;
+    let secondParticipantScore = secondParticipant.score ?? 0;
+    if (firstTime > secondTime) {
+      await this.increasePlayerScore(secondParticipant);
+      firstParticipantScore++;
+    } else if (secondTime > firstTime) {
+      await this.increasePlayerScore(firstParticipant);
+      secondParticipantScore++;
     }
+    let winnerId: number | null;
+    if (firstParticipantScore > secondParticipantScore) {
+      winnerId = firstParticipant.user.id;
+    } else if (secondParticipantScore > firstParticipantScore) {
+      winnerId = secondParticipant.user.id;
+    } else {
+      winnerId = null;
+    }
+    if (winnerId) {
+      await this.updateGameSessionWinner(game_session_id, winnerId);
+    }
+    return winnerId;
+  }
+
+  private async updateGameSessionWinner(sessionId: number, winnerId: number) {
+    await this.gameSessionsRepository.updateWinner(sessionId, winnerId);
+  }
+
+  private async handleLastQuestionCase(
+    gameSessionParticipant: GameSessionParticipants,
+    gameSession: GameSession,
+  ) {
+    await this.setParticipantFinishedAt(gameSessionParticipant);
+
+    const participants =
+      await this.gameSessionParticipantsRepository.findByGameSessionId(
+        gameSession.id,
+        true,
+      );
+    const firstParticipant = participants.find(
+      (participant) => participant.user_id === gameSessionParticipant.user_id,
+    );
+    const secondParticipant = participants.find(
+      (participant) => participant.user_id !== gameSessionParticipant.user_id,
+    );
+
+    if (
+      !gameSession.winner_id &&
+      firstParticipant?.finished_at &&
+      secondParticipant?.finished_at
+    ) {
+      await this.calculateWinnerIdAndSave(
+        firstParticipant,
+        secondParticipant,
+        gameSession.id,
+      );
+    }
+  }
+
+  private async setParticipantFinishedAt(
+    gameSessionParticipant: GameSessionParticipants,
+  ) {
+    await this.gameSessionParticipantsRepository.save({
+      ...gameSessionParticipant,
+      finished_at: new Date(),
+    });
   }
 
   private async increasePlayerScore(

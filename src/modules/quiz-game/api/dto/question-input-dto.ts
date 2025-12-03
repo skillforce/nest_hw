@@ -5,6 +5,7 @@ import { ArrayMinSize, IsArray, IsBoolean, IsString } from 'class-validator';
 
 export enum QuestionsSortBy {
   CreatedAt = 'createdAt',
+  Body = 'body',
 }
 
 export class GetQuestionsQueryParams extends BaseQueryParams {

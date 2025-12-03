@@ -42,8 +42,13 @@ export class QuestionsController {
   @UseGuards(BasicAuthGuard)
   async getAllPaginatedQuestions(
     @Query() query: GetQuestionsQueryParams,
-  ): Promise<PaginatedViewDto<QuestionViewDto[]>> {
-    return await this.questionsQueryRepository.getAll(query);
+  ): Promise<PaginatedViewDto<QuestionViewDto[]> | undefined> {
+    try {
+      console.log(await this.questionsQueryRepository.getAll(query));
+      return await this.questionsQueryRepository.getAll(query);
+    } catch (error) {
+      console.log('Error in getAllPaginatedQuestions:', error);
+    }
   }
 
   @UseGuards(BasicAuthGuard)

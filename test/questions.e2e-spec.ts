@@ -50,12 +50,23 @@ describe('Questions Controller (e2e)', () => {
       body: 'What is the capital of France?',
       correctAnswers: ['Paris'],
     });
+    console.log(created);
+    await questionsTestManager.updateQuestionById(
+      {
+        body: 'updated123123123!',
+        correctAnswers: ['Paris!'],
+      },
+      +created.id,
+    );
 
+    const result = await questionsTestManager.getQuestions(200);
+    console.log(result);
     expect(created.id).toBeDefined();
     expect(created.body).toBe('What is the capital of France?');
     expect(created.correctAnswers).toEqual(['Paris']);
     expect(created.published).toBe(false);
     expect(created.createdAt).toBeDefined();
+    expect(created.updatedAt).toBeNull();
   });
 
   it("shouldn't create question when body is empty", async () => {

@@ -37,7 +37,7 @@ export class GameSessionsRepository {
   }
   async findOrNotFoundFail(id: number): Promise<GameSession> {
     const gameSession = await this.findById(id);
-    console.log('gameSession found:', gameSession);
+
     if (!gameSession) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,

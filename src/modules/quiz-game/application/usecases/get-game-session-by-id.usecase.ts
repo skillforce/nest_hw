@@ -43,6 +43,7 @@ export class GetGameSessionByIdUsecase
       );
 
     this.checkIfUserIsParticipant(participants, userId);
+    console.log('GAME SESSION', gameSession);
     const firstParticipant = participants.find(
       (participant) => participant.user_id === userId,
     )!;
@@ -105,13 +106,13 @@ export class GetGameSessionByIdUsecase
       },
       secondParticipant.score ?? 0,
     );
+
     const finishGameDate = this.getFinishGameDate(
       firstParticipant,
       secondParticipant,
       gameSession.winner_id,
     );
 
-    console.log('SESSION', gameSession);
     const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
 
     return GameSessionViewDto.mapToViewDto(
@@ -136,6 +137,15 @@ export class GetGameSessionByIdUsecase
       return firstParticipant.finished_at.toString();
     }
     return secondParticipant.finished_at.toString();
+  }
+  private async increasePlayerScore(
+    gameSessionParticipant: GameSessionParticipants,
+  ) {
+    const updatedParticipant = {
+      ...gameSessionParticipant,
+      score: gameSessionParticipant.score + 1,
+    };
+    await this.gameSessionParticipantsRepository.save(updatedParticipant);
   }
   private checkIfUserIsParticipant(
     participants: GameSessionParticipants[],

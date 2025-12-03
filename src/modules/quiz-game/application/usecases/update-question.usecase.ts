@@ -1,10 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionsRepository } from '../../infrastructure/questions.repository';
 import { UpdateQuestionDto } from '../../dto/question.dto';
-import {
-  CreateQuestionDomainDto,
-  UpdateQuestionDomainDto,
-} from '../../domain/dto/question-domain.dto';
+import { UpdateQuestionDomainDto } from '../../domain/dto/question-domain.dto';
 import { Question } from '../../domain/question.entity';
 
 export class UpdateQuestionCommand {
@@ -39,6 +36,7 @@ export class UpdateQuestionUsecase
     return {
       ...initQuestion,
       questionBody: updatedQuestionDto.body,
+      updatedAt: new Date(),
       answers: updatedQuestionDto.correctAnswers,
     };
   }

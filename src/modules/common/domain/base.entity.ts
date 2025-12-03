@@ -1,15 +1,15 @@
 import {
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 export abstract class BaseEntity {
   @CreateDateColumn()
   createdAt?: Date;
 
-  @UpdateDateColumn()
+  @Column({ type: 'timestamp with time zone', nullable: true, default: null })
   updatedAt?: Date;
 
   @DeleteDateColumn({ default: null })

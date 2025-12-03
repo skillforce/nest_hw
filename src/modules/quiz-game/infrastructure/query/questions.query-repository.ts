@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Question } from '../../domain/question.entity';
 import { IsNull, Repository } from 'typeorm';
-import { GetQuestionsQueryParams } from '../../api/dto/question-input-dto';
+import {
+  GetQuestionsQueryParams,
+  QuestionsSortBy,
+} from '../../api/dto/question-input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { QuestionViewDto } from '../../api/dto/question-view-dto';
 import { FilterQuery } from 'mongoose';
@@ -29,7 +32,7 @@ export class QuestionsQueryRepository {
       .where('question.deletedAt IS NULL');
 
     if (additionalFilters.bodySearchTerm) {
-      qb.andWhere('question.body = :body', {
+      qb.andWhere('question.questionBody = :body', {
         body: +additionalFilters.bodySearchTerm,
       });
     }
@@ -37,7 +40,10 @@ export class QuestionsQueryRepository {
     const sortBy = query.sortBy;
 
     if (sortBy) {
-      qb.orderBy(`question.${sortBy}`, sortDirection);
+      qb.orderBy(
+        `question.${sortBy === QuestionsSortBy.Body ? 'questionBody' : sortBy}`,
+        sortDirection,
+      );
     }
 
     qb.skip(skip).take(limit);

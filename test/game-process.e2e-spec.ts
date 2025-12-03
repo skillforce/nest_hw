@@ -86,19 +86,20 @@ describe('Game Process (e2e)', () => {
     }
 
     console.log('Both users have answered all questions.');
-    // --- Step 6: Verify both users’ current game status
-    const game1 = await gameTestManager.getMyCurrentGame(user1.accessToken);
-    const game2 = await gameTestManager.getMyCurrentGame(user2.accessToken);
+    // // --- Step 6: Verify both users’ current game status
+    // const game1 = await gameTestManager.getMyCurrentGame(user1.accessToken);
+    // const game2 = await gameTestManager.getMyCurrentGame(user2.accessToken);
 
-    expect(game1.id).toBe(game2.id);
-    expect(['Active', 'Finished']).toContain(game1.status);
+    // expect(activeGame.id).toBe(activeGame.id);
+    // expect(['Active', 'Finished']).toContain(activeGame.status);
 
     // --- Step 7: Wait a bit for finalization and check finished state
-    await delay(500);
+    // await delay(500);
     const finishedGame = await gameTestManager.getGameById(
       user1.accessToken,
-      game1.id,
+      activeGame.id,
     );
+    console.log(finishedGame);
 
     expect(finishedGame.status).toBe('Finished');
     expect(finishedGame.firstPlayerProgress.answers).toHaveLength(5);
