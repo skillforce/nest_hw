@@ -27,7 +27,6 @@ export class ConnectUserToTheQuizGameUsecase
     const activeGameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
 
-    console.log(activeGameSession);
     if (activeGameSession) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
@@ -43,8 +42,6 @@ export class ConnectUserToTheQuizGameUsecase
     const secondUserPendingGameSession =
       await this.gameSessionsRepository.findPendingSecondUserGameSession();
 
-    console.log(secondUserPendingGameSession);
-    console.log(userId);
     if (secondUserPendingGameSession) {
       await this.connectUserToExistingGameSession(
         secondUserPendingGameSession,

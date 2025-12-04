@@ -19,7 +19,7 @@ export class PlayerDto {
 export class PlayerProgressDto {
   answers: AnswerDto[];
   player: PlayerDto;
-  score: string;
+  score: number;
 
   static mapToViewDto(
     answers: GameSessionQuestionAnswer[],
@@ -38,7 +38,7 @@ export class PlayerProgressDto {
         })
       : [];
     dto.player = playerDto;
-    dto.score = score.toString();
+    dto.score = score;
     return dto;
   }
 }
@@ -83,8 +83,8 @@ export class GameSessionViewDto {
     dto.questions = questions;
     dto.status = status;
     dto.pairCreatedDate =
-      gameSession.createdAt?.toString() || new Date().toISOString();
-    dto.startGameDate = gameSession.session_started_at?.toString();
+      gameSession.createdAt?.toISOString() || new Date().toISOString();
+    dto.startGameDate = gameSession.session_started_at?.toISOString();
     dto.finishGameDate = finishGameDate;
 
     return dto;

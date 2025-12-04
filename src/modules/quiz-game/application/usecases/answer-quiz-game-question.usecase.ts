@@ -43,7 +43,11 @@ export class AnswerQuestionUsecase
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
     const gameSessionParticipant =
       await this.gameSessionParticipantsRepository.findActiveByUserId(userId);
-    if (!gameSession || !gameSessionParticipant) {
+    if (
+      !gameSession ||
+      !gameSessionParticipant ||
+      !gameSession.session_started_at
+    ) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         message: 'Game session not found',

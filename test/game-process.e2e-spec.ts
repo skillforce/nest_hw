@@ -118,6 +118,11 @@ describe('Game Process (e2e)', () => {
     // Step 1: user1 connects → pending
     const pending = await gameTestManager.connectToGame(user1.accessToken);
     expect(pending.status).toBe('PendingSecondPlayer');
+    await gameTestManager.sendAnswer(
+      user1.accessToken,
+      { answer: 'hello' },
+      HttpStatus.FORBIDDEN,
+    );
 
     // Step 2: user2 connects → active game
     const active = await gameTestManager.connectToGame(user2.accessToken);
@@ -130,6 +135,7 @@ describe('Game Process (e2e)', () => {
       HttpStatus.FORBIDDEN,
     );
   });
+
   it('should return 401 when user tries to connect without token', async () => {
     await gameTestManager.connectToGame('', HttpStatus.UNAUTHORIZED);
   });
