@@ -62,6 +62,36 @@ export class QuestionsTestManager {
     return response.body;
   }
 
+  async createAndPublishFiveQuestions(): Promise<void> {
+    const questions: CreateQuestionInputDto[] = [
+      {
+        body: 'What is the sum of two and two in simple arithmetic?',
+        correctAnswers: ['4', 'four'],
+      },
+      {
+        body: 'In basic math, what number do you get when adding three plus three?',
+        correctAnswers: ['6'],
+      },
+      {
+        body: 'Name the European city that serves as the capital of France.',
+        correctAnswers: ['Paris'],
+      },
+      {
+        body: 'At what temperature in Celsius does water start to freeze?',
+        correctAnswers: ['0', 'four'],
+      },
+      {
+        body: 'If you multiply five by five, what number will you get as a result?',
+        correctAnswers: ['25'],
+      },
+    ];
+
+    for (const q of questions) {
+      const created = await this.createQuestion(q);
+      await this.publishQuestionById(true, +created.id);
+    }
+  }
+
   async deleteQuestion(
     questionId: number,
     statusCode: number = HttpStatus.NO_CONTENT,

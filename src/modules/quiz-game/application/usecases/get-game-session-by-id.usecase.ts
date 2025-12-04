@@ -43,7 +43,6 @@ export class GetGameSessionByIdUsecase
       );
 
     this.checkIfUserIsParticipant(participants, userId);
-    console.log('GAME SESSION', gameSession);
     const firstParticipant = participants.find(
       (participant) => participant.user_id === userId,
     )!;

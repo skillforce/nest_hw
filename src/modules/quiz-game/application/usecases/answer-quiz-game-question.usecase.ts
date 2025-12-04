@@ -43,7 +43,7 @@ export class AnswerQuestionUsecase
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
     if (!gameSession) {
       throw new DomainException({
-        code: DomainExceptionCode.BadRequest,
+        code: DomainExceptionCode.Forbidden,
         message: 'Game session not found',
       });
     }

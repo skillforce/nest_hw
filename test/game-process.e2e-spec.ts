@@ -5,7 +5,6 @@ import { UsersTestManager } from './helpers/users-test-manager';
 import { QuestionsTestManager } from './helpers/questions-test-manager';
 import { delay } from './helpers/delay';
 import { GameTestManager } from './helpers/quiz-game-test-manager';
-import { CreateQuestionInputDto } from '../src/modules/quiz-game/api/dto/question-input-dto';
 
 describe('Game Process (e2e)', () => {
   let app: INestApplication;
@@ -31,33 +30,7 @@ describe('Game Process (e2e)', () => {
 
   it('should create questions, two users connect to game, answer, and finish the game', async () => {
     // --- Step 1: Create & publish 5 questions
-    const questions: CreateQuestionInputDto[] = [
-      {
-        body: 'What is the sum of two and two in simple arithmetic?',
-        correctAnswers: ['4', 'four'],
-      },
-      {
-        body: 'In basic math, what number do you get when adding three plus three?',
-        correctAnswers: ['6'],
-      },
-      {
-        body: 'Name the European city that serves as the capital of France.',
-        correctAnswers: ['Paris'],
-      },
-      {
-        body: 'At what temperature in Celsius does water start to freeze?',
-        correctAnswers: ['0', 'four'],
-      },
-      {
-        body: 'If you multiply five by five, what number will you get as a result?',
-        correctAnswers: ['25'],
-      },
-    ];
-
-    for (const q of questions) {
-      const created = await questionsTestManager.createQuestion(q);
-      await questionsTestManager.publishQuestionById(true, +created.id);
-    }
+    await questionsTestManager.createAndPublishFiveQuestions();
 
     // --- Step 2: Create and login 2 users
     const users = await usersTestManager.createAndLoginSeveralUsers(2);
@@ -86,15 +59,6 @@ describe('Game Process (e2e)', () => {
     }
 
     console.log('Both users have answered all questions.');
-    // // --- Step 6: Verify both users’ current game status
-    // const game1 = await gameTestManager.getMyCurrentGame(user1.accessToken);
-    // const game2 = await gameTestManager.getMyCurrentGame(user2.accessToken);
-
-    // expect(activeGame.id).toBe(activeGame.id);
-    // expect(['Active', 'Finished']).toContain(activeGame.status);
-
-    // --- Step 7: Wait a bit for finalization and check finished state
-    // await delay(500);
     const finishedGame = await gameTestManager.getGameById(
       user1.accessToken,
       activeGame.id,
@@ -106,6 +70,44 @@ describe('Game Process (e2e)', () => {
     expect(finishedGame.secondPlayerProgress?.answers).toHaveLength(5);
   });
 
+  it('should return 403 if user tries to connect again while already in active/pending game', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+
+    // Create & login 1 user
+    const [user1] = await usersTestManager.createAndLoginSeveralUsers(1);
+
+    // Step 1: user1 connects → pending game
+    const pendingGame = await gameTestManager.connectToGame(user1.accessToken);
+    expect(pendingGame.status).toBe('PendingSecondPlayer');
+
+    // Step 2: user1 tries to connect again → 403
+    await gameTestManager.connectToGame(
+      user1.accessToken,
+      HttpStatus.FORBIDDEN,
+    );
+  });
+  it('should return 403 if user tries to answer in a game they are not a participant of', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+
+    // Create & login 3 users
+    const [user1, user2, user3] =
+      await usersTestManager.createAndLoginSeveralUsers(3);
+
+    // Step 1: user1 connects → pending
+    const pending = await gameTestManager.connectToGame(user1.accessToken);
+    expect(pending.status).toBe('PendingSecondPlayer');
+
+    // Step 2: user2 connects → active game
+    const active = await gameTestManager.connectToGame(user2.accessToken);
+    expect(active.status).toBe('Active');
+
+    // Step 3: user3 tries to answer → 403
+    await gameTestManager.sendAnswer(
+      user3.accessToken,
+      { answer: 'hello' },
+      HttpStatus.FORBIDDEN,
+    );
+  });
   it('should return 401 when user tries to connect without token', async () => {
     await gameTestManager.connectToGame('', HttpStatus.UNAUTHORIZED);
   });
