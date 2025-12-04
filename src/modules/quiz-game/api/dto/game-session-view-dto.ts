@@ -84,7 +84,7 @@ export class GameSessionViewDto {
     dto.status = status;
     dto.pairCreatedDate =
       gameSession.createdAt?.toISOString() || new Date().toISOString();
-    dto.startGameDate = gameSession.session_started_at?.toISOString();
+    dto.startGameDate = gameSession.session_started_at?.toISOString() || null;
     dto.finishGameDate = finishGameDate;
 
     return dto;
