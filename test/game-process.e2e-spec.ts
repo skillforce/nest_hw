@@ -69,7 +69,29 @@ describe('Game Process (e2e)', () => {
     expect(finishedGame.firstPlayerProgress.answers).toHaveLength(5);
     expect(finishedGame.secondPlayerProgress?.answers).toHaveLength(5);
   });
+  it('should return 403 if user tries answer question not from active pair', async () => {
+    // Arrange: create & publish required 5 questions
+    await questionsTestManager.createAndPublishFiveQuestions();
 
+    // Create & login two users
+    const [user1, user2, user3] =
+      await usersTestManager.createAndLoginSeveralUsers(3);
+
+    // User1 connects → creates pending game
+    const pendingGame = await gameTestManager.connectToGame(user1.accessToken);
+    expect(pendingGame.status).toBe('PendingSecondPlayer');
+    const activeGame = await gameTestManager.connectToGame(user2.accessToken);
+    expect(activeGame.status).toBe('Active');
+
+    // User2 does NOT connect → he is NOT in any active/pending game
+
+    // User2 tries to answer → must get 403
+    await gameTestManager.sendAnswer(
+      user3.accessToken,
+      { answer: 'test' },
+      HttpStatus.FORBIDDEN, // 403
+    );
+  });
   it('should return 403 if user tries to connect again while already in active/pending game', async () => {
     await questionsTestManager.createAndPublishFiveQuestions();
 

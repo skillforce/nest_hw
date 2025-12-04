@@ -62,12 +62,7 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('gameSession.participants', 'participants')
       .leftJoinAndSelect('participants.user', 'user')
       .where('gameSession.deletedAt IS NULL')
-      // .andWhere('gameSession.session_started_at IS NOT NULL')
       .andWhere('user.id = :userId', { userId });
-
-    // 🔥 Log SQL + params
-    console.log('SQL:', qb.getSql());
-    console.log('PARAMS:', qb.getParameters());
 
     return await qb.getOne();
   }

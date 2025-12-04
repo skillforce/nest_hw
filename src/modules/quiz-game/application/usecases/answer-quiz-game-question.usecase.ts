@@ -41,17 +41,14 @@ export class AnswerQuestionUsecase
   }: AnswerQuestionCommand): Promise<AnswerQuestionViewDto> {
     const gameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
-    if (!gameSession) {
+    const gameSessionParticipant =
+      await this.gameSessionParticipantsRepository.findActiveByUserId(userId);
+    if (!gameSession || !gameSessionParticipant) {
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         message: 'Game session not found',
       });
     }
-
-    const gameSessionParticipant =
-      await this.gameSessionParticipantsRepository.findActiveByUserIdOrNotFoundFail(
-        userId,
-      );
 
     const gameSessionQuestions =
       await this.gameSessionsQuestionsRepository.findByGameSessionId(
