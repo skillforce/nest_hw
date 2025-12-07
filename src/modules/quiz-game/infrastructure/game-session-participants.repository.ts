@@ -27,6 +27,23 @@ export class GameSessionParticipantsRepository {
       relations: ['user'],
     });
   }
+  async findMostRecentByUserId(
+    userId: number,
+  ): Promise<GameSessionParticipants | null> {
+    if (!Number.isInteger(Number(userId))) {
+      return null;
+    }
+    return await this.gameSessionParticipantsOrmRepository.findOne({
+      where: {
+        user_id: userId,
+        deletedAt: IsNull(),
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+      relations: ['user'],
+    });
+  }
   async findSecondParticipantByGameSessionId(
     gameSessionId: number,
     firstParticipantId: number,
@@ -47,6 +64,26 @@ export class GameSessionParticipantsRepository {
     userId: number,
   ): Promise<GameSessionParticipants> {
     const gameSessionParticipant = await this.findActiveByUserId(userId);
+
+    if (!gameSessionParticipant) {
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        extensions: [
+          {
+            field: 'game session participant',
+            message: 'game session participant not found',
+          },
+        ],
+        message: 'game session participant not found',
+      });
+    }
+
+    return gameSessionParticipant;
+  }
+  async findMostRecentByUserIdOrNotFoundFail(
+    userId: number,
+  ): Promise<GameSessionParticipants> {
+    const gameSessionParticipant = await this.findMostRecentByUserId(userId);
 
     if (!gameSessionParticipant) {
       throw new DomainException({
