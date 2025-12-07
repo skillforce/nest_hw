@@ -8,7 +8,6 @@ import { Comment } from '../../../bloggers-platform/domain/comment.entity';
 import { Like } from '../../../bloggers-platform/domain/like.entity';
 import { GameSession } from '../../../quiz-game/domain/game-session.entity';
 import { GameSessionParticipants } from '../../../quiz-game/domain/game-session-participants.entity';
-import { GameSessionQuestion } from '../../../quiz-game/domain/game-session-questions.entity';
 
 export const loginConstraints = {
   minLength: 3,
@@ -35,6 +34,9 @@ export class User extends NumericIdEntity {
 
   @OneToMany(() => GameSession, (session) => session.winner)
   wonSessions?: GameSession[];
+
+  @OneToMany(() => GameSession, (session) => session.winner)
+  createdGameSessions?: GameSession[];
 
   @OneToOne(
     () => PasswordRecoveryConfirmation,

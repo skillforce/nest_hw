@@ -33,7 +33,6 @@ export class GetMyCurrentPairUsecase
         userId,
       );
 
-    console.log(activeParticipant);
     const gameSession = await this.gameSessionsRepository.findOrNotFoundFail(
       activeParticipant.game_session_id,
     );
@@ -43,8 +42,6 @@ export class GetMyCurrentPairUsecase
         activeParticipant.game_session_id,
         userId,
       );
-
-    console.log('SECOND PARTICIPANT', secondParticipant);
 
     const emptyFirstParticipantProgress = PlayerProgressDto.mapToViewDto(
       [],

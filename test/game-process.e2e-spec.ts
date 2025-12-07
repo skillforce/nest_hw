@@ -58,12 +58,10 @@ describe('Game Process (e2e)', () => {
       });
     }
 
-    console.log('Both users have answered all questions.');
     const finishedGame = await gameTestManager.getGameById(
       user1.accessToken,
       activeGame.id,
     );
-    console.log(finishedGame);
 
     expect(finishedGame.status).toBe('Finished');
     expect(finishedGame.firstPlayerProgress.answers).toHaveLength(5);
