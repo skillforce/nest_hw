@@ -58,6 +58,11 @@ describe('Game Process (e2e)', () => {
       });
     }
 
+    // --- Step 6: Verify the game is finished
+    const current = await gameTestManager.getMyCurrentGame(user1.accessToken);
+
+    console.log(current);
+
     const finishedGame = await gameTestManager.getGameById(
       user1.accessToken,
       activeGame.id,

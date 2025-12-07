@@ -133,9 +133,9 @@ export class GetGameSessionByIdUsecase
       return null;
     }
     if (firstParticipant.user.id === +winnerId) {
-      return firstParticipant.finished_at.toString();
+      return firstParticipant.finished_at.toISOString();
     }
-    return secondParticipant.finished_at.toString();
+    return secondParticipant.finished_at.toISOString();
   }
   private async increasePlayerScore(
     gameSessionParticipant: GameSessionParticipants,

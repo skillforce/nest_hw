@@ -29,7 +29,7 @@ export class GetMyCurrentPairUsecase
     userId,
   }: GetMyCurrentPairCommand): Promise<GameSessionViewDto> {
     const activeParticipant =
-      await this.gameSessionParticipantsRepository.findMostRecentByUserIdOrNotFoundFail(
+      await this.gameSessionParticipantsRepository.findActiveByUserIdOrNotFoundFail(
         userId,
       );
 
