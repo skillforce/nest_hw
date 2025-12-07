@@ -33,7 +33,7 @@ export class PlayerProgressDto {
           return {
             addedAt: answer.createdAt?.toString() || new Date().toISOString(),
             answerStatus: answer.answer_status,
-            questionId: answer.game_session_question_id,
+            questionId: answer.gameSessionQuestion.question_id,
           };
         })
       : [];
@@ -49,7 +49,7 @@ export class QuestionDto {
 
   static mapToViewDto(gameSessionQuestion: GameSessionQuestion): QuestionDto {
     const dto = new QuestionDto();
-    dto.id = gameSessionQuestion.id.toString();
+    dto.id = gameSessionQuestion.question_id.toString();
     dto.body = gameSessionQuestion.question.questionBody;
     return dto;
   }
