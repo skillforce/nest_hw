@@ -117,7 +117,7 @@ export class AnswerQuestionViewDto {
     return {
       questionId: questionId.toString(),
       answerStatus: answer.answer_status,
-      addedAt: answer.createdAt?.toString() || new Date().toISOString(),
+      addedAt: answer.createdAt?.toISOString() || new Date().toISOString(),
     };
   }
 }
