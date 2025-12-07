@@ -6,7 +6,7 @@ import { GameSession } from '../../domain/game-session.entity';
 import { GameSessionQuestion } from '../../domain/game-session-questions.entity';
 
 export class AnswerDto {
-  questionId: number;
+  questionId: string;
   answerStatus: AnswerStatus;
   addedAt: string;
 }
@@ -31,9 +31,10 @@ export class PlayerProgressDto {
     dto.answers = answers.length
       ? answers.map((answer) => {
           return {
-            addedAt: answer.createdAt?.toString() || new Date().toISOString(),
+            addedAt:
+              answer.createdAt?.toISOString() || new Date().toISOString(),
             answerStatus: answer.answer_status,
-            questionId: answer.gameSessionQuestion.question_id,
+            questionId: answer.gameSessionQuestion.question_id.toString(),
           };
         })
       : [];
