@@ -97,9 +97,6 @@ export class GetMyCurrentPairUsecase
       secondParticipant.score ?? 0,
     );
 
-    console.log('ACTIVE PARTICIPANT', activeParticipant);
-    console.log('SECOND PARTICIPANT', secondParticipant);
-
     const finishGameDate = this.getFinishGameDate(
       activeParticipant,
       secondParticipant,

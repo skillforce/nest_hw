@@ -33,7 +33,7 @@ export class PlayerProgressDto {
           return {
             addedAt: answer.createdAt?.toString() || new Date().toISOString(),
             answerStatus: answer.answer_status,
-            questionId: answer.gameSessionQuestion.question_id,
+            questionId: answer.game_session_question_id,
           };
         })
       : [];

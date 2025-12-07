@@ -163,4 +163,60 @@ describe('Game Process (e2e)', () => {
       HttpStatus.UNAUTHORIZED,
     );
   });
+
+  it('should process sequential answers from both players and allow checking my-current after each answer', async () => {
+    // --- Step 1: create & publish 5 questions
+    await questionsTestManager.createAndPublishFiveQuestions();
+
+    // --- Step 2: create & login 2 users
+    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+
+    // --- Step 3: user1 connects → pending
+    const pending = await gameTestManager.connectToGame(user1.accessToken);
+    expect(pending.status).toBe('PendingSecondPlayer');
+
+    // --- Step 4: user2 connects → active game
+    const active = await gameTestManager.connectToGame(user2.accessToken);
+    expect(active.status).toBe('Active');
+
+    const gameId = active.id;
+
+    async function expectMyCurrentOk(u: string) {
+      const current = await gameTestManager.getMyCurrentGame(u);
+      expect(current.status).toBe('Active');
+      expect(current.id).toBe(gameId);
+      return current;
+    }
+
+    // --- ACTION 1: user1 gives correct answer
+    await gameTestManager.sendAnswer(user1.accessToken, { answer: 'four' });
+    const after1User1 = await expectMyCurrentOk(user1.accessToken);
+
+    expect(after1User1.firstPlayerProgress.answers.length).toBe(1);
+    expect(after1User1?.secondPlayerProgress?.answers.length).toBe(0);
+
+    // --- ACTION 2: user2 gives incorrect answer
+    await gameTestManager.sendAnswer(user2.accessToken, { answer: 'wrong' });
+    const after2User1 = await expectMyCurrentOk(user1.accessToken);
+
+    expect(after2User1.firstPlayerProgress.answers.length).toBe(1);
+    expect(after2User1.secondPlayerProgress?.answers.length).toBe(1);
+
+    // --- ACTION 3: user2 gives correct answer
+    await gameTestManager.sendAnswer(user2.accessToken, { answer: 'correct' });
+    const after3User1 = await expectMyCurrentOk(user1.accessToken);
+
+    expect(after3User1.firstPlayerProgress.answers.length).toBe(1);
+    expect(after3User1.secondPlayerProgress?.answers.length).toBe(2);
+
+    // Ensure the game is still active at this point
+    const finalGame = await gameTestManager.getGameById(
+      user1.accessToken,
+      gameId,
+    );
+    console.log(finalGame.questions);
+    console.log(JSON.stringify(finalGame.firstPlayerProgress.answers));
+    console.log(JSON.stringify(finalGame.secondPlayerProgress?.answers));
+    expect(finalGame.status).toBe('Active');
+  });
 });
