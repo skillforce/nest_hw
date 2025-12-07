@@ -4,9 +4,9 @@ import { GameSessionParticipants } from './game-session-participants.entity';
 import { GameSessionQuestion } from './game-session-questions.entity';
 
 export enum AnswerStatus {
-  CORRECT = 'correct',
-  INCORRECT = 'incorrect',
-  PENDING = 'pending',
+  CORRECT = 'Correct',
+  INCORRECT = 'Incorrect',
+  PENDING = 'Pending',
 }
 
 @Entity('GameSessionQuestionAnswers')
