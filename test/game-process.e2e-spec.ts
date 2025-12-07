@@ -106,6 +106,24 @@ describe('Game Process (e2e)', () => {
       HttpStatus.FORBIDDEN,
     );
   });
+  it('should create game and connect both users', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+
+    // Create & login 1 user
+    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+
+    // Step 1: user1 connects → pending game
+    const pendingGame = await gameTestManager.connectToGame(user1.accessToken);
+    expect(pendingGame.status).toBe('PendingSecondPlayer');
+    expect(pendingGame.secondPlayerProgress).toBeNull();
+
+    const activeGame = await gameTestManager.connectToGame(user2.accessToken);
+    expect(activeGame.status).toBe('Active');
+    expect(activeGame.firstPlayerProgress.player.id).not.toBe(
+      activeGame.secondPlayerProgress?.player.id,
+    );
+    expect(activeGame.secondPlayerProgress?.player.id).toBeDefined();
+  });
   it('should return 403 if user tries to answer in a game they are not a participant of', async () => {
     await questionsTestManager.createAndPublishFiveQuestions();
 

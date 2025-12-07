@@ -86,9 +86,12 @@ export class GameSessionViewDto {
       progresses.find((p) => p.player.id === creatorId) ?? firstPlayerProgress;
 
     const participantProgress =
-      secondPlayerProgress && secondPlayerProgress.player.id !== creatorId
-        ? secondPlayerProgress
-        : null;
+      progresses.length === 1
+        ? null
+        : (progresses.find(
+            (p) => p.player.id !== creatorId,
+          ) as PlayerProgressDto);
+
     dto.id = gameSession.id.toString();
     dto.firstPlayerProgress = creatorProgress;
     dto.secondPlayerProgress = participantProgress;
@@ -98,7 +101,6 @@ export class GameSessionViewDto {
       gameSession.createdAt?.toISOString() || new Date().toISOString();
     dto.startGameDate = gameSession.session_started_at?.toISOString() || null;
     dto.finishGameDate = finishGameDate;
-
     return dto;
   }
 }
