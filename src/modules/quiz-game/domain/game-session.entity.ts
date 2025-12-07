@@ -12,7 +12,7 @@ export class GameSession extends NumericIdEntity {
   @Column({ nullable: true })
   winner_id: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   creator_user_id: number;
 
   @ManyToOne(() => User, (user) => user.createdGameSessions, { nullable: true })

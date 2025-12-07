@@ -52,7 +52,7 @@ export class ConnectUserToTheQuizGameUsecase
     return await this.createGameSession(userId);
   }
   private async createGameSession(userId: number) {
-    const gameSession = new GameSession();
+    const gameSession = { ...new GameSession(), creator_user_id: userId };
     const newGameSessionId =
       await this.gameSessionsRepository.save(gameSession);
     await this.createGameSessionParticipant(newGameSessionId, userId);

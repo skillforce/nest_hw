@@ -76,10 +76,22 @@ export class GameSessionViewDto {
     finishGameDate: string | null,
   ): GameSessionViewDto {
     const dto = new GameSessionViewDto();
+    const progresses = [firstPlayerProgress, secondPlayerProgress].filter(
+      Boolean,
+    ) as PlayerProgressDto[];
 
+    const creatorId = gameSession.creator_user_id.toString();
+
+    const creatorProgress =
+      progresses.find((p) => p.player.id === creatorId) ?? firstPlayerProgress;
+
+    const participantProgress =
+      secondPlayerProgress && secondPlayerProgress.player.id !== creatorId
+        ? secondPlayerProgress
+        : null;
     dto.id = gameSession.id.toString();
-    dto.firstPlayerProgress = firstPlayerProgress;
-    dto.secondPlayerProgress = secondPlayerProgress;
+    dto.firstPlayerProgress = creatorProgress;
+    dto.secondPlayerProgress = participantProgress;
     dto.questions = questions;
     dto.status = status;
     dto.pairCreatedDate =
