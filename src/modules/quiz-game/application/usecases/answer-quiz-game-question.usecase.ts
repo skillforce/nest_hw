@@ -39,6 +39,7 @@ export class AnswerQuestionUsecase
     answerQuestionDto,
     userId,
   }: AnswerQuestionCommand): Promise<AnswerQuestionViewDto> {
+    console.log('questionDTO', answerQuestionDto);
     const gameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
     const gameSessionParticipant =
@@ -120,6 +121,7 @@ export class AnswerQuestionUsecase
       await this.increasePlayerScore(gameSessionParticipant);
     }
 
+    console.log('newAnswer', newAnswer);
     await this.gameSessionQuestionAnswerRepository.save(newAnswer);
     if (isLastQuestion) {
       await this.handleLastQuestionCase(gameSessionParticipant, gameSession);
@@ -137,20 +139,20 @@ export class AnswerQuestionUsecase
     const secondTime = new Date(secondParticipant.finished_at).getTime();
     let firstParticipantScore = firstParticipant.score ?? 0;
     let secondParticipantScore = secondParticipant.score ?? 0;
-    if (firstTime > secondTime) {
+    if (firstTime > secondTime && secondParticipantScore !== 0) {
       await this.increasePlayerScore(secondParticipant);
       firstParticipantScore++;
-    } else if (secondTime > firstTime) {
+    } else if (secondTime > firstTime && firstParticipantScore !== 0) {
       await this.increasePlayerScore(firstParticipant);
       secondParticipantScore++;
     }
-    let winnerId: number | null;
+    let winnerId: number;
     if (firstParticipantScore > secondParticipantScore) {
       winnerId = firstParticipant.user.id;
     } else if (secondParticipantScore > firstParticipantScore) {
       winnerId = secondParticipant.user.id;
     } else {
-      winnerId = null;
+      winnerId = 0;
     }
     if (winnerId) {
       await this.updateGameSessionWinner(game_session_id, winnerId);
