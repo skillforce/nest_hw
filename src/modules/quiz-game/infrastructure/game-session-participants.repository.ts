@@ -60,26 +60,7 @@ export class GameSessionParticipantsRepository {
       relations: ['user'],
     });
   }
-  async findActiveByUserIdOrNotFoundFail(
-    userId: number,
-  ): Promise<GameSessionParticipants> {
-    const gameSessionParticipant = await this.findActiveByUserId(userId);
 
-    if (!gameSessionParticipant) {
-      throw new DomainException({
-        code: DomainExceptionCode.NotFound,
-        extensions: [
-          {
-            field: 'game session participant',
-            message: 'game session participant not found',
-          },
-        ],
-        message: 'game session participant not found',
-      });
-    }
-
-    return gameSessionParticipant;
-  }
   async findMostRecentByUserIdOrNotFoundFail(
     userId: number,
   ): Promise<GameSessionParticipants> {
