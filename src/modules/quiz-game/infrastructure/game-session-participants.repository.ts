@@ -41,7 +41,7 @@ export class GameSessionParticipantsRepository {
       order: {
         createdAt: 'DESC',
       },
-      relations: ['user'],
+      relations: ['user', 'gameSession'],
     });
   }
   async findSecondParticipantByGameSessionId(
