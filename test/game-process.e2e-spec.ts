@@ -75,6 +75,7 @@ describe('Game Process (e2e)', () => {
       await gameTestManager.sendAnswer(user1.accessToken, {
         answer: '25',
       });
+      await delay(300);
     }
 
     await gameTestManager.getMyCurrentGame(

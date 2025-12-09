@@ -117,12 +117,20 @@ export class AnswerQuestionUsecase
       ? AnswerStatus.CORRECT
       : AnswerStatus.INCORRECT;
     if (isAnswerCorrect) {
+      console.log('Increase score for participant:', participantId);
       await this.increasePlayerScore(gameSessionParticipant);
     }
 
     await this.gameSessionQuestionAnswerRepository.save(newAnswer);
     if (isLastQuestion) {
-      await this.handleLastQuestionCase(gameSessionParticipant, gameSession);
+      const updatedParticipant = isAnswerCorrect
+        ? {
+            ...gameSessionParticipant,
+            score: gameSessionParticipant.score + 1,
+            finished_at: new Date(),
+          }
+        : { ...gameSessionParticipant, finished_at: new Date() };
+      await this.handleLastQuestionCase(updatedParticipant, gameSession);
     }
 
     return AnswerQuestionViewDto.mapToViewDto(newAnswer, question.id);
@@ -163,13 +171,9 @@ export class AnswerQuestionUsecase
   }
 
   private async handleLastQuestionCase(
-    gameSessionParticipant: GameSessionParticipants,
+    finishedGameSessionParticipant: GameSessionParticipants,
     gameSession: GameSession,
   ) {
-    const finishedGameSessionParticipant = {
-      ...gameSessionParticipant,
-      finished_at: new Date(),
-    };
     await this.setParticipantFinishedAt(finishedGameSessionParticipant);
 
     const participants =
