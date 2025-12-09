@@ -21,6 +21,7 @@ export class GameSessionsRepository {
         id,
         deletedAt: IsNull(),
       },
+      relations: ['participants'],
     });
   }
 

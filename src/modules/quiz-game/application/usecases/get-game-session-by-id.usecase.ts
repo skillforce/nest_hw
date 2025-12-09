@@ -109,10 +109,13 @@ export class GetGameSessionByIdUsecase
     const finishGameDate = this.getFinishGameDate(
       firstParticipant,
       secondParticipant,
-      gameSession.winner_id,
     );
 
-    const gameSessionStatus = gameSession.winner_id ? 'Finished' : 'Active';
+    const isGameFinished =
+      !!gameSession.winner_id ||
+      (firstParticipant.finished_at && secondParticipant.finished_at);
+
+    const gameSessionStatus = isGameFinished ? 'Finished' : 'Active';
 
     return GameSessionViewDto.mapToViewDto(
       gameSession,
@@ -125,17 +128,24 @@ export class GetGameSessionByIdUsecase
   }
 
   private getFinishGameDate(
-    firstParticipant: GameSessionParticipants,
-    secondParticipant: GameSessionParticipants,
-    winnerId: number,
+    firstParticipant: GameSessionParticipants | null,
+    secondParticipant: GameSessionParticipants | null,
   ) {
-    if (!winnerId) {
+    if (
+      !firstParticipant ||
+      !secondParticipant ||
+      !firstParticipant.finished_at ||
+      !secondParticipant.finished_at
+    ) {
       return null;
     }
-    if (firstParticipant.user.id === +winnerId) {
-      return firstParticipant.finished_at.toISOString();
-    }
-    return secondParticipant.finished_at.toISOString();
+
+    const firstDate = firstParticipant.finished_at;
+    const secondDate = secondParticipant.finished_at;
+
+    const oldest = firstDate < secondDate ? firstDate : secondDate;
+
+    return oldest.toISOString();
   }
   private async increasePlayerScore(
     gameSessionParticipant: GameSessionParticipants,

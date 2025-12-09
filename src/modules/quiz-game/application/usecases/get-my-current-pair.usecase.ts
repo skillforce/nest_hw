@@ -44,7 +44,14 @@ export class GetMyCurrentPairUsecase
         await this.gameSessionsRepository.findOrNotFoundFail(
           mostRecentParticipant.game_session_id,
         );
-      if (!recentGameSession.winner_id) {
+      console.log('recentGameSession', recentGameSession);
+
+      if (
+        !recentGameSession.winner_id &&
+        !recentGameSession.participants.every(
+          (participant) => participant.finished_at,
+        )
+      ) {
         targetParticipant = mostRecentParticipant;
       } else {
         throw new DomainException({

@@ -140,7 +140,7 @@ export class AnswerQuestionUsecase
     firstParticipant: GameSessionParticipants,
     secondParticipant: GameSessionParticipants,
     game_session_id: number,
-  ): Promise<number | null> {
+  ): Promise<void> {
     const firstTime = new Date(firstParticipant.finished_at).getTime();
     const secondTime = new Date(secondParticipant.finished_at).getTime();
     let firstParticipantScore = firstParticipant.score ?? 0;
@@ -152,18 +152,17 @@ export class AnswerQuestionUsecase
       await this.increasePlayerScore(firstParticipant);
       firstParticipantScore++;
     }
-    let winnerId: number;
+    let winnerId: number | null;
     if (firstParticipantScore > secondParticipantScore) {
       winnerId = firstParticipant.user.id;
     } else if (secondParticipantScore > firstParticipantScore) {
       winnerId = secondParticipant.user.id;
     } else {
-      winnerId = 0;
+      winnerId = null;
     }
     if (winnerId) {
       await this.updateGameSessionWinner(game_session_id, winnerId);
     }
-    return winnerId;
   }
 
   private async updateGameSessionWinner(sessionId: number, winnerId: number) {

@@ -68,14 +68,13 @@ describe('Game Process (e2e)', () => {
 
     // --- Step 5: User1 and User2 answer alternately
     for (let i = 0; i < 5; i++) {
-      await gameTestManager.sendAnswer(user2.accessToken, {
-        answer: 'four',
-      });
-      await delay(300);
       await gameTestManager.sendAnswer(user1.accessToken, {
         answer: '25',
       });
-      await delay(300);
+      await delay(203);
+      await gameTestManager.sendAnswer(user2.accessToken, {
+        answer: 'four',
+      });
     }
 
     await gameTestManager.getMyCurrentGame(
@@ -91,10 +90,7 @@ describe('Game Process (e2e)', () => {
       user1.accessToken,
       activeGame.id,
     );
-    console.log(finishedGame.firstPlayerProgress.answers);
-    console.log(finishedGame.secondPlayerProgress?.answers);
-
-    console.log(finishedGame);
+    console.log(finishedGame.status);
 
     expect(finishedGame.status).toBe('Finished');
     expect(finishedGame.firstPlayerProgress.answers).toHaveLength(5);
