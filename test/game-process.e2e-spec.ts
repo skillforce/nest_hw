@@ -33,8 +33,22 @@ describe('Game Process (e2e)', () => {
     await questionsTestManager.createAndPublishFiveQuestions();
 
     // --- Step 2: Create and login 2 users
-    const users = await usersTestManager.createAndLoginSeveralUsers(2);
-    const [user1, user2] = users;
+    const users = await usersTestManager.createAndLoginSeveralUsers(1);
+    const [user1] = users;
+
+    await gameTestManager.getMyCurrentGame(
+      user1.accessToken,
+      HttpStatus.NOT_FOUND,
+    ); // 404
+  });
+
+  it('should create questions, two users connect to game, answer, and finish the game', async () => {
+    // --- Step 1: Create & publish 5 questions
+    await questionsTestManager.createAndPublishFiveQuestions();
+
+    // --- Step 2: Create and login 2 users
+    const users = await usersTestManager.createAndLoginSeveralUsers(3);
+    const [user1, user2, user3] = users;
 
     // --- Step 3: User1 connects (game pending)
     const pendingGame = await gameTestManager.connectToGame(user1.accessToken);
@@ -47,21 +61,39 @@ describe('Game Process (e2e)', () => {
       activeGame.secondPlayerProgress?.player.id,
     );
 
+    await gameTestManager.getMyCurrentGame(
+      user3.accessToken,
+      HttpStatus.NOT_FOUND,
+    ); // 404
+
     // --- Step 5: User1 and User2 answer alternately
     for (let i = 0; i < 5; i++) {
-      await gameTestManager.sendAnswer(user1.accessToken, {
-        answer: '25',
-      });
-      await delay(200);
       await gameTestManager.sendAnswer(user2.accessToken, {
         answer: 'four',
       });
+      await delay(300);
+      await gameTestManager.sendAnswer(user1.accessToken, {
+        answer: '25',
+      });
     }
+
+    await gameTestManager.getMyCurrentGame(
+      user1.accessToken,
+      HttpStatus.NOT_FOUND,
+    ); // 404
+    await gameTestManager.getMyCurrentGame(
+      user2.accessToken,
+      HttpStatus.NOT_FOUND,
+    );
 
     const finishedGame = await gameTestManager.getGameById(
       user1.accessToken,
       activeGame.id,
     );
+    console.log(finishedGame.firstPlayerProgress.answers);
+    console.log(finishedGame.secondPlayerProgress?.answers);
+
+    console.log(finishedGame);
 
     expect(finishedGame.status).toBe('Finished');
     expect(finishedGame.firstPlayerProgress.answers).toHaveLength(5);
@@ -218,5 +250,22 @@ describe('Game Process (e2e)', () => {
     console.log(JSON.stringify(finalGame.firstPlayerProgress.answers));
     console.log(JSON.stringify(finalGame.secondPlayerProgress?.answers));
     expect(finalGame.status).toBe('Active');
+  });
+  it('HW25: should return 404 if user has no active game when calling GET /pair-game-quiz/pairs/my-current', async () => {
+    // Clean DB
+    await deleteAllData(app);
+
+    // Create & publish 5 questions
+    await questionsTestManager.createAndPublishFiveQuestions();
+
+    // Create & login 1 user
+    const [user] = await usersTestManager.createAndLoginSeveralUsers(1);
+
+    // User DID NOT create and DID NOT join any game
+    // → must return 404
+    await gameTestManager.getMyCurrentGame(
+      user.accessToken,
+      HttpStatus.NOT_FOUND,
+    );
   });
 });

@@ -39,7 +39,6 @@ export class AnswerQuestionUsecase
     answerQuestionDto,
     userId,
   }: AnswerQuestionCommand): Promise<AnswerQuestionViewDto> {
-    console.log('questionDTO', answerQuestionDto);
     const gameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
     const gameSessionParticipant =
@@ -121,7 +120,6 @@ export class AnswerQuestionUsecase
       await this.increasePlayerScore(gameSessionParticipant);
     }
 
-    console.log('newAnswer', newAnswer);
     await this.gameSessionQuestionAnswerRepository.save(newAnswer);
     if (isLastQuestion) {
       await this.handleLastQuestionCase(gameSessionParticipant, gameSession);
@@ -141,10 +139,10 @@ export class AnswerQuestionUsecase
     let secondParticipantScore = secondParticipant.score ?? 0;
     if (firstTime > secondTime && secondParticipantScore !== 0) {
       await this.increasePlayerScore(secondParticipant);
-      firstParticipantScore++;
+      secondParticipantScore++;
     } else if (secondTime > firstTime && firstParticipantScore !== 0) {
       await this.increasePlayerScore(firstParticipant);
-      secondParticipantScore++;
+      firstParticipantScore++;
     }
     let winnerId: number;
     if (firstParticipantScore > secondParticipantScore) {
