@@ -42,6 +42,18 @@ export class ConnectUserToTheQuizGameUsecase
     const secondUserPendingGameSession =
       await this.gameSessionsRepository.findPendingSecondUserGameSession();
 
+    if (secondUserPendingGameSession?.creator_user_id === userId) {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        extensions: [
+          {
+            field: 'user is already in the game',
+            message: 'user is already in the game',
+          },
+        ],
+        message: 'user is already in the game',
+      });
+    }
     if (secondUserPendingGameSession) {
       await this.connectUserToExistingGameSession(
         secondUserPendingGameSession,
