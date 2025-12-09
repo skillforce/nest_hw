@@ -166,18 +166,21 @@ export class AnswerQuestionUsecase
     gameSessionParticipant: GameSessionParticipants,
     gameSession: GameSession,
   ) {
-    await this.setParticipantFinishedAt(gameSessionParticipant);
+    const finishedGameSessionParticipant = {
+      ...gameSessionParticipant,
+      finished_at: new Date(),
+    };
+    await this.setParticipantFinishedAt(finishedGameSessionParticipant);
 
     const participants =
       await this.gameSessionParticipantsRepository.findByGameSessionId(
         gameSession.id,
         true,
       );
-    const firstParticipant = participants.find(
-      (participant) => participant.user_id === gameSessionParticipant.user_id,
-    );
+    const firstParticipant = finishedGameSessionParticipant;
     const secondParticipant = participants.find(
-      (participant) => participant.user_id !== gameSessionParticipant.user_id,
+      (participant) =>
+        participant.user_id !== finishedGameSessionParticipant.user_id,
     );
 
     if (
@@ -196,10 +199,7 @@ export class AnswerQuestionUsecase
   private async setParticipantFinishedAt(
     gameSessionParticipant: GameSessionParticipants,
   ) {
-    await this.gameSessionParticipantsRepository.save({
-      ...gameSessionParticipant,
-      finished_at: new Date(),
-    });
+    await this.gameSessionParticipantsRepository.save(gameSessionParticipant);
   }
 
   private async increasePlayerScore(
