@@ -39,9 +39,8 @@ export class AnswerQuestionUsecase
     answerQuestionDto,
     userId,
   }: AnswerQuestionCommand): Promise<AnswerQuestionViewDto> {
-    let gameSession =
+    const gameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
-
     const gameSessionParticipant =
       await this.gameSessionParticipantsRepository.findActiveByUserId(userId);
     if (
@@ -85,26 +84,6 @@ export class AnswerQuestionUsecase
         code: DomainExceptionCode.BadRequest,
         message: 'No not answered questions found',
       });
-    }
-
-    const isLastQuestion = firstUnansweredQuestion?.order_index === 5;
-
-    if (isLastQuestion) {
-      try {
-        gameSession =
-          await this.gameSessionsRepository.findActiveGameSessionByUserIdWithLock(
-            userId,
-          );
-      } catch (e) {
-        console.log(e);
-      }
-
-      if (!gameSession) {
-        throw new DomainException({
-          code: DomainExceptionCode.Forbidden,
-          message: 'Game session not found',
-        });
-      }
     }
 
     return await this.answerQuestion(

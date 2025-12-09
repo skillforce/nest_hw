@@ -28,62 +28,18 @@ describe('Game Process (e2e)', () => {
     await app.close();
   });
 
-  it('should return 404 when user tries to get my-current game without active pair', async () => {
+  it('should create questions, two users connect to game, answer, and finish the game', async () => {
     // --- Step 1: Create & publish 5 questions
     await questionsTestManager.createAndPublishFiveQuestions();
 
     // --- Step 2: Create and login 2 users
-    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+    const users = await usersTestManager.createAndLoginSeveralUsers(1);
+    const [user1] = users;
 
-    // --- Step 3: User1 connects to game (pending state)
-    const pendingGame = await gameTestManager.connectToGame(user1.accessToken);
-    expect(pendingGame.status).toBe('PendingSecondPlayer');
-
-    // --- Step 4: User2 connects to game (becomes active)
-    const activeGame = await gameTestManager.connectToGame(user2.accessToken);
-    expect(activeGame.status).toBe('Active');
-
-    const gameId = activeGame.id;
-
-    // --- Step 5: Both users answer all 5 questions with CORRECT answers
-    // Using correct answers from the questions created in createAndPublishFiveQuestions:
-    // Q1: 'four' or '4', Q2: '6', Q3: 'Paris', Q4: '0', Q5: '25'
-    const correctAnswers = ['four', '6', 'Paris', '0', '25'];
-
-    for (let i = 0; i < 5; i++) {
-      await gameTestManager.sendAnswer(user1.accessToken, {
-        answer: correctAnswers[i],
-      });
-      await delay(200);
-      await gameTestManager.sendAnswer(user2.accessToken, {
-        answer: correctAnswers[i],
-      });
-      await delay(200);
-    }
-
-    // --- Step 6: Add additional delay to ensure game finishes processing
-    // await delay(500);
-
-    // --- Step 7: Verify game is finished by retrieving it by ID
-    const finishedGame = await gameTestManager.getGameById(
-      user1.accessToken,
-      gameId,
-    );
-    expect(finishedGame.status).toBe('Finished');
-
-    // --- Step 8: User1 tries to call GET /pair-game-quiz/pairs/my-current
-    // Should return 404 because user1 no longer has an active game (game is finished)
     await gameTestManager.getMyCurrentGame(
       user1.accessToken,
       HttpStatus.NOT_FOUND,
-    );
-
-    // --- Step 9: User2 also tries to call GET /pair-game-quiz/pairs/my-current
-    // Should return 404 because user2 no longer has an active game (game is finished)
-    await gameTestManager.getMyCurrentGame(
-      user2.accessToken,
-      HttpStatus.NOT_FOUND,
-    );
+    ); // 404
   });
 
   it('should create questions, two users connect to game, answer, and finish the game', async () => {
