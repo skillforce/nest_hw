@@ -63,6 +63,7 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('participants.user', 'user')
       .where('gameSession.deletedAt IS NULL')
       .andWhere('gameSession.session_started_at IS NOT NULL')
+      .andWhere('gameSession.winner_id IS NULL')
       .andWhere('user.id = :userId', { userId });
 
     return await qb.getOne();
