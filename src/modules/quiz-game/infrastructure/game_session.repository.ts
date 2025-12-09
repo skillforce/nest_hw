@@ -23,6 +23,21 @@ export class GameSessionsRepository {
       },
     });
   }
+  async findActiveGameSessionByUserIdWithLock(
+    userId: number,
+  ): Promise<GameSession | null> {
+    const qb = this.gameSessionsOrmRepository
+      .createQueryBuilder('gameSession')
+      .leftJoinAndSelect('gameSession.participants', 'participants')
+      .leftJoinAndSelect('participants.user', 'user')
+      .where('gameSession.deletedAt IS NULL')
+      .andWhere('gameSession.session_started_at IS NOT NULL')
+      .andWhere('gameSession.winner_id IS NULL')
+      .andWhere('user.id = :userId', { userId })
+      .setLock('pessimistic_write');
+
+    return await qb.getOne();
+  }
 
   async updateWinner(sessionId: number, winnerId: number): Promise<void> {
     try {
