@@ -44,7 +44,7 @@ export class GetMyCurrentPairUsecase
         await this.gameSessionsRepository.findOrNotFoundFail(
           mostRecentParticipant.game_session_id,
         );
-      if (!recentGameSession.winner_id) {
+      if (recentGameSession.winner_id === null) {
         targetParticipant = mostRecentParticipant;
       } else {
         throw new DomainException({
