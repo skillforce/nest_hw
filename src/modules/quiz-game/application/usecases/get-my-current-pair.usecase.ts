@@ -9,7 +9,6 @@ import { GameSessionQuestionsRepository } from '../../infrastructure/game-sessio
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
 import { GameSessionQuestionAnswerRepository } from '../../infrastructure/game-session-question-answer.repository';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
-
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 
@@ -44,7 +43,6 @@ export class GetMyCurrentPairUsecase
         await this.gameSessionsRepository.findOrNotFoundFail(
           mostRecentParticipant.game_session_id,
         );
-      console.log('recentGameSession', recentGameSession);
 
       if (
         !recentGameSession.winner_id &&

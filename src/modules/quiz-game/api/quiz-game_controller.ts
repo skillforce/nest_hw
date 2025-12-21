@@ -23,6 +23,8 @@ import { IdNumberParamDto } from '../../../core/decorators/validation/objectIdDt
 import { GetGameSessionByIdCommand } from '../application/usecases/get-game-session-by-id.usecase';
 import { ConnectUserToTheQuizGameCommand } from '../application/usecases/connect-user-to-the-quiz-game.usecase';
 import { AnswerQuestionCommand } from '../application/usecases/answer-quiz-game-question.usecase';
+import { GameStatisticsViewDto } from './dto/game-statistics-view-dto';
+import { GetMyStatisticCommand } from '../application/usecases/get-my-statistic.usecase';
 
 @SkipThrottle()
 @Controller('/pair-game-quiz/pairs')
@@ -38,6 +40,16 @@ export class QuizGameController {
       GetMyCurrentPairCommand,
       GameSessionViewDto
     >(new GetMyCurrentPairCommand(user.id));
+  }
+  @Get('/my-statistic')
+  @UseGuards(JwtAuthGuard)
+  async getMyStatistics(
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<GameStatisticsViewDto> {
+    return await this.commandBus.execute<
+      GetMyStatisticCommand,
+      GameStatisticsViewDto
+    >(new GetMyStatisticCommand(user.id));
   }
 
   @Get(':id')

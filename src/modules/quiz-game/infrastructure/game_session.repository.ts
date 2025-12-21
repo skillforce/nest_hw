@@ -25,6 +25,34 @@ export class GameSessionsRepository {
     });
   }
 
+  async getUserWinsAndLosesCount(
+    gameSessionsIds: number[],
+    userId: number,
+  ): Promise<{
+    winsCount: number;
+    lossesCount: number;
+  }> {
+    const result = await this.gameSessionsOrmRepository
+      .createQueryBuilder('gs')
+      .leftJoin('gs.participants', 'gsp')
+      .select(
+        'SUM(CASE WHEN gs.winner_id = gsp.user_id THEN 1 ELSE 0 END)',
+        'winsCount',
+      )
+      .addSelect(
+        'SUM(CASE WHEN gs.winner_id IS NOT NULL AND gs.winner_id != gsp.user_id THEN 1 ELSE 0 END)',
+        'losesCount',
+      )
+      .where('gs.id IN (:...gameSessionsIds)', { gameSessionsIds })
+      .andWhere('gsp.user_id = :userId', { userId })
+
+      .getRawOne();
+    return {
+      winsCount: Number(result.winsCount || 0),
+      lossesCount: Number(result.losesCount || 0),
+    };
+  }
+
   async updateWinner(sessionId: number, winnerId: number): Promise<void> {
     try {
       await this.gameSessionsOrmRepository.update(sessionId, {

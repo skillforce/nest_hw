@@ -21,6 +21,7 @@ import { ConnectUserToTheQuizGameUsecase } from './application/usecases/connect-
 import { GetGameSessionByIdUsecase } from './application/usecases/get-game-session-by-id.usecase';
 import { GetMyCurrentPairUsecase } from './application/usecases/get-my-current-pair.usecase';
 import { QuizGameController } from './api/quiz-game_controller';
+import { GetMyStatisticUsecase } from './application/usecases/get-my-statistic.usecase';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { QuizGameController } from './api/quiz-game_controller';
     UpdateQuestionUsecase,
     DeleteQuestionUsecase,
     AnswerQuestionUsecase,
+    GetMyStatisticUsecase,
     ConnectUserToTheQuizGameUsecase,
     GetGameSessionByIdUsecase,
     GetMyCurrentPairUsecase,
