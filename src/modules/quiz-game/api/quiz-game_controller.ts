@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -25,6 +26,9 @@ import { ConnectUserToTheQuizGameCommand } from '../application/usecases/connect
 import { AnswerQuestionCommand } from '../application/usecases/answer-quiz-game-question.usecase';
 import { GameStatisticsViewDto } from './dto/game-statistics-view-dto';
 import { GetMyStatisticCommand } from '../application/usecases/get-my-statistic.usecase';
+import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
+import { GetMyGamesHistoryQueryParamsInputDto } from './dto/get-my-games-history-query-params.input-dto';
+import { GetMyGamesHistoryCommand } from '../application/usecases/get-my-games-history.usecase';
 
 @SkipThrottle()
 @Controller('/pair-game-quiz/pairs')
@@ -41,6 +45,19 @@ export class QuizGameController {
       GameSessionViewDto
     >(new GetMyCurrentPairCommand(user.id));
   }
+
+  @Get('/my')
+  @UseGuards(JwtAuthGuard)
+  async getMyGamesHistorySession(
+    @ExtractUserFromRequest() user: UserContextDto,
+    @Query() query: GetMyGamesHistoryQueryParamsInputDto,
+  ): Promise<PaginatedViewDto<GameSessionViewDto>> {
+    return await this.commandBus.execute<
+      GetMyGamesHistoryCommand,
+      GameSessionViewDto[]
+    >(new GetMyGamesHistoryCommand(user.id, query));
+  }
+
   @Get('/my-statistic')
   @UseGuards(JwtAuthGuard)
   async getMyStatistics(

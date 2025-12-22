@@ -52,6 +52,18 @@ export class GameSessionsRepository {
       lossesCount: Number(result.losesCount || 0),
     };
   }
+  async findFinishedByUserId(userId: number): Promise<GameSession[] | null> {
+    return await this.gameSessionsOrmRepository
+      .createQueryBuilder('gs')
+      .leftJoinAndSelect('gs.participants', 'gsp')
+      .leftJoinAndSelect('gsp.user', 'participantUser')
+      .leftJoinAndSelect('gsp.gameSessionQuestionAnswers', 'gspAnswers')
+      .leftJoinAndSelect('gspAnswers.gameSessionQuestion', 'gsq')
+      .where('gsp.user_id = :userId', { userId })
+      .andWhere('gs.winner_id IS NOT NULL')
+      .andWhere('gs.deletedAt IS NULL')
+      .getMany();
+  }
 
   async updateWinner(sessionId: number, winnerId: number): Promise<void> {
     try {

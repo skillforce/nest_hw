@@ -22,6 +22,7 @@ import { GetGameSessionByIdUsecase } from './application/usecases/get-game-sessi
 import { GetMyCurrentPairUsecase } from './application/usecases/get-my-current-pair.usecase';
 import { QuizGameController } from './api/quiz-game_controller';
 import { GetMyStatisticUsecase } from './application/usecases/get-my-statistic.usecase';
+import { GetMyGamesHistoryUsecase } from './application/usecases/get-my-games-history.usecase';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { GetMyStatisticUsecase } from './application/usecases/get-my-statistic.u
     GetMyStatisticUsecase,
     ConnectUserToTheQuizGameUsecase,
     GetGameSessionByIdUsecase,
+    GetMyGamesHistoryUsecase,
     GetMyCurrentPairUsecase,
     UpdateQuestionPublishStatusUsecase,
     GameSessionParticipantsRepository,
