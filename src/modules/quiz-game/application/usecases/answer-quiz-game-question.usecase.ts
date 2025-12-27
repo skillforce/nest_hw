@@ -117,7 +117,6 @@ export class AnswerQuestionUsecase
       ? AnswerStatus.CORRECT
       : AnswerStatus.INCORRECT;
     if (isAnswerCorrect) {
-      console.log('Increase score for participant:', participantId);
       await this.increasePlayerScore(gameSessionParticipant);
     }
 
@@ -158,7 +157,7 @@ export class AnswerQuestionUsecase
     } else if (secondParticipantScore > firstParticipantScore) {
       winnerId = secondParticipant.user.id;
     } else {
-      winnerId = null;
+      winnerId = 0; // draw
     }
     if (winnerId) {
       await this.updateGameSessionWinner(game_session_id, winnerId);

@@ -1,75 +1,49 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   GameSessionViewDto,
+  GameStatus,
   PlayerProgressDto,
   QuestionDto,
 } from '../../api/dto/game-session-view-dto';
-import { GameSessionParticipantsRepository } from '../../infrastructure/game-session-participants.repository';
-import { GameSessionQuestionsRepository } from '../../infrastructure/game-session-questions.repository';
 import { GameSessionsRepository } from '../../infrastructure/game_session.repository';
-import { GameSessionQuestionAnswerRepository } from '../../infrastructure/game-session-question-answer.repository';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
 import { GetMyGamesHistoryQueryParamsInputDto } from '../../api/dto/get-my-games-history-query-params.input-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
+import { GameSession } from '../../domain/game-session.entity';
 
 export class GetMyGamesHistoryCommand {
   constructor(
     public userId: number,
-    query: GetMyGamesHistoryQueryParamsInputDto, //TODO ts is under question
+    public query: GetMyGamesHistoryQueryParamsInputDto,
   ) {}
 }
 
 @CommandHandler(GetMyGamesHistoryCommand)
 export class GetMyGamesHistoryUsecase
-  implements ICommandHandler<GetMyGamesHistoryCommand, GameSessionViewDto[]>
+  implements
+    ICommandHandler<
+      GetMyGamesHistoryCommand,
+      PaginatedViewDto<GameSessionViewDto[]>
+    >
 {
-  constructor(
-    private gameSessionParticipantsRepository: GameSessionParticipantsRepository,
-    private gameSessionsRepository: GameSessionsRepository,
-    private gameSessionsQuestionsRepository: GameSessionQuestionsRepository,
-    private gameSessionsQuestionsAnswersRepository: GameSessionQuestionAnswerRepository,
-  ) {}
-  //TODO don't forget to handle queries conditions (sort + pagination etc.)
+  constructor(private gameSessionsRepository: GameSessionsRepository) {}
   async execute({
     userId,
-  }: GetMyGamesHistoryCommand): Promise<GameSessionViewDto[]> {
-    const gameSessions =
-      await this.gameSessionsRepository.findFinishedByUserId(userId);
+    query,
+  }: GetMyGamesHistoryCommand): Promise<
+    PaginatedViewDto<GameSessionViewDto[]>
+  > {
+    const gameSessions = await this.gameSessionsRepository.findAllByUserId(
+      userId,
+      query,
+    );
 
-    if (!gameSessions || gameSessions.length === 0) {
-      return [];
-    }
+    const gameSessionItems = this.getGameSessionItems(gameSessions.items);
 
-    return gameSessions.map((gameSessionItem) => {
-      const firstParticipantProgress = PlayerProgressDto.mapToViewDto(
-        gameSessionItem.participants[0].gameSessionQuestionAnswers,
-        {
-          id: gameSessionItem.participants[0].user_id.toString(),
-          login: gameSessionItem.participants[0].user.login,
-        },
-        gameSessionItem.participants[0].score ?? 0,
-      );
-      const secondParticipantProgress = PlayerProgressDto.mapToViewDto(
-        gameSessionItem.participants[1].gameSessionQuestionAnswers,
-        {
-          id: gameSessionItem.participants[1].user_id.toString(),
-          login: gameSessionItem.participants[1].user.login,
-        },
-        gameSessionItem.participants[1].score ?? 0,
-      );
-
-      return GameSessionViewDto.mapToViewDto(
-        gameSessionItem,
-        firstParticipantProgress,
-        secondParticipantProgress,
-        gameSessionItem.questions.map(QuestionDto.mapToViewDto),
-        'Finished',
-        this.getFinishGameDate(
-          gameSessionItem.participants[0],
-          gameSessionItem.participants[1],
-          gameSessionItem.winner_id,
-        ),
-      );
-    });
+    return {
+      ...gameSessions,
+      items: gameSessionItems,
+    };
   }
 
   private getFinishGameDate(
@@ -81,5 +55,67 @@ export class GetMyGamesHistoryUsecase
       return firstParticipant.finished_at.toString();
     }
     return secondParticipant.finished_at.toString();
+  }
+  private createPlayerProgressDto(
+    participant: GameSessionParticipants,
+    isEmpty?: boolean,
+  ): PlayerProgressDto {
+    if (isEmpty) {
+      return PlayerProgressDto.mapToViewDto(
+        [],
+        {
+          id: participant.user_id.toString(),
+          login: participant.user.login,
+        },
+        0,
+      );
+    }
+    return PlayerProgressDto.mapToViewDto(
+      participant.gameSessionQuestionAnswers,
+      {
+        id: participant.user_id.toString(),
+        login: participant.user.login,
+      },
+      participant.score ?? 0,
+    );
+  }
+  private getGameSessionItems(
+    gameSessions: Array<GameSession> | null,
+  ): GameSessionViewDto[] {
+    return gameSessions?.length
+      ? gameSessions.map((gameSessionItem) => {
+          const [participant1, participant2] = gameSessionItem.participants;
+          const isSessionStarted = !!gameSessionItem.session_started_at;
+          const firstParticipantProgress = this.createPlayerProgressDto(
+            participant1,
+            !isSessionStarted,
+          );
+          const finishGameDate = this.getFinishGameDate(
+            participant1,
+            participant2,
+            gameSessionItem.winner_id,
+          );
+          const secondParticipantProgress = isSessionStarted
+            ? this.createPlayerProgressDto(participant2)
+            : null;
+
+          const gameStatus: GameStatus = gameSessionItem.winner_id
+            ? 'Finished'
+            : 'Active';
+
+          const gameSessionQuestions = gameSessionItem.questions.map(
+            QuestionDto.mapToViewDto,
+          );
+
+          return GameSessionViewDto.mapToViewDto(
+            gameSessionItem,
+            firstParticipantProgress,
+            secondParticipantProgress,
+            gameSessionQuestions,
+            gameStatus,
+            finishGameDate,
+          );
+        })
+      : [];
   }
 }

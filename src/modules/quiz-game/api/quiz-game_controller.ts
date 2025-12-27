@@ -51,10 +51,10 @@ export class QuizGameController {
   async getMyGamesHistorySession(
     @ExtractUserFromRequest() user: UserContextDto,
     @Query() query: GetMyGamesHistoryQueryParamsInputDto,
-  ): Promise<PaginatedViewDto<GameSessionViewDto>> {
+  ): Promise<PaginatedViewDto<GameSessionViewDto[]>> {
     return await this.commandBus.execute<
       GetMyGamesHistoryCommand,
-      GameSessionViewDto[]
+      PaginatedViewDto<GameSessionViewDto[]>
     >(new GetMyGamesHistoryCommand(user.id, query));
   }
 

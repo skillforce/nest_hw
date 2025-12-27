@@ -4,6 +4,11 @@ import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-c
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { GameSession } from '../domain/game-session.entity';
+import {
+  GetMyGamesHistoryQueryParamsInputDto,
+  GetMyGamesHistorySortBy,
+} from '../api/dto/get-my-games-history-query-params.input-dto';
+import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
 
 @Injectable()
 export class GameSessionsRepository {
@@ -52,17 +57,46 @@ export class GameSessionsRepository {
       lossesCount: Number(result.losesCount || 0),
     };
   }
-  async findFinishedByUserId(userId: number): Promise<GameSession[] | null> {
-    return await this.gameSessionsOrmRepository
+  async findAllByUserId(
+    userId: number,
+    query: GetMyGamesHistoryQueryParamsInputDto,
+  ): Promise<PaginatedViewDto<GameSession[] | null>> {
+    const sortDirection =
+      query.sortDirection?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
+    const SORT_BY_MAP: Record<GetMyGamesHistorySortBy, string> = {
+      [GetMyGamesHistorySortBy.pairCreatedDate]: 'gs.createdAt',
+      [GetMyGamesHistorySortBy.startGameDate]: 'gs.session_started_at',
+      [GetMyGamesHistorySortBy.finishGameDate]: 'gsp.finished_at',
+    };
+
+    const sortByColumn = SORT_BY_MAP[query.sortBy];
+
+    const skip = query.calculateSkip();
+    const take = query.pageSize;
+
+    const qb = this.gameSessionsOrmRepository
       .createQueryBuilder('gs')
       .leftJoinAndSelect('gs.participants', 'gsp')
       .leftJoinAndSelect('gsp.user', 'participantUser')
       .leftJoinAndSelect('gsp.gameSessionQuestionAnswers', 'gspAnswers')
       .leftJoinAndSelect('gspAnswers.gameSessionQuestion', 'gsq')
+      .leftJoinAndSelect('gs.questions', 'gsQuestions')
       .where('gsp.user_id = :userId', { userId })
       .andWhere('gs.winner_id IS NOT NULL')
       .andWhere('gs.deletedAt IS NULL')
-      .getMany();
+      .orderBy(sortByColumn, sortDirection)
+      .skip(skip)
+      .take(take);
+
+    const [sessions, totalCount] = await qb.getManyAndCount();
+
+    return PaginatedViewDto.mapToView({
+      items: sessions,
+      page: query.pageNumber,
+      size: query.pageSize,
+      totalCount,
+    });
   }
 
   async updateWinner(sessionId: number, winnerId: number): Promise<void> {
@@ -70,8 +104,6 @@ export class GameSessionsRepository {
       await this.gameSessionsOrmRepository.update(sessionId, {
         winner_id: winnerId,
       });
-
-      console.log('Winner updated successfully', winnerId);
     } catch (err) {
       console.error('Update error:', err);
     }
@@ -104,7 +136,6 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('participants.user', 'user')
       .where('gameSession.deletedAt IS NULL')
       .andWhere('gameSession.session_started_at IS NOT NULL')
-      .andWhere('gameSession.winner_id IS NULL')
       .andWhere('user.id = :userId', { userId });
 
     return await qb.getOne();
