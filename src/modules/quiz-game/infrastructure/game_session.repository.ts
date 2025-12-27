@@ -83,7 +83,6 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('gspAnswers.gameSessionQuestion', 'gsq')
       .leftJoinAndSelect('gs.questions', 'gsQuestions')
       .where('gsp.user_id = :userId', { userId })
-      .andWhere('gs.winner_id IS NOT NULL')
       .andWhere('gs.deletedAt IS NULL')
       .orderBy(sortByColumn, sortDirection)
       .skip(skip)

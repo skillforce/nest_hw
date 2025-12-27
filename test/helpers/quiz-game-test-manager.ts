@@ -5,6 +5,8 @@ import {
   AnswerQuestionViewDto,
   GameSessionViewDto,
 } from '../../src/modules/quiz-game/api/dto/game-session-view-dto';
+import { GetMyGamesHistoryQueryParamsInputDto } from '../../src/modules/quiz-game/api/dto/get-my-games-history-query-params.input-dto';
+import { PaginatedViewDto } from '../../src/core/dto/base.paginated.view-dto';
 
 export class GameTestManager {
   constructor(private app: INestApplication) {}
@@ -45,6 +47,28 @@ export class GameTestManager {
       .expect(expectedStatus);
 
     return response.body as AnswerQuestionViewDto;
+  }
+
+  async getMyGamesHistory(
+    accessToken: string,
+    query?: Partial<GetMyGamesHistoryQueryParamsInputDto>,
+    expectedStatus: HttpStatus = HttpStatus.OK,
+  ): Promise<PaginatedViewDto<GameSessionViewDto[]>> {
+    const requestBuilder = request(this.app.getHttpServer())
+      .get(`/${GLOBAL_PREFIX}/pair-game-quiz/pairs/my`)
+      .auth(accessToken, { type: 'bearer' });
+
+    if (query) {
+      Object.entries(query).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          requestBuilder.query({ [key]: value });
+        }
+      });
+    }
+
+    const response = await requestBuilder.expect(expectedStatus);
+
+    return response.body as PaginatedViewDto<GameSessionViewDto[]>;
   }
 
   async getGameById(

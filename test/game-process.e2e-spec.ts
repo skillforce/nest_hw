@@ -5,6 +5,8 @@ import { UsersTestManager } from './helpers/users-test-manager';
 import { QuestionsTestManager } from './helpers/questions-test-manager';
 import { delay } from './helpers/delay';
 import { GameTestManager } from './helpers/quiz-game-test-manager';
+import { SortDirection } from '../src/core/dto/base.query-params.input-dto';
+import { GetMyGamesHistorySortBy } from '../src/modules/quiz-game/api/dto/get-my-games-history-query-params.input-dto';
 
 describe('Game Process (e2e)', () => {
   let app: INestApplication;
@@ -264,5 +266,132 @@ describe('Game Process (e2e)', () => {
       user.accessToken,
       HttpStatus.NOT_FOUND,
     );
+  });
+  it('GET /pairs/my → should return 401 without token', async () => {
+    await gameTestManager.getMyGamesHistory(
+      '',
+      undefined,
+      HttpStatus.UNAUTHORIZED,
+    );
+  });
+  it('GET /pairs/my → should return empty history if user has no finished games', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+    const [user] = await usersTestManager.createAndLoginSeveralUsers(1);
+
+    const result = await gameTestManager.getMyGamesHistory(user.accessToken);
+
+    expect(result.totalCount).toBe(0);
+    expect(result.items).toHaveLength(0);
+    expect(result.page).toBe(1);
+    expect(result.pageSize).toBe(10);
+  });
+
+  it('GET /pairs/my → should return paginated result', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+
+    // finish 3 games
+    for (let g = 0; g < 3; g++) {
+      await gameTestManager.connectToGame(user1.accessToken);
+      await delay(100);
+      await gameTestManager.connectToGame(user2.accessToken);
+      await delay(100);
+      for (let i = 0; i < 5; i++) {
+        await gameTestManager.sendAnswer(user1.accessToken, { answer: 'four' });
+        await delay(150);
+        await gameTestManager.sendAnswer(user2.accessToken, {
+          answer: 'wrong',
+        });
+      }
+    }
+
+    const page1 = await gameTestManager.getMyGamesHistory(user1.accessToken, {
+      pageNumber: 1,
+      pageSize: 2,
+    });
+
+    expect(page1.items).toHaveLength(2);
+    expect(page1.totalCount).toBe(3);
+
+    const page2 = await gameTestManager.getMyGamesHistory(user1.accessToken, {
+      pageNumber: 2,
+      pageSize: 2,
+    });
+
+    expect(page2.items).toHaveLength(1);
+  });
+  it('GET /pairs/my → should sort by finishGameDate DESC', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+
+    // finish 2 games
+    for (let g = 0; g < 2; g++) {
+      await gameTestManager.connectToGame(user1.accessToken);
+      await delay(100);
+      await gameTestManager.connectToGame(user2.accessToken);
+
+      for (let i = 0; i < 5; i++) {
+        await gameTestManager.sendAnswer(user1.accessToken, { answer: 'four' });
+        await delay(200);
+        await gameTestManager.sendAnswer(user2.accessToken, {
+          answer: 'wrong',
+        });
+      }
+    }
+
+    const history = await gameTestManager.getMyGamesHistory(user1.accessToken, {
+      sortBy: GetMyGamesHistorySortBy.pairCreatedDate,
+      sortDirection: SortDirection.Desc,
+    });
+
+    const dates = history.items.map((i) => i.finishGameDate);
+    expect(new Date(dates[0]!).getTime()).toBeGreaterThan(
+      new Date(dates[1]!).getTime(),
+    );
+  });
+  it('GET /pairs/my → should return all games including current', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+
+    // 1️⃣ Pending game
+    const pending = await gameTestManager.connectToGame(user1.accessToken);
+    expect(pending.status).toBe('PendingSecondPlayer');
+
+    let history = await gameTestManager.getMyGamesHistory(user1.accessToken);
+    expect(history.totalCount).toBe(1);
+    expect(history.items[0].status).toBe('PendingSecondPlayer');
+
+    // 2️⃣ Active game
+    await gameTestManager.connectToGame(user2.accessToken);
+
+    history = await gameTestManager.getMyGamesHistory(user1.accessToken);
+    expect(history.totalCount).toBe(1);
+    expect(history.items[0].status).toBe('Active');
+
+    // 3️⃣ Finish game
+    for (let i = 0; i < 5; i++) {
+      await gameTestManager.sendAnswer(user1.accessToken, { answer: 'four' });
+      await delay(150);
+      await gameTestManager.sendAnswer(user2.accessToken, { answer: 'wrong' });
+    }
+
+    history = await gameTestManager.getMyGamesHistory(user1.accessToken);
+    expect(history.totalCount).toBe(1);
+
+    const game = history.items[0];
+    expect(game.status).toBe('Finished');
+    expect(game.finishGameDate).toBeDefined();
+  });
+  it('GET /pairs/my → should include active game while my-current exists', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+
+    await gameTestManager.connectToGame(user1.accessToken);
+    await gameTestManager.connectToGame(user2.accessToken);
+
+    const current = await gameTestManager.getMyCurrentGame(user1.accessToken);
+    const history = await gameTestManager.getMyGamesHistory(user1.accessToken);
+
+    expect(history.items.some((g) => g.id === current.id)).toBe(true);
   });
 });

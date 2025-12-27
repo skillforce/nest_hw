@@ -6,7 +6,7 @@ import { GameSessionParticipants } from './game-session-participants.entity';
 
 @Entity('GameSessions')
 export class GameSession extends NumericIdEntity {
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   session_started_at: Date | null;
 
   @Column({ nullable: true })
