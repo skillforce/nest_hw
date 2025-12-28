@@ -39,6 +39,7 @@ export class AnswerQuestionUsecase
     answerQuestionDto,
     userId,
   }: AnswerQuestionCommand): Promise<AnswerQuestionViewDto> {
+    console.log('USER ID IN ANSWER QUESTION USECASE:', userId);
     const gameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
     const gameSessionParticipant =

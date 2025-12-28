@@ -85,7 +85,6 @@ export class GetMyGamesHistoryUsecase
   private getGameSessionItems(
     gameSessions: Array<GameSession> | null,
   ): GameSessionViewDto[] {
-    console.log('SESSIONS', JSON.stringify(gameSessions![0]));
     return gameSessions?.length
       ? gameSessions.map((gameSessionItem) => {
           const [participant1, participant2] = gameSessionItem.participants;

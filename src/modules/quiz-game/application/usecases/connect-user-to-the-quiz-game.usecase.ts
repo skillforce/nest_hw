@@ -26,9 +26,10 @@ export class ConnectUserToTheQuizGameUsecase
   async execute({ userId }: ConnectUserToTheQuizGameCommand): Promise<number> {
     const activeGameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
-    console.log(activeGameSession);
+    console.log('USER ID IN CONNECT USECASE:', userId);
 
     if (activeGameSession) {
+      console.log('FOUND ACTIVE SESSION:', activeGameSession);
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         extensions: [
@@ -42,9 +43,9 @@ export class ConnectUserToTheQuizGameUsecase
     }
     const secondUserPendingGameSession =
       await this.gameSessionsRepository.findPendingSecondUserGameSession();
-    console.log('pending session', secondUserPendingGameSession);
 
     if (secondUserPendingGameSession?.creator_user_id === userId) {
+      console.log('USER IS THE CREATOR OF PENDING SESSION');
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         extensions: [

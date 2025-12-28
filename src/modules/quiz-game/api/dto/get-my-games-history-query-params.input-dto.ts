@@ -4,6 +4,7 @@ export enum GetMyGamesHistorySortBy {
   pairCreatedDate = 'pairCreatedDate',
   startGameDate = 'startGameDate',
   finishGameDate = 'finishGameDate',
+  status = 'status',
 }
 
 export class GetMyGamesHistoryQueryParamsInputDto extends BaseQueryParams {

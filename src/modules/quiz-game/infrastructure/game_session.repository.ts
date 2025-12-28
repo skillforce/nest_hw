@@ -68,6 +68,7 @@ export class GameSessionsRepository {
       [GetMyGamesHistorySortBy.pairCreatedDate]: 'gs.createdAt',
       [GetMyGamesHistorySortBy.startGameDate]: 'gs.session_started_at',
       [GetMyGamesHistorySortBy.finishGameDate]: 'gsp.finished_at',
+      [GetMyGamesHistorySortBy.status]: 'game_status_sort',
     };
 
     const sortByColumn = SORT_BY_MAP[query.sortBy];
@@ -77,6 +78,15 @@ export class GameSessionsRepository {
 
     const qb = this.gameSessionsOrmRepository
       .createQueryBuilder('gs')
+      .addSelect(
+        `
+  CASE
+    WHEN gs.winner_id IS NULL THEN 0
+    ELSE 1
+  END
+  `,
+        'game_status_sort',
+      )
       .leftJoinAndSelect('gs.participants', 'gsp')
       .leftJoinAndSelect('gsp.user', 'participantUser')
       .leftJoinAndSelect('gsp.gameSessionQuestionAnswers', 'gspAnswers')
@@ -112,7 +122,7 @@ export class GameSessionsRepository {
       .skip(skip)
       .take(take);
 
-    const [sessions, totalCount] = await qb.getManyAndCount();
+    const [sessions, totalCount] = await qb.distinct(true).getManyAndCount();
 
     return PaginatedViewDto.mapToView({
       items: sessions,
@@ -159,6 +169,7 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('participants.user', 'user')
       .where('gameSession.deletedAt IS NULL')
       .andWhere('gameSession.session_started_at IS NOT NULL')
+      .andWhere('gameSession.winner_id IS NULL')
       .andWhere('user.id = :userId', { userId });
 
     return await qb.getOne();
