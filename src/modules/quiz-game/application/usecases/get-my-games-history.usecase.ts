@@ -51,6 +51,9 @@ export class GetMyGamesHistoryUsecase
     secondParticipant: GameSessionParticipants,
     winnerId: number,
   ) {
+    if (!firstParticipant?.finished_at && !secondParticipant?.finished_at) {
+      return null;
+    }
     if (firstParticipant.user.id === +winnerId) {
       return firstParticipant.finished_at.toString();
     }
@@ -60,7 +63,7 @@ export class GetMyGamesHistoryUsecase
     participant: GameSessionParticipants,
     isEmpty?: boolean,
   ): PlayerProgressDto {
-    if (isEmpty) {
+    if (isEmpty || !participant) {
       return PlayerProgressDto.mapToViewDto(
         [],
         {
@@ -82,6 +85,7 @@ export class GetMyGamesHistoryUsecase
   private getGameSessionItems(
     gameSessions: Array<GameSession> | null,
   ): GameSessionViewDto[] {
+    console.log('SESSIONS', JSON.stringify(gameSessions![0]));
     return gameSessions?.length
       ? gameSessions.map((gameSessionItem) => {
           const [participant1, participant2] = gameSessionItem.participants;

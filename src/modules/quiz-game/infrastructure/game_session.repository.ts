@@ -81,9 +81,33 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('gsp.user', 'participantUser')
       .leftJoinAndSelect('gsp.gameSessionQuestionAnswers', 'gspAnswers')
       .leftJoinAndSelect('gspAnswers.gameSessionQuestion', 'gsq')
+      .leftJoinAndSelect('gsq.question', 'answeredQuestion')
       .leftJoinAndSelect('gs.questions', 'gsQuestions')
-      .where('gsp.user_id = :userId', { userId })
-      .andWhere('gs.deletedAt IS NULL')
+      .leftJoinAndSelect('gsQuestions.question', 'question')
+      .where('gs.deletedAt IS NULL')
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('1')
+          .from('GameSessionParticipants', 'gsp2')
+          .where('gsp2.game_session_id = gs.id')
+          .andWhere('gsp2.user_id = :userId')
+          .getQuery();
+
+        return `EXISTS ${subQuery}`;
+      })
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('COUNT(*)')
+          .from('GameSessionParticipants', 'gsp3')
+          .where('gsp3.game_session_id = gs.id')
+          .andWhere('gsp3.deletedAt IS NULL')
+          .getQuery();
+
+        return `${subQuery} = 2`;
+      })
+      .setParameter('userId', userId)
       .orderBy(sortByColumn, sortDirection)
       .skip(skip)
       .take(take);

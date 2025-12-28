@@ -14,6 +14,7 @@ export class TestingController {
     await this.dataSource.query('TRUNCATE TABLE "Users" CASCADE');
     await this.dataSource.query('TRUNCATE TABLE "Blogs" CASCADE');
     await this.dataSource.query('TRUNCATE TABLE "Questions" CASCADE');
+    await this.dataSource.query('TRUNCATE TABLE "GameSessions" CASCADE');
     return {
       status: 'succeeded',
     };

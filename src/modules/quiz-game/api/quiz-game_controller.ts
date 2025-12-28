@@ -52,10 +52,15 @@ export class QuizGameController {
     @ExtractUserFromRequest() user: UserContextDto,
     @Query() query: GetMyGamesHistoryQueryParamsInputDto,
   ): Promise<PaginatedViewDto<GameSessionViewDto[]>> {
-    return await this.commandBus.execute<
-      GetMyGamesHistoryCommand,
-      PaginatedViewDto<GameSessionViewDto[]>
-    >(new GetMyGamesHistoryCommand(user.id, query));
+    try {
+      return await this.commandBus.execute<
+        GetMyGamesHistoryCommand,
+        PaginatedViewDto<GameSessionViewDto[]>
+      >(new GetMyGamesHistoryCommand(user.id, query));
+    } catch (error) {
+      console.error('Error in getMyGamesHistorySession:', error);
+      throw error;
+    }
   }
 
   @Get('/my-statistic')
@@ -86,7 +91,7 @@ export class QuizGameController {
   @Post('/connection')
   async connectToGameSession(
     @ExtractUserFromRequest() user: UserContextDto,
-  ): Promise<GameSessionViewDto> {
+  ): Promise<any> {
     const gameSessionId = await this.commandBus.execute<
       ConnectUserToTheQuizGameCommand,
       number
