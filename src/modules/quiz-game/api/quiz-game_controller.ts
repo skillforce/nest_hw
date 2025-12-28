@@ -31,11 +31,11 @@ import { GetMyGamesHistoryQueryParamsInputDto } from './dto/get-my-games-history
 import { GetMyGamesHistoryCommand } from '../application/usecases/get-my-games-history.usecase';
 
 @SkipThrottle()
-@Controller('/pair-game-quiz/pairs')
+@Controller('/pair-game-quiz')
 export class QuizGameController {
   constructor(private readonly commandBus: CommandBus) {}
 
-  @Get('/my-current')
+  @Get('/pairs/my-current')
   @UseGuards(JwtAuthGuard)
   async getMyCurrentGameSession(
     @ExtractUserFromRequest() user: UserContextDto,
@@ -46,7 +46,7 @@ export class QuizGameController {
     >(new GetMyCurrentPairCommand(user.id));
   }
 
-  @Get('/my')
+  @Get('/pairs/my')
   @UseGuards(JwtAuthGuard)
   async getMyGamesHistorySession(
     @ExtractUserFromRequest() user: UserContextDto,
@@ -63,7 +63,7 @@ export class QuizGameController {
     }
   }
 
-  @Get('/my-statistic')
+  @Get('/users/my-statistic')
   @UseGuards(JwtAuthGuard)
   async getMyStatistics(
     @ExtractUserFromRequest() user: UserContextDto,
@@ -74,7 +74,7 @@ export class QuizGameController {
     >(new GetMyStatisticCommand(user.id));
   }
 
-  @Get(':id')
+  @Get('/pairs/:id')
   @UseGuards(JwtAuthGuard)
   async getGameSessionById(
     @Param() { id }: IdNumberParamDto,
@@ -88,7 +88,7 @@ export class QuizGameController {
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('/connection')
+  @Post('/pairs/connection')
   async connectToGameSession(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<any> {
@@ -104,7 +104,7 @@ export class QuizGameController {
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('/my-current/answers')
+  @Post('/pairs/my-current/answers')
   async answerGameSessionQuestion(
     @Body() body: AnswerQuestionInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
