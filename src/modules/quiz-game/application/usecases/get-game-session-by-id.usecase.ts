@@ -130,7 +130,7 @@ export class GetGameSessionByIdUsecase
   private getFinishGameDate(
     firstParticipant: GameSessionParticipants | null,
     secondParticipant: GameSessionParticipants | null,
-  ) {
+  ): Date | null {
     if (
       !firstParticipant ||
       !secondParticipant ||
@@ -143,9 +143,11 @@ export class GetGameSessionByIdUsecase
     const firstDate = firstParticipant.finished_at;
     const secondDate = secondParticipant.finished_at;
 
-    const oldest = firstDate < secondDate ? firstDate : secondDate;
+    if (!firstDate || !secondDate) {
+      return null;
+    }
 
-    return oldest.toISOString();
+    return firstDate < secondDate ? firstDate : secondDate;
   }
   private async increasePlayerScore(
     gameSessionParticipant: GameSessionParticipants,

@@ -153,15 +153,15 @@ export class GetMyCurrentPairUsecase
     firstParticipant: GameSessionParticipants,
     secondParticipant: GameSessionParticipants,
     winnerId: number,
-  ) {
+  ): Date | null {
     if (!winnerId) {
       return null;
     }
 
     //TODO need to set finished_at when participant finishes all questions and FINISH DATE FOR GAME SESSION
     if (firstParticipant.user.id === +winnerId) {
-      return firstParticipant.finished_at.toString();
+      return firstParticipant.finished_at;
     }
-    return secondParticipant.finished_at.toString();
+    return secondParticipant.finished_at;
   }
 }

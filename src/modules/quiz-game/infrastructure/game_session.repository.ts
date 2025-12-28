@@ -119,6 +119,7 @@ export class GameSessionsRepository {
       })
       .setParameter('userId', userId)
       .orderBy(sortByColumn, sortDirection)
+      .addOrderBy('gs.createdAt', 'DESC')
       .skip(skip)
       .take(take);
 

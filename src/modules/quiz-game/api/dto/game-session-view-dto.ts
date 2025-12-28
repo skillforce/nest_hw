@@ -74,7 +74,7 @@ export class GameSessionViewDto {
     secondPlayerProgress: PlayerProgressDto | null,
     questions: QuestionDto[] | null,
     status: GameStatus,
-    finishGameDate: string | null,
+    finishGameDate: Date | null,
   ): GameSessionViewDto {
     const dto = new GameSessionViewDto();
     const progresses = [firstPlayerProgress, secondPlayerProgress].filter(
@@ -101,7 +101,7 @@ export class GameSessionViewDto {
     dto.pairCreatedDate =
       gameSession.createdAt?.toISOString() || new Date().toISOString();
     dto.startGameDate = gameSession.session_started_at?.toISOString() || null;
-    dto.finishGameDate = finishGameDate;
+    dto.finishGameDate = finishGameDate?.toISOString() || null;
     return dto;
   }
 }

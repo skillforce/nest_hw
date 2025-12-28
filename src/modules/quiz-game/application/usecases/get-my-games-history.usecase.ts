@@ -50,14 +50,14 @@ export class GetMyGamesHistoryUsecase
     firstParticipant: GameSessionParticipants,
     secondParticipant: GameSessionParticipants,
     winnerId: number,
-  ) {
+  ): Date | null {
     if (!firstParticipant?.finished_at && !secondParticipant?.finished_at) {
       return null;
     }
     if (firstParticipant.user.id === +winnerId) {
-      return firstParticipant.finished_at.toString();
+      return firstParticipant.finished_at;
     }
-    return secondParticipant.finished_at.toString();
+    return secondParticipant.finished_at;
   }
   private createPlayerProgressDto(
     participant: GameSessionParticipants,
