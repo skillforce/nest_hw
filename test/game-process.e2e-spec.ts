@@ -362,4 +362,16 @@ describe('Game Process (e2e)', () => {
 
     expect(history.items.some((g) => g.id === current.id)).toBe(true);
   });
+  it('GET statistics', async () => {
+    await questionsTestManager.createAndPublishFiveQuestions();
+    const [user1, user2] = await usersTestManager.createAndLoginSeveralUsers(2);
+
+    await gameTestManager.connectToGame(user1.accessToken);
+    await gameTestManager.connectToGame(user2.accessToken);
+
+    const currentStatistics = await gameTestManager.getMyStatistic(
+      user1.accessToken,
+    );
+    console.log(currentStatistics);
+  });
 });

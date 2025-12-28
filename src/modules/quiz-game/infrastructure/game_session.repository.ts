@@ -31,15 +31,18 @@ export class GameSessionsRepository {
   }
 
   async getUserWinsAndLosesCount(
-    gameSessionsIds: number[],
     userId: number,
-  ): Promise<{
-    winsCount: number;
-    lossesCount: number;
-  }> {
+    gameSessionIds: number[],
+  ): Promise<{ winsCount: number; losesCount: number }> {
+    if (gameSessionIds.length === 0) {
+      return {
+        winsCount: 0,
+        losesCount: 0,
+      };
+    }
+
     const result = await this.gameSessionsOrmRepository
       .createQueryBuilder('gs')
-      .leftJoin('gs.participants', 'gsp')
       .select(
         'SUM(CASE WHEN gs.winner_id = gsp.user_id THEN 1 ELSE 0 END)',
         'winsCount',
@@ -48,13 +51,15 @@ export class GameSessionsRepository {
         'SUM(CASE WHEN gs.winner_id IS NOT NULL AND gs.winner_id != gsp.user_id THEN 1 ELSE 0 END)',
         'losesCount',
       )
-      .where('gs.id IN (:...gameSessionsIds)', { gameSessionsIds })
+      .leftJoin('gs.participants', 'gsp')
+      .where('gs.id IN (:...gameSessionIds)', { gameSessionIds })
       .andWhere('gsp.user_id = :userId', { userId })
-
+      .andWhere('gs.deletedAt IS NULL')
       .getRawOne();
+
     return {
-      winsCount: Number(result.winsCount || 0),
-      lossesCount: Number(result.losesCount || 0),
+      winsCount: Number(result.winsCount),
+      losesCount: Number(result.losesCount),
     };
   }
   async findAllByUserId(

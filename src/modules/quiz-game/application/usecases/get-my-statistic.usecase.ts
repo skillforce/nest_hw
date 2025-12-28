@@ -25,20 +25,20 @@ export class GetMyStatisticUsecase
       );
     const averageScore = sessionsCount > 0 ? totalScore / sessionsCount : 0;
 
-    const { winsCount, lossesCount } =
+    const { winsCount, losesCount } =
       await this.gameSessionsRepository.getUserWinsAndLosesCount(
-        gameSessionsIds,
         userId,
+        gameSessionsIds,
       );
 
-    const drawsCount = sessionsCount - winsCount - lossesCount;
+    const drawsCount = sessionsCount - winsCount - losesCount;
 
     return GameStatisticsViewDto.mapToViewDto({
       sumScore: totalScore,
       avgScores: Number(averageScore.toFixed(2)),
       gamesCount: sessionsCount,
       winsCount,
-      lossesCount,
+      lossesCount: losesCount,
       drawsCount,
     });
   }

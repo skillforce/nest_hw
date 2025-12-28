@@ -68,10 +68,15 @@ export class QuizGameController {
   async getMyStatistics(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<GameStatisticsViewDto> {
-    return await this.commandBus.execute<
-      GetMyStatisticCommand,
-      GameStatisticsViewDto
-    >(new GetMyStatisticCommand(user.id));
+    try {
+      return await this.commandBus.execute<
+        GetMyStatisticCommand,
+        GameStatisticsViewDto
+      >(new GetMyStatisticCommand(user.id));
+    } catch (error) {
+      console.log('Error in getMyStatistics:', error);
+      throw error;
+    }
   }
 
   @Get('/pairs/:id')

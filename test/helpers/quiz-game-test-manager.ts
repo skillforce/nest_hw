@@ -34,6 +34,17 @@ export class GameTestManager {
 
     return response.body as GameSessionViewDto;
   }
+  async getMyStatistic(
+    accessToken: string,
+    expectedStatus: number = HttpStatus.OK,
+  ): Promise<GameSessionViewDto> {
+    const response = await request(this.app.getHttpServer())
+      .get(`/${GLOBAL_PREFIX}/pair-game-quiz/users/my-statistic`)
+      .auth(accessToken, { type: 'bearer' })
+      .expect(expectedStatus);
+
+    return response.body as GameSessionViewDto;
+  }
 
   async sendAnswer(
     accessToken: string,

@@ -36,8 +36,8 @@ export class GameSessionParticipantsRepository {
     const result = await this.gameSessionParticipantsOrmRepository
       .createQueryBuilder('gsp')
       .select('COALESCE(SUM(gsp.score), 0)', 'totalScore')
-      .addSelect('COUNT(*)', 'sessionsCount')
-      .addSelect('game_session_id', 'gameSessionsIds')
+      .addSelect('COUNT(DISTINCT gsp.game_session_id)', 'sessionsCount')
+      .addSelect('ARRAY_AGG(DISTINCT gsp.game_session_id)', 'gameSessionsIds')
       .where('gsp.user_id = :userId', { userId })
       .andWhere('gsp.finished_at IS NOT NULL')
       .getRawOne();
@@ -46,7 +46,7 @@ export class GameSessionParticipantsRepository {
       totalScore: Number(result.totalScore),
       sessionsCount: Number(result.sessionsCount),
       gameSessionsIds: result.gameSessionsIds
-        ? [Number(result.gameSessionsIds)]
+        ? result.gameSessionsIds.map(Number)
         : [],
     };
   }
