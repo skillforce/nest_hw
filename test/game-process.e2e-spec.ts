@@ -449,7 +449,6 @@ describe('Game Process (e2e)', () => {
       gameId,
       HttpStatus.OK,
     );
-    console.log(finishedGame);
 
     expect(finishedGame.status).toBe('Finished');
 
