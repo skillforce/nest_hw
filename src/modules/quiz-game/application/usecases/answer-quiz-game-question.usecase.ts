@@ -152,7 +152,7 @@ export class AnswerQuestionUsecase
       await this.increasePlayerScore(firstParticipant);
       firstParticipantScore++;
     }
-    let winnerId: number | null;
+    let winnerId: number;
     if (firstParticipantScore > secondParticipantScore) {
       winnerId = firstParticipant.user.id;
     } else if (secondParticipantScore > firstParticipantScore) {

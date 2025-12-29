@@ -140,6 +140,12 @@ export class GameSessionsRepository {
 
   async updateWinner(sessionId: number, winnerId: number): Promise<void> {
     try {
+      console.log(
+        'Updating winner for session:',
+        sessionId,
+        'to winner:',
+        winnerId,
+      );
       await this.gameSessionsOrmRepository.update(sessionId, {
         winner_id: winnerId,
       });
