@@ -5,8 +5,6 @@ import { UsersTestManager } from './helpers/users-test-manager';
 import { QuestionsTestManager } from './helpers/questions-test-manager';
 import { delay } from './helpers/delay';
 import { GameTestManager } from './helpers/quiz-game-test-manager';
-import { SortDirection } from '../src/core/dto/base.query-params.input-dto';
-import { GetMyGamesHistorySortBy } from '../src/modules/quiz-game/api/dto/get-my-games-history-query-params.input-dto';
 
 describe('Game Process (e2e)', () => {
   let app: INestApplication;
@@ -373,5 +371,90 @@ describe('Game Process (e2e)', () => {
       user1.accessToken,
     );
     console.log(currentStatistics);
+  });
+  it('should finish game where secondPlayer wins 5-0 without bonus points', async () => {
+    // Arrange: create & publish 5 questions
+    await questionsTestManager.createAndPublishFiveQuestions();
+
+    // Create & login users
+    const users = await usersTestManager.createAndLoginSeveralUsers(4);
+    const user1 = users[0]; // firstPlayer
+    const user4 = users[3]; // secondPlayer
+    const user2 = users[2]; // secondPlayer
+
+    // User1 creates pending game
+    const pendingGame = await gameTestManager.connectToGame(user1.accessToken);
+    expect(pendingGame.status).toBe('PendingSecondPlayer');
+
+    // User4 connects → active game
+    const activeGame = await gameTestManager.connectToGame(user4.accessToken);
+    expect(activeGame.status).toBe('Active');
+
+    await gameTestManager.connectToGame(
+      user4.accessToken,
+      HttpStatus.FORBIDDEN,
+    );
+    await gameTestManager.connectToGame(
+      user1.accessToken,
+      HttpStatus.FORBIDDEN,
+    );
+    await gameTestManager.connectToGame(user2.accessToken);
+
+    const gameId = activeGame.id;
+
+    // Helper shortcuts
+    const FP = user1.accessToken;
+    const SP = user4.accessToken;
+
+    // --- Answer sequence ---
+    // 1️⃣ correct (second)
+    await gameTestManager.sendAnswer(SP, { answer: 'right' });
+    await delay(200);
+    // 2️⃣ correct (second)
+    await gameTestManager.sendAnswer(SP, { answer: 'right' });
+    await delay(200);
+    // 3️⃣ incorrect (first)
+    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await delay(200);
+    // 4️⃣ correct (second)
+    await gameTestManager.sendAnswer(SP, { answer: 'right' });
+    await delay(200);
+    // 5️⃣ correct (second)
+    await gameTestManager.sendAnswer(SP, { answer: 'right' });
+    await delay(200);
+    // 6️⃣ incorrect (first)
+    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await delay(200);
+    // 7️⃣ incorrect (first)
+    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await delay(200);
+    // 8️⃣ incorrect (first)
+    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await delay(200);
+    // 9️⃣ incorrect (first)
+    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await delay(200);
+    // 🔟 correct (second)
+    await gameTestManager.sendAnswer(SP, { answer: 'right' });
+    await delay(200);
+    // --- Assertions ---
+
+    // No active game anymore
+    await gameTestManager.getMyCurrentGame(FP, HttpStatus.NOT_FOUND);
+    await gameTestManager.getMyCurrentGame(SP, HttpStatus.NOT_FOUND);
+
+    // Get finished game
+    const finishedGame = await gameTestManager.getGameById(
+      FP,
+      gameId,
+      HttpStatus.OK,
+    );
+    console.log(finishedGame);
+
+    expect(finishedGame.status).toBe('Finished');
+
+    // Scores
+    expect(finishedGame.firstPlayerProgress.score).toBe(0);
+    expect(finishedGame.secondPlayerProgress?.score).toBe(5);
   });
 });

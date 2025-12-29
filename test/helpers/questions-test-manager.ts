@@ -66,23 +66,23 @@ export class QuestionsTestManager {
     const questions: CreateQuestionInputDto[] = [
       {
         body: 'What is the sum of two and two in simple arithmetic?',
-        correctAnswers: ['4', 'four'],
+        correctAnswers: ['4', 'four', 'right'],
       },
       {
         body: 'In basic math, what number do you get when adding three plus three?',
-        correctAnswers: ['6'],
+        correctAnswers: ['6', 'right'],
       },
       {
         body: 'Name the European city that serves as the capital of France.',
-        correctAnswers: ['Paris'],
+        correctAnswers: ['Paris', 'right'],
       },
       {
         body: 'At what temperature in Celsius does water start to freeze?',
-        correctAnswers: ['0', 'four'],
+        correctAnswers: ['0', 'four', 'right'],
       },
       {
         body: 'If you multiply five by five, what number will you get as a result?',
-        correctAnswers: ['25'],
+        correctAnswers: ['25', 'right'],
       },
     ];
 

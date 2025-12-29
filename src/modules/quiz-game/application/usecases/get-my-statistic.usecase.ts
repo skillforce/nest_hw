@@ -35,7 +35,7 @@ export class GetMyStatisticUsecase
 
     return GameStatisticsViewDto.mapToViewDto({
       sumScore: totalScore,
-      avgScores: Number(averageScore.toFixed(2)),
+      avgScores: Number(averageScore.toFixed(1)),
       gamesCount: sessionsCount,
       winsCount,
       lossesCount: losesCount,
