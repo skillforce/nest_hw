@@ -28,6 +28,8 @@ export class ConnectUserToTheQuizGameUsecase
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
 
     if (activeGameSession) {
+      console.log('ACTIVE GAME SESSION FOUND:', activeGameSession);
+      console.log('ACTIVE GAME SESSION FOUND:', userId);
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         extensions: [
