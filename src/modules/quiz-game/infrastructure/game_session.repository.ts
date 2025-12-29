@@ -3,7 +3,7 @@ import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
-import { GameSession } from '../domain/game-session.entity';
+import { GameSession, GameSessionStatus } from '../domain/game-session.entity';
 import {
   GetMyGamesHistoryQueryParamsInputDto,
   GetMyGamesHistorySortBy,
@@ -28,6 +28,15 @@ export class GameSessionsRepository {
       },
       relations: ['participants'],
     });
+  }
+  async updateGameSessionStatus(
+    gameSessionId: number,
+    status: GameSessionStatus,
+  ) {
+    const updated = await this.gameSessionsOrmRepository.update(gameSessionId, {
+      status,
+    });
+    console.log(updated);
   }
 
   async getUserWinsAndLosesCount(
@@ -181,7 +190,12 @@ export class GameSessionsRepository {
       .leftJoinAndSelect('participants.user', 'user')
       .where('gameSession.deletedAt IS NULL')
       .andWhere('gameSession.session_started_at IS NOT NULL')
-      .andWhere('gameSession.winner_id IS NULL')
+      .andWhere('gameSession.status IN (:...activeStatuses)', {
+        activeStatuses: [
+          GameSessionStatus.Active,
+          GameSessionStatus.PendingSecondPlayer,
+        ],
+      })
       .andWhere('user.id = :userId', { userId });
 
     return await qb.getOne();

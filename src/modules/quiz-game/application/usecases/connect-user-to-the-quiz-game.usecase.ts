@@ -5,7 +5,10 @@ import { GameSessionsRepository } from '../../infrastructure/game_session.reposi
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
-import { GameSession } from '../../domain/game-session.entity';
+import {
+  GameSession,
+  GameSessionStatus,
+} from '../../domain/game-session.entity';
 import { QuestionsRepository } from '../../infrastructure/questions.repository';
 
 export class ConnectUserToTheQuizGameCommand {
@@ -28,8 +31,7 @@ export class ConnectUserToTheQuizGameUsecase
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
 
     if (activeGameSession) {
-      console.log('ACTIVE GAME SESSION FOUND:', activeGameSession);
-      console.log('ACTIVE GAME SESSION FOUND:', userId);
+      console.log('activeGameSession', activeGameSession);
       throw new DomainException({
         code: DomainExceptionCode.Forbidden,
         extensions: [
@@ -94,12 +96,19 @@ export class ConnectUserToTheQuizGameUsecase
       const startedGameSession = {
         ...gameSession,
         session_started_at: new Date(),
+        status: GameSessionStatus.Active,
       };
 
       await this.gameSessionsRepository.save(startedGameSession);
     } catch (e) {
       console.log(e);
     }
+  }
+  private async setGameStatusActive(gameSessionId: number) {
+    await this.gameSessionsRepository.updateGameSessionStatus(
+      gameSessionId,
+      GameSessionStatus.Active,
+    );
   }
   private async createGameSessionParticipant(
     sessionId: number,

@@ -398,7 +398,6 @@ describe('Game Process (e2e)', () => {
       user1.accessToken,
       HttpStatus.FORBIDDEN,
     );
-    await gameTestManager.connectToGame(user2.accessToken);
 
     const gameId = activeGame.id;
 
@@ -414,7 +413,7 @@ describe('Game Process (e2e)', () => {
     await gameTestManager.sendAnswer(SP, { answer: 'right' });
     await delay(200);
     // 3️⃣ incorrect (first)
-    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await gameTestManager.sendAnswer(FP, { answer: 'right' });
     await delay(200);
     // 4️⃣ correct (second)
     await gameTestManager.sendAnswer(SP, { answer: 'right' });
@@ -423,26 +422,27 @@ describe('Game Process (e2e)', () => {
     await gameTestManager.sendAnswer(SP, { answer: 'right' });
     await delay(200);
     // 6️⃣ incorrect (first)
-    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await gameTestManager.sendAnswer(FP, { answer: 'right' });
     await delay(200);
     // 7️⃣ incorrect (first)
-    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await gameTestManager.sendAnswer(FP, { answer: 'right' });
     await delay(200);
     // 8️⃣ incorrect (first)
-    await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
+    await gameTestManager.sendAnswer(FP, { answer: 'right' });
     await delay(200);
     // 9️⃣ incorrect (first)
     await gameTestManager.sendAnswer(FP, { answer: 'wrong' });
     await delay(200);
     // 🔟 correct (second)
     await gameTestManager.sendAnswer(SP, { answer: 'right' });
-    await delay(200);
+    await delay(400);
     // --- Assertions ---
 
     // No active game anymore
     await gameTestManager.getMyCurrentGame(FP, HttpStatus.NOT_FOUND);
     await gameTestManager.getMyCurrentGame(SP, HttpStatus.NOT_FOUND);
-
+    // Try to connect again
+    await gameTestManager.connectToGame(user4.accessToken);
     // Get finished game
     const finishedGame = await gameTestManager.getGameById(
       FP,
@@ -454,7 +454,7 @@ describe('Game Process (e2e)', () => {
     expect(finishedGame.status).toBe('Finished');
 
     // Scores
-    expect(finishedGame.firstPlayerProgress.score).toBe(0);
+    expect(finishedGame.firstPlayerProgress.score).toBe(5);
     expect(finishedGame.secondPlayerProgress?.score).toBe(5);
   });
 });

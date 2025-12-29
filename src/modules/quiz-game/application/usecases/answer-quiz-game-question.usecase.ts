@@ -14,7 +14,10 @@ import {
 } from '../../domain/game-session-question-answers.entity';
 import { GameSessionQuestion } from '../../domain/game-session-questions.entity';
 import { GameSessionParticipants } from '../../domain/game-session-participants.entity';
-import { GameSession } from '../../domain/game-session.entity';
+import {
+  GameSession,
+  GameSessionStatus,
+} from '../../domain/game-session.entity';
 
 export class AnswerQuestionCommand {
   constructor(
@@ -39,7 +42,6 @@ export class AnswerQuestionUsecase
     answerQuestionDto,
     userId,
   }: AnswerQuestionCommand): Promise<AnswerQuestionViewDto> {
-    console.log('USER ID IN ANSWER QUESTION USECASE:', userId);
     const gameSession =
       await this.gameSessionsRepository.findActiveGameSessionByUserId(userId);
     const gameSessionParticipant =
@@ -139,7 +141,7 @@ export class AnswerQuestionUsecase
   private async calculateWinnerIdAndSave(
     firstParticipant: GameSessionParticipants,
     secondParticipant: GameSessionParticipants,
-    game_session_id: number,
+    gameSession: GameSession,
   ): Promise<void> {
     const firstTime = new Date(firstParticipant.finished_at).getTime();
     const secondTime = new Date(secondParticipant.finished_at).getTime();
@@ -152,21 +154,35 @@ export class AnswerQuestionUsecase
       await this.increasePlayerScore(firstParticipant);
       firstParticipantScore++;
     }
-    let winnerId: number;
+    let winnerId: number | null;
     if (firstParticipantScore > secondParticipantScore) {
       winnerId = firstParticipant.user.id;
     } else if (secondParticipantScore > firstParticipantScore) {
       winnerId = secondParticipant.user.id;
     } else {
-      winnerId = 0; // draw
+      winnerId = null; // draw
     }
+    await this.setGameStatusFinished(gameSession.id);
+
     if (winnerId) {
-      await this.updateGameSessionWinner(game_session_id, winnerId);
+      await this.updateGameSessionWinner(gameSession.id, winnerId);
     }
   }
 
   private async updateGameSessionWinner(sessionId: number, winnerId: number) {
     await this.gameSessionsRepository.updateWinner(sessionId, winnerId);
+  }
+
+  private async setGameStatusFinished(gameSessionId: number) {
+    try {
+      console.log('Setting game session status to Finished');
+      await this.gameSessionsRepository.updateGameSessionStatus(
+        gameSessionId,
+        GameSessionStatus.Finished,
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   private async handleLastQuestionCase(
@@ -194,7 +210,7 @@ export class AnswerQuestionUsecase
       await this.calculateWinnerIdAndSave(
         firstParticipant,
         secondParticipant,
-        gameSession.id,
+        gameSession,
       );
     }
   }

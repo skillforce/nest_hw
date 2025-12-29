@@ -4,10 +4,23 @@ import { User } from '../../user-accounts/domain/entities/user.entity';
 import { GameSessionQuestion } from './game-session-questions.entity';
 import { GameSessionParticipants } from './game-session-participants.entity';
 
+export enum GameSessionStatus {
+  PendingSecondPlayer = 'PendingSecondPlayer',
+  Active = 'Active',
+  Finished = 'Finished',
+}
+
 @Entity('GameSessions')
 export class GameSession extends NumericIdEntity {
   @Column({ type: 'timestamp', nullable: true })
   session_started_at: Date | null;
+
+  @Column({
+    type: 'enum',
+    enum: GameSessionStatus,
+    default: GameSessionStatus.PendingSecondPlayer,
+  })
+  status: GameSessionStatus;
 
   @Column({ nullable: true })
   winner_id: number;
